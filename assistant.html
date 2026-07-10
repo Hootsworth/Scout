@@ -49,6 +49,7 @@ body::after {
   background: white;
   transition: transform 0.2s ease;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 .sidenav .logo-container:hover {
   transform: scale(1.1);
@@ -56,7 +57,8 @@ body::after {
 .sidenav .logo-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
 .sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
@@ -479,6 +481,11 @@ body::after {
   <div class="chat-header">
     <h1>SCOUT <span class="outline">AI ASSISTANT</span></h1>
     <div style="display:flex; align-items:center; gap:16px;">
+      <!-- Toggle Sidebar Button -->
+      <button id="toggle-sidebar-btn" class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="toggleChatsSidebar()">
+        <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+        Chats List
+      </button>
       <!-- Toggle button for interview mode -->
       <button id="toggle-interview-mode-btn" class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="toggleInterviewMode()">
         <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
@@ -498,6 +505,23 @@ body::after {
 
   <!-- WORKSPACE WRAPPER (Split chat & editor) -->
   <div class="chat-workspace-wrapper" style="display:flex; flex:1; overflow:hidden; width: 100%;">
+    
+    <!-- CHAT LIST SIDEBAR (COLLAPSIBLE) -->
+    <div id="chats-sidebar" style="width:240px; display:flex; flex-direction:column; background:var(--paper2); border-right:1px solid var(--line); transition: width 0.2s, border-right-width 0.2s; overflow:hidden; flex-shrink:0;">
+      <!-- Search & New Chat Button -->
+      <div style="padding:16px; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:12px;">
+        <button class="btn btn-outline" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:12px; padding:8px;" onclick="createNewChat()">
+          <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          New Chat
+        </button>
+        <input type="text" id="chat-search-input" placeholder="Search chats..." style="width:100%; padding:6px 10px; font-family:'Syne',sans-serif; font-size:11px; border:1px solid var(--line); background:var(--paper); outline:none;" oninput="filterChatsList()">
+      </div>
+      
+      <!-- List of Chats -->
+      <div id="chats-list-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px; padding:10px 6px;">
+        <!-- Dynamically rendered chat items -->
+      </div>
+    </div>
     
     <!-- LEFT PANE: CHAT WINDOW -->
     <div class="chat-pane" style="flex:1; display:flex; flex-direction:column; border-right: 1px solid var(--line); position:relative; overflow:hidden;">
@@ -602,6 +626,7 @@ let currentUid = null;
 let semesterData = null;
 let activeProvider = 'gemini'; // 'gemini' | 'openai'
 let isInterviewMode = false;
+let currentChatId = null;
 
 function setProvider(p) {
   activeProvider = p;
@@ -694,11 +719,30 @@ async function loadUserData() {
     if (docSnap.exists) {
       semesterData = docSnap.data();
       
-      // Load saved chat histories
-      conversationHistory = semesterData.gemini_chat_history || [];
-      openaiHistory = semesterData.openai_chat_history || [];
+      // Initialize chats array if not present
+      if (!semesterData.chats || semesterData.chats.length === 0) {
+        // Migrate old history if present
+        const migratedMessages = semesterData.gemini_chat_history || [];
+        semesterData.chats = [{
+          id: "chat_" + Date.now(),
+          title: migratedMessages.length > 0 ? "Migrated Chat" : "New Chat",
+          provider: activeProvider,
+          created_at: new Date().toISOString(),
+          messages: migratedMessages
+        }];
+      }
       
-      renderLoadedMessages();
+      // Select first chat session as active
+      const lastChat = semesterData.chats[0];
+      currentChatId = lastChat.id;
+      activeProvider = lastChat.provider || 'gemini';
+      
+      // Toggle button highlights in UI
+      document.getElementById('btn-gemini').classList.toggle('active', activeProvider === 'gemini');
+      document.getElementById('btn-openai').classList.toggle('active', activeProvider === 'openai');
+      
+      loadActiveChatSession();
+      renderChatsList();
     } else {
       document.getElementById('welcome-message-box').innerHTML = `
         Hello! I couldn't find a plan database for you in Firestore. 
@@ -774,16 +818,179 @@ function appendMessageUI(role, text) {
 }
 
 // Save chat logs to Firestore
+// Save chat logs to Firestore
 async function saveChatHistory() {
-  if (!db || !currentUid || !semesterData) return;
+  if (!db || !currentUid || !semesterData || !currentChatId) return;
   try {
-    semesterData.gemini_chat_history = conversationHistory;
-    semesterData.openai_chat_history = openaiHistory;
+    // Find active chat session in semesterData.chats
+    let activeChat = semesterData.chats.find(c => c.id === currentChatId);
+    if (!activeChat) {
+      activeChat = {
+        id: currentChatId,
+        title: "New Chat",
+        provider: activeProvider,
+        created_at: new Date().toISOString(),
+        messages: []
+      };
+      semesterData.chats.unshift(activeChat);
+    }
+    
+    // Sync active history depending on active provider
+    if (activeProvider === 'openai') {
+      activeChat.messages = openaiHistory.filter(msg => msg.role === 'user' || msg.role === 'assistant');
+      activeChat.provider = 'openai';
+    } else {
+      activeChat.messages = conversationHistory.filter(msg => msg.role === 'user' || msg.role === 'model');
+      activeChat.provider = 'gemini';
+    }
+    
+    // Auto-generate title on first conversation message
+    if ((activeChat.title === "New Chat" || activeChat.title === "Migrated Chat") && activeChat.messages.length > 0) {
+      let firstText = "";
+      if (activeProvider === 'openai') {
+        firstText = activeChat.messages[0].content || "";
+      } else {
+        firstText = activeChat.messages[0].parts?.[0]?.text || "";
+      }
+      if (firstText) {
+        // Exclude system logs and truncate
+        if (!firstText.startsWith('[')) {
+          activeChat.title = firstText.slice(0, 26) + (firstText.length > 26 ? "..." : "");
+        }
+      }
+    }
+    
+    // Use set with merge: true to avoid deleting other semesterData fields (critical DB safeguard!)
     semesterData.last_updated = new Date().toISOString();
-    await db.collection('users').doc(currentUid).set(semesterData);
+    await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
     console.log("Chat history successfully synced to Firestore.");
+    renderChatsList();
   } catch (e) {
     console.error("Failed to save chat logs:", e);
+  }
+}
+
+// Active session loaders & sidebar controllers
+function loadActiveChatSession() {
+  const activeChat = semesterData.chats.find(c => c.id === currentChatId);
+  if (!activeChat) return;
+  
+  if (activeChat.provider === 'openai') {
+    openaiHistory = activeChat.messages || [];
+    conversationHistory = [];
+  } else {
+    conversationHistory = activeChat.messages || [];
+    openaiHistory = [];
+  }
+  
+  renderLoadedMessages();
+}
+
+function createNewChat() {
+  const newId = "chat_" + Date.now();
+  const newChat = {
+    id: newId,
+    title: "New Chat",
+    provider: activeProvider,
+    created_at: new Date().toISOString(),
+    messages: []
+  };
+  
+  if (!semesterData.chats) semesterData.chats = [];
+  semesterData.chats.unshift(newChat);
+  currentChatId = newId;
+  
+  loadActiveChatSession();
+  saveChatHistory();
+}
+
+function selectChat(chatId) {
+  currentChatId = chatId;
+  const activeChat = semesterData.chats.find(c => c.id === chatId);
+  if (activeChat) {
+    activeProvider = activeChat.provider || 'gemini';
+    document.getElementById('btn-gemini').classList.toggle('active', activeProvider === 'gemini');
+    document.getElementById('btn-openai').classList.toggle('active', activeProvider === 'openai');
+  }
+  loadActiveChatSession();
+  renderChatsList();
+}
+
+function renderChatsList() {
+  const listContainer = document.getElementById('chats-list-container');
+  if (!listContainer) return;
+  listContainer.innerHTML = '';
+  
+  const searchVal = document.getElementById('chat-search-input').value.toLowerCase();
+  
+  if (!semesterData || !semesterData.chats) return;
+  
+  semesterData.chats.forEach(chat => {
+    if (searchVal && !chat.title.toLowerCase().includes(searchVal)) {
+      return;
+    }
+    
+    const item = document.createElement('div');
+    item.style.padding = '10px 14px';
+    item.style.fontFamily = 'Syne';
+    item.style.fontSize = '12px';
+    item.style.cursor = 'pointer';
+    item.style.borderBottom = '1px solid var(--line2)';
+    item.style.display = 'flex';
+    item.style.flexDirection = 'column';
+    item.style.gap = '2px';
+    item.style.transition = 'all 0.15s';
+    
+    const isSelected = chat.id === currentChatId;
+    if (isSelected) {
+      item.style.background = 'var(--ink)';
+      item.style.color = 'var(--bg)';
+    } else {
+      item.style.background = 'transparent';
+      item.style.color = 'var(--ink2)';
+    }
+    
+    item.onmouseover = () => {
+      if (!isSelected) item.style.background = 'var(--paper)';
+    };
+    item.onmouseout = () => {
+      if (!isSelected) item.style.background = 'transparent';
+    };
+    
+    item.onclick = () => selectChat(chat.id);
+    
+    const titleSpan = document.createElement('span');
+    titleSpan.style.fontWeight = '700';
+    titleSpan.style.whiteSpace = 'nowrap';
+    titleSpan.style.overflow = 'hidden';
+    titleSpan.style.textOverflow = 'ellipsis';
+    titleSpan.textContent = chat.title;
+    item.appendChild(titleSpan);
+    
+    const metaSpan = document.createElement('span');
+    metaSpan.style.fontSize = '9px';
+    metaSpan.style.fontFamily = 'Syne Mono';
+    metaSpan.style.opacity = '0.6';
+    const dateStr = new Date(chat.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    metaSpan.textContent = `${chat.provider.toUpperCase()} // ${dateStr}`;
+    item.appendChild(metaSpan);
+    
+    listContainer.appendChild(item);
+  });
+}
+
+function filterChatsList() {
+  renderChatsList();
+}
+
+function toggleChatsSidebar() {
+  const sidebar = document.getElementById('chats-sidebar');
+  if (sidebar.style.width === '0px') {
+    sidebar.style.width = '240px';
+    sidebar.style.borderRightWidth = '1px';
+  } else {
+    sidebar.style.width = '0px';
+    sidebar.style.borderRightWidth = '0px';
   }
 }
 
@@ -1809,8 +2016,8 @@ async function updateSemesterDataInFirestore(newJsonString) {
   }
   
   parsed.last_updated = new Date().toISOString();
-  await db.collection('users').doc(currentUid).set(parsed);
-  semesterData = parsed;
+  await db.collection('users').doc(currentUid).set(parsed, { merge: true });
+  semesterData = { ...semesterData, ...parsed };
   return { status: "success", message: "semester_data successfully updated in Cloud Firestore" };
 }
 

@@ -51,6 +51,7 @@ body::after {
   background: white;
   transition: transform 0.2s ease;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 .sidenav .logo-container:hover {
   transform: scale(1.1);
@@ -58,7 +59,8 @@ body::after {
 .sidenav .logo-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
 .sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
