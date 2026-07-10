@@ -1700,45 +1700,21 @@ function renderBarChartTag(title, yLabel, bars) {
 function parseMarkdown(md) {
   md = normalizeEscapedMarkdownText(md);
 
-  // Parse custom <pie-chart> tags before HTML escaping
+  const pieCharts = [];
+  const barCharts = [];
+
+  // Parse custom <pie-chart> tags before HTML escaping and replace with placeholders
   md = md.replace(/<pie-chart\b[^>]*>([\s\S]*?)<\/pie-chart>/gi, (match) => {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(match, 'text/html');
-      const pieNode = doc.querySelector('pie-chart');
-      if (!pieNode) return match;
-      const title = pieNode.getAttribute('title') || 'Chart';
-      const slices = Array.from(pieNode.querySelectorAll('slice')).map(node => ({
-        label: node.getAttribute('label') || '',
-        value: parseFloat(node.getAttribute('value') || '0'),
-        color: node.getAttribute('color') || '#3d7a6a'
-      }));
-      return renderPieChartTag(title, slices);
-    } catch(e) {
-      console.error("Pie Chart parsing error:", e);
-      return match;
-    }
+    const id = `%%PIECHART${pieCharts.length}%%`;
+    pieCharts.push(match);
+    return id;
   });
 
-  // Parse custom <bar-chart> tags before HTML escaping
+  // Parse custom <bar-chart> tags before HTML escaping and replace with placeholders
   md = md.replace(/<bar-chart\b[^>]*>([\s\S]*?)<\/bar-chart>/gi, (match) => {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(match, 'text/html');
-      const barNode = doc.querySelector('bar-chart');
-      if (!barNode) return match;
-      const title = barNode.getAttribute('title') || 'Chart';
-      const yLabel = barNode.getAttribute('y-label') || 'Value';
-      const bars = Array.from(barNode.querySelectorAll('bar')).map(node => ({
-        label: node.getAttribute('label') || '',
-        value: parseFloat(node.getAttribute('value') || '0'),
-        color: node.getAttribute('color') || '#3d7a6a'
-      }));
-      return renderBarChartTag(title, yLabel, bars);
-    } catch(e) {
-      console.error("Bar Chart parsing error:", e);
-      return match;
-    }
+    const id = `%%BARCHART${barCharts.length}%%`;
+    barCharts.push(match);
+    return id;
   });
 
   // Strip json-quiz blocks completely from the main message body to keep it clean in chat
@@ -1957,6 +1933,45 @@ function parseMarkdown(md) {
   // Restore Inline Code
   inlineCodes.forEach((code, idx) => {
     html = html.replace(`%%INLINECODE${idx}%%`, () => `<code>${code}</code>`);
+  });
+
+  // Restore Pie Charts
+  pieCharts.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const pieNode = doc.querySelector('pie-chart');
+      const title = pieNode ? (pieNode.getAttribute('title') || 'Chart') : 'Chart';
+      const slices = pieNode ? Array.from(pieNode.querySelectorAll('slice')).map(node => ({
+        label: node.getAttribute('label') || '',
+        value: parseFloat(node.getAttribute('value') || '0'),
+        color: node.getAttribute('color') || '#3d7a6a'
+      })) : [];
+      html = html.replace(`%%PIECHART${idx}%%`, () => renderPieChartTag(title, slices));
+    } catch(e) {
+      console.error("Pie Chart restoration error:", e);
+      html = html.replace(`%%PIECHART${idx}%%`, () => '');
+    }
+  });
+
+  // Restore Bar Charts
+  barCharts.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const barNode = doc.querySelector('bar-chart');
+      const title = barNode ? (barNode.getAttribute('title') || 'Chart') : 'Chart';
+      const yLabel = barNode ? (barNode.getAttribute('y-label') || 'Value') : 'Value';
+      const bars = barNode ? Array.from(barNode.querySelectorAll('bar')).map(node => ({
+        label: node.getAttribute('label') || '',
+        value: parseFloat(node.getAttribute('value') || '0'),
+        color: node.getAttribute('color') || '#3d7a6a'
+      })) : [];
+      html = html.replace(`%%BARCHART${idx}%%`, () => renderBarChartTag(title, yLabel, bars));
+    } catch(e) {
+      console.error("Bar Chart restoration error:", e);
+      html = html.replace(`%%BARCHART${idx}%%`, () => '');
+    }
   });
 
   // Replace double newlines with paragraphs
