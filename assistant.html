@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEM 05 // AI ASSISTANT CHAT</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #f5f2eb;
+  --paper:  #faf8f3;
+  --paper2: #ede9e0;
+  --paper3: #e5e0d4;
+  --ink:    #1a1814;
+  --ink2:   #3d3a33;
+  --ink3:   #7a7670;
+  --red:    #c13d2e;
+  --amber:  #c47d1a;
+  --teal:   #2a6b5e;
+  --blue:   #2c4f8a;
+  --line:   rgba(26,24,20,0.10);
+  --line2:  rgba(26,24,20,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--ink2); font-family:'Syne',sans-serif;
+  cursor:crosshair; position:relative; overflow-x:hidden;
+  height: 100vh; display: flex;
+}
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9998; mix-blend-mode:multiply;
+}
+#cursor { width:6px;height:6px;background:var(--red);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply; }
+
+.sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
+.sidenav .logo{font-family:'Bebas Neue';color:var(--red);font-size:20px;writing-mode:vertical-rl;letter-spacing:0.1em;}
+.sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
+.sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
+.sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
+.sidenav .links a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink3);font-family:'Syne Mono';font-size:10px;letter-spacing:0.2em;text-transform:uppercase;transition:color .15s;}
+.sidenav .links a:hover{color:var(--red);}
+.sidenav .links a.active{color:var(--red);font-weight:700;}
+.sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
+
+.main-chat-container {
+  margin-left: 60px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
+
+.chat-header {
+  padding: 24px 40px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.chat-header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+.chat-header .outline {
+  -webkit-text-stroke: 1px var(--ink);
+  color: transparent;
+}
+.status-indicator {
+  font-family: 'Syne Mono', monospace;
+  font-size: 10px;
+  color: var(--ink3);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+.status-dot.active {
+  background: var(--teal);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-image: linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px);
+  background-size: 48px 48px;
+}
+
+.message-row {
+  display: flex;
+  width: 100%;
+}
+.message-row.user {
+  justify-content: flex-end;
+}
+.message {
+  max-width: 70%;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  line-height: 1.6;
+}
+.message-row.user .message {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+  font-family: 'Syne', sans-serif;
+  font-size: 14.5px;
+}
+.message-row.assistant .message {
+  background: var(--paper);
+  color: var(--ink2);
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 18px;
+}
+.message-row.assistant .message b, .message-row.assistant .message strong {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  font-style: normal;
+}
+.message-row.system-log .message {
+  background: rgba(196,125,26,0.05);
+  border-color: rgba(196,125,26,0.2);
+  color: var(--amber);
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  max-width: 90%;
+}
+
+.quick-prompts {
+  padding: 16px 40px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  border-top: 1px solid var(--line2);
+  background: var(--bg);
+  align-items: center;
+}
+.quick-prompts::-webkit-scrollbar {
+  height: 2px;
+}
+.prompt-chip {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 8px 16px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.prompt-chip:hover {
+  background: var(--paper2);
+  border-color: var(--ink3);
+}
+
+.chat-input-container {
+  padding: 24px 40px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.chat-input {
+  flex: 1;
+  background: var(--paper2);
+  border: 1px solid var(--line);
+  padding: 16px 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14.5px;
+  color: var(--ink);
+  outline: none;
+}
+.chat-input:focus {
+  border-color: var(--red);
+}
+.send-btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  padding: 16px 32px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.send-btn:hover {
+  background: var(--red);
+  color: white;
+}
+
+.btn {
+  background: var(--red);
+  color: white;
+  border: 1px solid var(--red);
+  padding: 10px 20px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+@media(max-width:900px){
+  .sidenav{display:none;}
+  .main-chat-container{margin-left:0;}
+  .chat-header{padding:16px 24px;}
+  .chat-messages{padding:20px;}
+  .message{max-width:85%;}
+  .chat-input-container{padding:16px 20px;}
+}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+
+<!-- NAVIGATION SIDEBAR -->
+<nav class="sidenav">
+  <div class="logo">SEM05</div>
+  
+  <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
+    <span class="nav-group-title">Menu</span>
+    <div class="links">
+      <a href="index.html">Plan</a>
+      <a href="assistant.html" class="active">Chat</a>
+      <a href="settings.html">Setup</a>
+    </div>
+  </div>
+
+  <div class="nav-group" style="flex-grow: 1; justify-content: flex-start; overflow-y: auto; padding-top: 10px;">
+    <span class="nav-group-title">Actions</span>
+    <div class="links" style="gap: 18px;" id="actions-group-links">
+      <a href="#" onclick="quickAction('weekly')">Summary</a>
+      <a href="#" onclick="quickAction('gmail')">Scan Mail</a>
+      <a href="#" onclick="quickAction('calendar')">Calendar</a>
+    </div>
+  </div>
+  
+  <div class="tag">JUL 2026 → JAN 2027</div>
+</nav>
+
+<!-- AUTHENTICATION CARD (HIDDEN BY DEFAULT) -->
+<div id="auth-warning-container" style="display: none; padding: 120px 80px; text-align: center; margin-left: 60px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+  <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--red);">Authentication Required</h2>
+  <p style="font-family: 'Instrument Serif', serif; font-style: italic; font-size: 24px; color: var(--ink3); max-width: 500px; margin: 24px auto;">
+    To open a session with the AI Academic Assistant, please sign in.
+  </p>
+  <button class="btn" onclick="window.location.href='settings.html'">Go to Setup &amp; Sign In</button>
+</div>
+
+<!-- CHAT INTERFACE (HIDDEN UNTIL AUTHENTICATED) -->
+<div class="main-chat-container" id="chat-interface-container" style="display: none;">
+  <!-- HEADER -->
+  <div class="chat-header">
+    <h1>AI ACADEMIC <span class="outline">ASSISTANT</span></h1>
+    <div class="status-indicator">
+      <div class="status-dot" id="agent-status-dot"></div>
+      <span id="agent-status-text">Disconnected</span>
+    </div>
+  </div>
+
+  <!-- CHAT MESSAGES -->
+  <div class="chat-messages" id="chat-messages-container">
+    <div class="message-row assistant">
+      <div class="message" id="welcome-message-box">
+        Hello! I am your personal academic assistant. I am loading your profile from Firestore...
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK CHIPS -->
+  <div class="quick-prompts">
+    <div class="prompt-chip" onclick="sendPrompt('Show my commitments status this week')">Commitments</div>
+    <div class="prompt-chip" onclick="sendPrompt('Check my Gmail for any new deadlines or tasks')">Scan Gmail</div>
+    <div class="prompt-chip" onclick="sendPrompt('What events do I have on my calendar for the next 7 days?')">List Calendar</div>
+    <div class="prompt-chip" onclick="sendPrompt('Suggest a weekly study plan for CV and NLP')">Suggest Plan</div>
+    <div class="prompt-chip" onclick="sendPrompt('I want to mark ECell exit task as done')">Exit ECell</div>
+  </div>
+
+  <!-- CHAT INPUT -->
+  <div class="chat-input-container">
+    <input type="text" class="chat-input" id="message-input" placeholder="Ask your assistant anything..." onkeydown="handleKeyPress(event)">
+    <button class="send-btn" onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<!-- Firebase CDN Libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+// Cursor Follower
+document.addEventListener('mousemove', e => {
+  const c = document.getElementById('cursor');
+  c.style.left = e.clientX + 'px';
+  c.style.top = e.clientY + 'px';
+});
+
+// State & Configs
+let geminiKey = localStorage.getItem('gemini_api_key') || '';
+let googleToken = localStorage.getItem('google_access_token') || '';
+let db = null;
+let currentUid = null;
+let semesterData = null;
+
+// Initialize status indicators
+const statusDot = document.getElementById('agent-status-dot');
+const statusText = document.getElementById('agent-status-text');
+
+if (geminiKey) {
+  statusDot.classList.add('active');
+  statusText.textContent = "Agent Ready";
+} else {
+  statusDot.classList.remove('active');
+  statusText.textContent = "API Keys Missing";
+}
+
+// Initialize Firebase Auth / Firestore
+function initFirebase() {
+  const storedConfig = localStorage.getItem('firebase_config');
+  if (!storedConfig) {
+    showAuthWarning();
+    return;
+  }
+  
+  try {
+    const config = JSON.parse(storedConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
+    }
+    db = firebase.firestore();
+    setupAuthStateListener();
+  } catch (e) {
+    console.error("Firebase init failed in Chat:", e);
+    showAuthWarning();
+  }
+}
+
+function setupAuthStateListener() {
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+      currentUid = user.uid;
+      document.getElementById('auth-warning-container').style.display = 'none';
+      document.getElementById('chat-interface-container').style.display = 'flex';
+      document.getElementById('actions-group-links').style.opacity = '1';
+      document.getElementById('actions-group-links').style.pointerEvents = 'auto';
+      await loadUserData();
+    } else {
+      currentUid = null;
+      showAuthWarning();
+    }
+  });
+}
+
+function showAuthWarning() {
+  document.getElementById('auth-warning-container').style.display = 'flex';
+  document.getElementById('chat-interface-container').style.display = 'none';
+  document.getElementById('actions-group-links').style.opacity = '0.3';
+  document.getElementById('actions-group-links').style.pointerEvents = 'none';
+}
+
+async function loadUserData() {
+  if (!db || !currentUid) return;
+  try {
+    const docSnap = await db.collection('users').doc(currentUid).get();
+    if (docSnap.exists) {
+      semesterData = docSnap.data();
+      document.getElementById('welcome-message-box').innerHTML = `
+        Welcome back! Your database profile has been successfully loaded from Cloud Firestore. 
+        <br><br>
+        I have full context about your commitments and courses. Ask me to scan your Gmail or list your calendar events to get started!
+      `;
+    } else {
+      document.getElementById('welcome-message-box').innerHTML = `
+        Hello! I couldn't find a plan database for you in Firestore. 
+        Please navigate to the <b>Plan Dashboard</b> page first to initialize your profile, or type <b>"Initialize my profile"</b> and I will set up the defaults for you.
+      `;
+    }
+  } catch (e) {
+    console.error(e);
+    document.getElementById('welcome-message-box').innerHTML = `
+      Error connecting to Firestore: <code>${e.message}</code>. Check your settings and Firestore security rules.
+    `;
+  }
+}
+
+// Tool definitions for Gemini
+const GEMINI_TOOLS = [
+  {
+    "function_declarations": [
+      {
+        "name": "list_calendar_events",
+        "description": "Lists upcoming events from Google Calendar for the next 7 days.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {}
+        }
+      },
+      {
+        "name": "create_calendar_event",
+        "description": "Creates a new event on Google Calendar.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "title": { "type": "STRING", "description": "Title/Summary of the event." },
+            "description": { "type": "STRING", "description": "Details/notes for the event." },
+            "start_time": { "type": "STRING", "description": "ISO 8601 DateTime string (e.g. 2026-07-11T15:00:00Z)." },
+            "end_time": { "type": "STRING", "description": "ISO 8601 DateTime string." }
+          },
+          "required": ["title", "start_time", "end_time"]
+        }
+      },
+      {
+        "name": "list_recent_emails",
+        "description": "Searches Gmail for recent academic or submission emails.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "query": { "type": "STRING", "description": "Gmail search query string (e.g. 'classroom' or 'CIE'). Defaults to searching recent unread mail." }
+          }
+        }
+      },
+      {
+        "name": "read_semester_schedule",
+        "description": "Reads the user's current semester schedule, commitments, rules, and tasks checklist from Firestore.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {}
+        }
+      },
+      {
+        "name": "update_semester_schedule",
+        "description": "Modifies user's semester commitments, executables, or tasks database directly in Firestore.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "updates": { 
+              "type": "STRING", 
+              "description": "The exact modified semester_data JSON database structure containing updates." 
+            }
+          },
+          "required": ["updates"]
+        }
+      }
+    ]
+  }
+];
+
+// Message History State
+let conversationHistory = [];
+
+// Appending message to window
+function appendMessage(role, text, isSystem = false) {
+  const container = document.getElementById('chat-messages-container');
+  const row = document.createElement('div');
+  row.className = isSystem ? "message-row system-log" : `message-row ${role}`;
+  
+  const msg = document.createElement('div');
+  msg.className = "message";
+  
+  if (role === 'assistant') {
+    let formattedText = text
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>');
+    msg.innerHTML = formattedText;
+  } else {
+    msg.textContent = text;
+  }
+  
+  row.appendChild(msg);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+// User text triggers
+function handleKeyPress(e) {
+  if (e.key === 'Enter') sendMessage();
+}
+
+function sendPrompt(text) {
+  document.getElementById('message-input').value = text;
+  sendMessage();
+}
+
+function quickAction(type) {
+  if (type === 'weekly') sendPrompt('Summarize my weekly schedule and progress from the database.');
+  else if (type === 'gmail') sendPrompt('Scan my Gmail for classroom announcements and deadlines.');
+  else if (type === 'calendar') sendPrompt('What is on my calendar this week?');
+}
+
+// Main Send Message loop
+async function sendMessage() {
+  const input = document.message = document.getElementById('message-input');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  input.value = '';
+  appendMessage('user', text);
+  
+  if (!geminiKey) {
+    appendMessage('assistant', "I cannot answer because your Gemini API key is missing. Please go to the Setup page to enter your credentials.");
+    return;
+  }
+  
+  conversationHistory.push({
+    "role": "user",
+    "parts": [{ "text": text }]
+  });
+  
+  await callGeminiApi();
+}
+
+// Gemini API Invocation
+async function callGeminiApi() {
+  statusText.textContent = "Thinking...";
+  
+  const systemInstruction = `
+    You are a personal academic assistant. Today is 2026-07-10T19:16:56+05:30.
+    You help the user manage their tasks, commitments, calendar, and scan emails.
+    
+    Here is their current semester plan context from their Cloud Firestore document:
+    ${JSON.stringify(semesterData, null, 2)}
+    
+    Respond in a supportive, structured, retro-minimalist, direct style matching their website. 
+    Use the tools provided to interact with their Google Calendar, Gmail, and Firestore database.
+    If a tool call succeeds, report it clearly.
+  `;
+
+  const modelName = "gemini-3.1-flash-lite";
+  
+  try {
+    const response = await sendGeminiRequest(modelName, systemInstruction);
+    await handleGeminiResponse(response, systemInstruction);
+  } catch (e) {
+    console.warn(`Model ${modelName} failed or rejected. Falling back to gemini-2.5-flash...`, e);
+    try {
+      const response = await sendGeminiRequest("gemini-2.5-flash", systemInstruction);
+      await handleGeminiResponse(response, systemInstruction);
+    } catch (err) {
+      console.error(err);
+      appendMessage('assistant', "An error occurred while calling the Gemini API: " + err.message);
+      statusText.textContent = "Error";
+    }
+  }
+}
+
+// Send HTTP Post to Gemini
+async function sendGeminiRequest(model, systemInstruction) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+  const body = {
+    "contents": conversationHistory,
+    "tools": GEMINI_TOOLS,
+    "systemInstruction": {
+      "parts": [{ "text": systemInstruction }]
+    }
+  };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const errData = await res.json();
+    throw new Error(errData.error?.message || `HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+// Handle response + tool loops
+async function handleGeminiResponse(data, systemInstruction) {
+  const candidate = data.candidates?.[0];
+  const message = candidate?.content;
+  if (!message) {
+    appendMessage('assistant', "I received an empty response from Gemini.");
+    statusText.textContent = "Agent Ready";
+    return;
+  }
+  
+  conversationHistory.push(message);
+  
+  const part = message.parts?.[0];
+  if (part && part.functionCall) {
+    const call = part.functionCall;
+    const name = call.name;
+    const args = call.args;
+    
+    appendMessage('system', `Executing tool: ${name}...`, true);
+    
+    let result = null;
+    try {
+      result = await executeTool(name, args);
+      appendMessage('system', `Tool ${name} executed successfully.`, true);
+    } catch(e) {
+      console.error(e);
+      result = { "error": e.message };
+      appendMessage('system', `Tool ${name} failed: ${e.message}`, true);
+    }
+    
+    conversationHistory.push({
+      "role": "function",
+      "parts": [{
+        "functionResponse": {
+          "name": name,
+          "response": result
+        }
+      }]
+    });
+    
+    await callGeminiApi();
+  } else {
+    const text = part?.text || "No response text.";
+    appendMessage('assistant', text);
+    statusText.textContent = "Agent Ready";
+  }
+}
+
+// Tool Implementation Registry
+async function executeTool(name, args) {
+  if (!googleToken && (name === 'list_calendar_events' || name === 'create_calendar_event' || name === 'list_recent_emails')) {
+    throw new Error("Google access token missing. Please authorize Google on the Setup page.");
+  }
+  
+  switch(name) {
+    case 'list_calendar_events':
+      return await fetchGoogleCalendar();
+    case 'create_calendar_event':
+      return await createGoogleCalendarEvent(args.title, args.start_time, args.end_time, args.description || '');
+    case 'list_recent_emails':
+      return await fetchGmailMessages(args.query || 'classroom');
+    case 'read_semester_schedule':
+      return semesterData || { error: "Local schedule data not loaded" };
+    case 'update_semester_schedule':
+      return await updateSemesterDataInFirestore(args.updates);
+    default:
+      throw new Error("Unknown tool: " + name);
+  }
+}
+
+// 1. Fetch Calendar Events
+async function fetchGoogleCalendar() {
+  const timeMin = new Date().toISOString();
+  const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=10&orderBy=startTime&singleEvents=true`, {
+    headers: { 'Authorization': `Bearer ${googleToken}` }
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Google Calendar listing failed");
+  }
+  const data = await res.json();
+  return data.items.map(item => ({
+    id: item.id,
+    summary: item.summary,
+    start: item.start.dateTime || item.start.date,
+    end: item.end.dateTime || item.end.date,
+    description: item.description || ''
+  }));
+}
+
+// 2. Create Calendar Event
+async function createGoogleCalendarEvent(title, start, end, desc) {
+  const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+    method: 'POST',
+    headers: { 
+      'Authorization': `Bearer ${googleToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      summary: title,
+      description: desc,
+      start: { dateTime: start },
+      end: { dateTime: end }
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Google Calendar create event failed");
+  }
+  return await res.json();
+}
+
+// 3. Scan Gmail
+async function fetchGmailMessages(query) {
+  const searchUrl = `https://www.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=5`;
+  const res = await fetch(searchUrl, {
+    headers: { 'Authorization': `Bearer ${googleToken}` }
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Gmail listing failed");
+  }
+  const data = await res.json();
+  if (!data.messages) return { messages: [], note: "No messages matched query" };
+  
+  const details = await Promise.all(data.messages.map(async (m) => {
+    const detailRes = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=minimal`, {
+      headers: { 'Authorization': `Bearer ${googleToken}` }
+    });
+    if (detailRes.ok) {
+      const detailData = await detailRes.json();
+      return {
+        id: detailData.id,
+        snippet: detailData.snippet
+      };
+    }
+    return { id: m.id, error: "Failed to load snippet" };
+  }));
+  return details;
+}
+
+// 4. Update Firestore user document
+async function updateSemesterDataInFirestore(newJsonString) {
+  if (!db || !currentUid) {
+    throw new Error("Firestore connection missing or user signed out.");
+  }
+  
+  let parsed = null;
+  try {
+    parsed = JSON.parse(newJsonString);
+  } catch(e) {
+    throw new Error("Invalid JSON update string: " + e.message);
+  }
+  
+  parsed.last_updated = new Date().toISOString();
+  await db.collection('users').doc(currentUid).set(parsed);
+  semesterData = parsed;
+  return { status: "success", message: "semester_data successfully updated in Cloud Firestore" };
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', initFirebase);
+</script>
+</body>
+</html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEM 05 // OPERATIONS PLAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #f5f2eb;
+  --paper:  #faf8f3;
+  --paper2: #ede9e0;
+  --paper3: #e5e0d4;
+  --ink:    #1a1814;
+  --ink2:   #3d3a33;
+  --ink3:   #7a7670;
+  --red:    #c13d2e;
+  --amber:  #c47d1a;
+  --teal:   #2a6b5e;
+  --blue:   #2c4f8a;
+  --line:   rgba(26,24,20,0.10);
+  --line2:  rgba(26,24,20,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--ink2); font-family:'Syne',sans-serif;
+  cursor:crosshair; position:relative; overflow-x:hidden;
+}
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9998; mix-blend-mode:multiply;
+}
+#cursor { width:6px;height:6px;background:var(--red);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply; }
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--ink3);}
+
+.sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
+.sidenav .logo{font-family:'Bebas Neue';color:var(--red);font-size:20px;writing-mode:vertical-rl;letter-spacing:0.1em;}
+.sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
+.sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
+.sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
+.sidenav .links a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink3);font-family:'Syne Mono';font-size:10px;letter-spacing:0.2em;text-transform:uppercase;transition:color .15s;}
+.sidenav .links a:hover{color:var(--red);}
+.sidenav .links a.active{color:var(--red);font-weight:700;}
+.sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
+
+.main{margin-left:60px;}
+section{padding:80px;border-bottom:1px solid var(--line);position:relative;}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+
+.hero{padding:100px 80px;position:relative;overflow:hidden;}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px);background-size:48px 48px;}
+.eyebrow{display:flex;align-items:center;gap:16px;margin-bottom:32px;position:relative;}
+.eyebrow .bar{width:40px;height:1px;background:var(--red);}
+.eyebrow span{font-family:'Syne Mono';font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--red);}
+.hero h1{font-family:'Bebas Neue';font-size:clamp(56px,10vw,140px);line-height:.9;position:relative;}
+.hero h1 .outline{-webkit-text-stroke:1.5px var(--ink);color:transparent;}
+.hero p.sub{font-family:'Instrument Serif';font-style:italic;font-size:22px;color:var(--ink3);max-width:640px;margin-top:28px;position:relative;}
+.hero .stats{display:flex;gap:60px;margin-top:56px;flex-wrap:wrap;position:relative;}
+.stat .num{font-family:'Bebas Neue';font-size:44px;color:var(--red);}
+.stat .lbl{font-family:'Syne Mono';font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink3);}
+
+.ticker{background:var(--ink);overflow:hidden;padding:12px 0;white-space:nowrap;}
+.ticker .track{display:inline-flex;animation:ticker 32s linear infinite;}
+.ticker span{font-family:'Bebas Neue';font-size:14px;letter-spacing:.2em;color:var(--bg);padding:0 24px;}
+.ticker span.sep{color:rgba(245,242,235,.35);}
+@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+.section-label{display:flex;align-items:baseline;gap:16px;margin-bottom:12px;}
+.section-num{font-family:'Syne Mono';font-size:11px;border:1px solid var(--line);padding:4px 10px;color:var(--ink3);}
+.section-title{font-family:'Bebas Neue';font-size:clamp(36px,5vw,52px);}
+.section-desc{font-family:'Instrument Serif';font-style:italic;font-size:18px;color:var(--ink3);max-width:680px;margin-bottom:48px;}
+
+.badge{font-family:'Syne Mono';font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 10px;border:1px solid;display:inline-block;}
+.badge.keep{color:var(--teal);border-color:rgba(42,107,94,.25);background:rgba(42,107,94,.10);}
+.badge.cut{color:var(--red);border-color:rgba(193,61,46,.25);background:rgba(193,61,46,.10);}
+.badge.watch{color:var(--amber);border-color:rgba(196,125,26,.25);background:rgba(196,125,26,.10);}
+.badge.ending{color:var(--blue);border-color:rgba(44,79,138,.25);background:rgba(44,79,138,.10);}
+
+.board{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--line);border:1px solid var(--line);}
+.card{background:var(--paper);padding:24px 28px;position:relative;transition:all .15s;}
+.card:hover{background:var(--paper2);transform:translateX(2px);}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.card.c-keep::before{background:var(--teal);}
+.card.c-cut::before{background:var(--red);}
+.card.c-watch::before{background:var(--amber);}
+.card.c-ending::before{background:var(--blue);}
+.card h4{font-family:'Syne';font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px;}
+.card .meta{font-family:'Syne Mono';font-size:10px;color:var(--ink3);letter-spacing:.1em;margin-bottom:10px;}
+.card p{font-family:'Instrument Serif';font-style:italic;font-size:15px;color:var(--ink2);line-height:1.5;}
+
+.triage-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:var(--line);border:1px solid var(--line);margin-top:8px;}
+.triage-col{background:var(--paper);padding:0;}
+.triage-col .head{padding:20px 24px;border-bottom:1px solid var(--line);}
+.triage-col .head h3{font-family:'Bebas Neue';font-size:26px;}
+.triage-col.keep .head{border-top:3px solid var(--teal);}
+.triage-col.cut .head{border-top:3px solid var(--red);}
+.triage-col.watch .head{border-top:3px solid var(--amber);}
+.triage-item{padding:18px 24px;border-bottom:1px solid var(--line2);}
+.triage-item h5{font-family:'Syne';font-weight:700;font-size:13.5px;margin-bottom:4px;}
+.triage-item p{font-family:'Instrument Serif';font-style:italic;font-size:13.5px;color:var(--ink3);line-height:1.45;}
+
+.exec-list{display:flex;flex-direction:column;border:1px solid var(--line);margin-top:8px;}
+.exec-item{display:grid;grid-template-columns:32px 90px 1fr auto;gap:20px;align-items:flex-start;padding:20px 24px;border-bottom:1px solid var(--line);}
+.exec-item:last-child{border-bottom:none;}
+.exec-item .check{margin-top:2px;}
+.task-check{width:16px;height:16px;border:1px solid var(--line3);background:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all .15s;}
+.task-check.checked{background:var(--ink);border-color:var(--ink);color:var(--bg);}
+.exec-item.done .exec-title, .exec-item.done .exec-body{opacity:.4;text-decoration:line-through;}
+.exec-title{font-family:'Syne';font-weight:700;font-size:14px;text-transform:uppercase;margin-bottom:5px;}
+.exec-body{font-family:'Instrument Serif';font-style:italic;font-size:14px;color:var(--ink2);line-height:1.5;}
+
+.subj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--line);border:1px solid var(--line);margin-top:8px;}
+.subj-card{background:var(--paper);padding:24px;position:relative;}
+.subj-card .credits{font-family:'Bebas Neue';font-size:40px;color:var(--paper3);position:absolute;top:16px;right:20px;}
+.subj-card h4{font-family:'Syne';font-weight:800;font-size:14px;text-transform:uppercase;margin-bottom:8px;max-width:80%;}
+.subj-card p{font-family:'Instrument Serif';font-style:italic;font-size:13px;color:var(--ink3);line-height:1.5;}
+
+.week-block{border:1px solid var(--line);margin-top:24px;}
+.week-head{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:var(--paper2);border-bottom:1px solid var(--line);}
+.week-head h4{font-family:'Bebas Neue';font-size:22px;letter-spacing:.02em;}
+.week-head span{font-family:'Syne Mono';font-size:10px;color:var(--ink3);letter-spacing:.15em;text-transform:uppercase;}
+.week-tasks{padding:8px 24px;}
+.wtask{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line2);position:relative;}
+.wtask:last-child{border-bottom:none;}
+.wtask.done p{opacity:0.4; text-decoration:line-through;}
+.wtask p{font-family:'Syne';font-size:13.5px;color:var(--ink2);line-height:1.5;}
+.wtask p b{font-weight:700;}
+
+.phase-row{display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid var(--line);}
+.phase-sidebar{padding:32px;border-right:1px solid var(--line);}
+.phase-sidebar .tag{font-family:'Syne Mono';font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;}
+.phase-sidebar h4{font-family:'Bebas Neue';font-size:30px;margin-bottom:14px;}
+.intensity{display:flex;gap:3px;}
+.intensity div{height:3px;width:16px;background:var(--line);}
+.intensity div.on{background:var(--red);}
+.phase-body{padding:32px 40px;}
+.phase-body .name{font-family:'Instrument Serif';font-style:italic;font-size:19px;color:var(--ink);margin-bottom:16px;}
+.phase-body ul{list-style:none;}
+.phase-body li{font-family:'Syne';font-size:13.5px;color:var(--ink2);padding:8px 0;border-bottom:1px solid var(--line2);padding-left:18px;position:relative;}
+.phase-body li:last-child{border-bottom:none;}
+.phase-body li::before{content:'—';position:absolute;left:0;color:var(--red);}
+
+.stress-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:16px;}
+.stress-col h3{font-family:'Bebas Neue';font-size:24px;margin-bottom:20px;}
+.cause{border-left:2px solid var(--red);padding:14px 20px;margin-bottom:14px;background:rgba(193,61,46,.04);}
+.cause h5{font-family:'Syne';font-weight:700;font-size:13.5px;margin-bottom:5px;}
+.cause p{font-family:'Instrument Serif';font-style:italic;font-size:13.5px;color:var(--ink3);line-height:1.5;}
+.remedy{border-left:2px solid var(--teal);padding:14px 20px;margin-bottom:14px;background:rgba(42,107,94,.04);}
+.remedy h5{font-family:'Syne';font-weight:700;font-size:13.5px;margin-bottom:5px;}
+.remedy p{font-family:'Instrument Serif';font-style:italic;font-size:13.5px;color:var(--ink3);line-height:1.5;}
+
+.dark-band{background:var(--ink);color:var(--bg);padding:70px 80px;}
+.dark-band h2{font-family:'Bebas Neue';font-size:clamp(32px,5vw,48px);margin-bottom:24px;}
+.rules-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(245,242,235,.15);}
+.rule-card{padding:28px;border-right:1px solid rgba(245,242,235,.15);border-bottom:1px solid rgba(245,242,235,.15);}
+.rule-card .n{font-family:'Bebas Neue';font-size:44px;color:rgba(245,242,235,.2);}
+.rule-card h5{font-family:'Syne';font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em;margin:8px 0;color:var(--bg);}
+.rule-card p{font-family:'Instrument Serif';font-style:italic;font-size:13.5px;color:rgba(245,242,235,.55);line-height:1.5;}
+
+.warning-banner{background:var(--red);padding:20px 80px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.warning-banner .lbl{font-family:'Bebas Neue';font-size:18px;color:rgba(245,242,235,.7);}
+.warning-banner p{font-family:'Syne';font-size:13px;font-weight:500;color:rgba(245,242,235,.95);}
+.warning-banner p b{color:#fff;font-weight:800;}
+
+.btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  padding: 12px 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.btn.btn-red {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+.btn.btn-red:hover {
+  background: transparent;
+  color: var(--red);
+}
+
+footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.15em;color:var(--ink3);text-transform:uppercase;display:flex;justify-content:space-between;}
+
+#sync-status-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 24px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  border: 1px solid rgba(245,242,235,0.2);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+@media(max-width:900px){
+  .sidenav{display:none;}
+  .main{margin-left:0;}
+  section{padding:24px;}
+  .board,.triage-cols,.subj-grid,.rules-grid{grid-template-columns:1fr;}
+  .phase-row{grid-template-columns:1fr;}
+  .phase-sidebar{border-right:none;border-bottom:1px solid var(--line);}
+  .hero{padding:56px 24px;}
+  .exec-item{grid-template-columns:24px 1fr;}
+  .exec-item .meta-col{display:none;}
+  .warning-banner{padding:20px 24px;}
+  .dark-band{padding:48px 24px;}
+  footer{padding:32px 24px;flex-direction:column;gap:8px;}
+}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+
+<!-- NAVIGATION SIDEBAR -->
+<nav class="sidenav">
+  <div class="logo">SEM05</div>
+  
+  <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
+    <span class="nav-group-title">Menu</span>
+    <div class="links">
+      <a href="index.html" class="active">Plan</a>
+      <a href="assistant.html">Chat</a>
+      <a href="settings.html">Setup</a>
+    </div>
+  </div>
+
+  <div class="nav-group" style="flex-grow: 1; justify-content: flex-start; overflow-y: auto; padding-top: 10px;">
+    <span class="nav-group-title">Sections</span>
+    <div class="links" style="gap: 18px;" id="sections-nav-links">
+      <a href="#situation">Situation</a>
+      <a href="#triage">Triage</a>
+      <a href="#exec">Executables</a>
+      <a href="#academics">Academics</a>
+      <a href="#necessities">Necessities</a>
+      <a href="#pre">Pre-Sem</a>
+      <a href="#insem">In-Sem</a>
+      <a href="#stress">Stress</a>
+      <a href="#rules">Rules</a>
+    </div>
+  </div>
+  
+  <div class="tag">JUL 2026 → JAN 2027</div>
+</nav>
+
+<!-- AUTHENTICATION CARD (HIDDEN BY DEFAULT) -->
+<div id="auth-warning-container" style="display: none; padding: 120px 80px; text-align: center; margin-left: 60px;">
+  <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--red);">Authentication Required</h2>
+  <p style="font-family: 'Instrument Serif', serif; font-style: italic; font-size: 24px; color: var(--ink3); max-width: 500px; margin: 24px auto;">
+    To protect your personal data, your schedule and commitments are securely stored in Firestore. Please log in first.
+  </p>
+  <button class="btn btn-red" onclick="window.location.href='settings.html'">Go to Setup &amp; Sign In</button>
+</div>
+
+<!-- DYNAMIC CONTENT (HIDDEN UNTIL AUTHENTICATED) -->
+<div class="main" id="main-content-container" style="display: none;">
+
+  <div class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="eyebrow"><div class="bar"></div><span>Operations plan — semester five</span></div>
+    <h1>DO LESS,<br>FINISH <span class="outline">MORE</span></h1>
+    <p class="sub">You're carrying eleven roles, one messy exit, and a 24-credit semester that starts in three weeks. This isn't a to-do list — it's the plan that decides what you carry into August and what you set down before then.</p>
+    <div class="stats">
+      <div class="stat"><div class="num" id="stat-commitments">--</div><div class="lbl">Active commitments</div></div>
+      <div class="stat"><div class="num" id="stat-credits">--</div><div class="lbl">Credits, Aug–Jan</div></div>
+      <div class="stat"><div class="num" id="stat-cuts">--</div><div class="lbl">To cut or exit</div></div>
+      <div class="stat"><div class="num" id="stat-weeks">~24</div><div class="lbl">Weeks in semester</div></div>
+    </div>
+  </div>
+
+  <div class="ticker">
+    <div class="track" id="ticker-track">
+      <!-- Rotating categories -->
+    </div>
+  </div>
+
+  <!-- 01 SITUATION -->
+  <section id="situation" class="fade-in">
+    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">The situation</h2></div>
+    <p class="section-desc">Everything you're currently holding, in one place. Titles are not the same as workload — a "Head of" role that takes two hours a week and an "unpaid intern" role that quietly takes ten are not equivalent, even if they look equal on a resume.</p>
+    <div class="board" id="commitments-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <!-- 02 TRIAGE -->
+  <section id="triage" class="fade-in">
+    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Keep / cut / watch</h2></div>
+    <p class="section-desc">The rule: a role earns a place in your semester if it builds something (skill, network, income, portfolio, or identity you actually want) at a cost you can name. If you can't name the cost, that's the problem — not the role.</p>
+    <div class="triage-cols">
+      <div class="triage-col keep">
+        <div class="head"><h3>KEEP</h3></div>
+        <div id="triage-keep-container"></div>
+      </div>
+      <div class="triage-col cut">
+        <div class="head"><h3>CUT</h3></div>
+        <div id="triage-cut-container"></div>
+      </div>
+      <div class="triage-col watch">
+        <div class="head"><h3>WATCH</h3></div>
+        <div id="triage-watch-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 EXECUTABLES -->
+  <section id="exec" class="fade-in">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Executables</h2></div>
+    <p class="section-desc">Not intentions — actual actions, each with a "what does done look like." Ordered by urgency. Check them off as you go.</p>
+    <div class="exec-list" id="executables-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <div class="warning-banner">
+    <span class="lbl">NOTE</span>
+    <p>Right now you have <b id="warning-exits">several unresolved exits</b> and <b id="warning-placement">zero placement-prep hours</b> blocked for Java, DSA, DBMS, or DevOps. Fix the first problem before the second one becomes urgent.</p>
+  </div>
+
+  <!-- 04 ACADEMICS -->
+  <section id="academics" class="fade-in">
+    <div class="section-label"><span class="section-num">04</span><h2 class="section-title">The academic load</h2></div>
+    <p class="section-desc">24 credits across eight courses is a heavy semester on paper. The real risk isn't any one course — it's that CV and NLP (both 4-credit, both math- and code-heavy) land in the same weeks as your club and internship obligations.</p>
+    <div class="subj-grid" id="academics-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <!-- 05 NECESSITIES -->
+  <section id="necessities" class="fade-in">
+    <div class="section-label"><span class="section-num">05</span><h2 class="section-title">Necessities before term starts</h2></div>
+    <p class="section-desc">Concrete things to arrange, not just decide.</p>
+    <div class="board" id="necessities-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <!-- 06 PRE-SEMESTER -->
+  <section id="pre" class="fade-in">
+    <div class="section-label"><span class="section-num">06</span><h2 class="section-title">Pre-semester checklist</h2></div>
+    <p class="section-desc">Today is <span id="current-date-display">July 10, 2026</span>. The semester starts in <b>August</b>. Four weeks, four jobs: decide, exit, prepare, rest.</p>
+    <div id="pre-semester-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <!-- 07 IN SEMESTER -->
+  <section id="insem" class="fade-in">
+    <div class="section-label"><span class="section-num">07</span><h2 class="section-title">In-semester operating system</h2></div>
+    <p class="section-desc">Five phases, August through January, plus a weekly rhythm you repeat throughout. Exact exam dates aren't fixed yet — confirm them against your academic calendar and slot them into the phases below.</p>
+    <div id="in-semester-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <div class="dark-band fade-in">
+    <h2>Weekly rhythm (repeat every week, Aug–Jan)</h2>
+    <div class="rules-grid" id="weekly-rhythm-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </div>
+
+  <!-- 08 STRESS -->
+  <section id="stress" class="fade-in">
+    <div class="section-label"><span class="section-num">08</span><h2 class="section-title">Where the stress will actually come from</h2></div>
+    <p class="section-desc">Specific to your situation, not generic advice. Each cause is paired with the structural fix, not a mood fix — the goal is to change what's causing the pressure, not just cope with it better.</p>
+    <div class="stress-grid">
+      <div class="stress-col">
+        <h3>Likely causes</h3>
+        <div id="stress-causes-container"></div>
+      </div>
+      <div class="stress-col">
+        <h3>Structural fixes</h3>
+        <div id="stress-remedies-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 RULES -->
+  <section id="rules" class="fade-in" style="border-bottom:none;">
+    <div class="section-label"><span class="section-num">09</span><h2 class="section-title">Non-negotiables</h2></div>
+    <p class="section-desc">The short version of everything above, for when you don't have time to reread the page.</p>
+    <div class="board" id="rules-container">
+      <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <footer>
+    <span>Semester 5 Operations Plan</span>
+    <span>Built Jul 10, 2026 — Firestore Database</span>
+  </footer>
+</div>
+
+<!-- Sync Indicator Toast -->
+<div id="sync-status-toast">Saving changes to Firestore...</div>
+
+<!-- Firebase CDN Libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+// State Management
+let semesterData = null;
+let db = null;
+let currentUid = null;
+
+// Template Data for New Users
+const DEFAULT_PLAN_DATA = {
+  "last_updated": "2026-07-10T19:16:56+05:30",
+  "commitments": [
+    { "id": "library", "title": "Library Student Assistant", "meta": "PAID · TILL SEPT", "category": "keep", "description": "₹10,000/month, has a natural end date already. Let it run its course." },
+    { "id": "cara", "title": "Intern — Centre for Applied & Responsible AI", "meta": "CREDIT-BEARING · TILL SEPT", "category": "keep", "description": "This *is* your 2-credit summer internship course. Unpaid in money, paid in transcript and research line." },
+    { "id": "sianom", "title": "Student Intern — Sianom Tech", "meta": "UNPAID · TILL AUGUST", "category": "cut", "description": "Low output, unpaid, near its natural end. Don't renew it." },
+    { "id": "vc", "title": "Project Intern — VC", "meta": "PAID · OPEN-ENDED", "category": "watch", "description": "₹10,000/month with no fixed end date is exactly the kind of role that quietly expands. Needs a boundary conversation, not an exit." },
+    { "id": "flyrank", "title": "Flyrank AI Student Intern", "meta": "UNPAID · REFUSED", "category": "cut", "description": "You already know what this is — a headcount number for someone else's LinkedIn and IPO story. You've correctly refused to do work. Now close it formally." },
+    { "id": "poethra", "title": "Poethra — Head of Literature", "meta": "CLUB · GROWING", "category": "keep", "description": "Possible President from August. The one role that's actually adjacent to your film/writing identity, not just your technical one." },
+    { "id": "vyoma", "title": "Vyoma — Ex-President → Advisor", "meta": "CLUB · TRANSITIONING", "category": "ending", "description": "Already stepping down in August. Good — advisor is low-touch by design if you keep it that way." },
+    { "id": "aws", "title": "AWS SBC — Director of Product", "meta": "CLUB · ACTIVE", "category": "keep", "description": "Real product leadership experience. Keep, but track hours honestly once the semester load lands." },
+    { "id": "foss", "title": "FOSS United — Head of Open Source", "meta": "CLUB · ACTIVE", "category": "keep", "description": "Closest to your actual technical identity and the community you've built. This is a keep, not a maybe." },
+    { "id": "ecell", "title": "ECell — Technical Team", "meta": "CLUB · ENDING", "category": "cut", "description": "Already leaving end of this semester. Confirm it's actually closed, don't let it drift." },
+    { "id": "placement", "title": "Student Placement Coordinator", "meta": "ADMIN ROLE", "category": "watch", "description": "Helps your seniors and batch. Valuable, but placement season is exactly when your own bandwidth for DSA/Java/DBMS prep is thinnest." },
+    { "id": "cr", "title": "Class Representative", "meta": "ADMIN ROLE · IRREGULAR", "category": "watch", "description": "\"Some instances\" — undefined scope is a stress source by itself. Needs a clear boundary, not necessarily an exit." },
+    { "id": "timetable", "title": "Timetable Team", "meta": "ADMIN ROLE · TEMPORARY", "category": "cut", "description": "You built the automation tool. Your job now is adoption, not manual correction forever. This should end, on purpose, this semester." },
+    { "id": "bharatgen", "title": "Possible Intern — BharatGen", "meta": "UNCONFIRMED · FROM AUGUST", "category": "watch", "description": "Don't pre-commit. Evaluate it against actual remaining capacity once the cuts above are done." },
+    { "id": "drone", "title": "Drone Intern — Indian Army project", "meta": "COMPLETED · ENDED JUNE", "category": "ending", "description": "Already finished. Nothing left to do except write it up properly for your portfolio." },
+    { "id": "kalpavikas", "title": "Kalpavikas 2.0 — Possible Event Coordinator", "meta": "RECONSIDERING", "category": "watch", "description": "University-level flagship fest is a real resume line, but it lands directly on top of your heaviest academic load and a possible club presidency. Decide early, not by drifting into it." }
+  ],
+  "executables": [
+    { "id": "exec_flyrank", "title": "Exit Flyrank AI in writing", "category": "cut", "meta": "Urgent", "description": "Send one clear, polite, unambiguous message withdrawing from the program — not a slow fade. Done = you're off any group chat, mailing list, or channel they use, and you've said explicitly you won't be contributing.", "done": false },
+    { "id": "exec_kalpavikas", "title": "Set a hard decision date for Kalpavikas 2.0", "category": "watch", "meta": "This week", "description": "By July 20, decide using one test: \"If Poethra presidency + this semester's course load are both real, does this fit without something else breaking?\" If the honest answer is no, decline now while it's still graceful.", "done": false },
+    { "id": "exec_ecell", "title": "Confirm the ECell exit is actually closed", "category": "cut", "meta": "This week", "description": "Message the team lead: confirm your last date, hand off anything you're holding, get removed from decision threads. \"Leaving end of semester\" should have a date attached, not a vibe.", "done": false },
+    { "id": "exec_timetable", "title": "Force a real handoff on the Timetable Team", "category": "cut", "meta": "Next 2 weeks", "description": "Write a one-page adoption plan: who owns the tool after you, what training they need, what \"fully adopted\" means. Take it to the faculty/staff coordinator and get a commitment, not just a thank-you.", "done": false },
+    { "id": "exec_vc", "title": "Name a boundary on the VC internship", "category": "watch", "meta": "Next 2 weeks", "description": "Have one direct conversation about expected weekly hours now that classes are starting. An open-ended paid role without a stated cap is the single most likely thing to silently eat your semester.", "done": false },
+    { "id": "exec_poethra", "title": "Scope the Poethra presidency before accepting it", "category": "keep", "meta": "Next 2 weeks", "description": "Ask the outgoing president directly: hours/week, biggest recurring headaches, what breaks if you say no. Walk in with eyes open in August, not mid-semester.", "done": false },
+    { "id": "exec_nptel", "title": "Enroll in the NPTEL Operations Research MOOC", "category": "watch", "meta": "Before enrollment closes", "description": "NPTEL/Swayam enrollment windows close early and don't reopen. Confirm the exact enrollment deadline and exam date now, not in August.", "done": false },
+    { "id": "exec_drone", "title": "Write up the drone RF detection project properly", "category": "ending", "meta": "Before semester", "description": "It's finished — close the loop. One clean write-up (problem, pipeline, SOTA result) you can point to in interviews, so it stops being an open task in your head.", "done": false },
+    { "id": "exec_bharatgen", "title": "Don't accept BharatGen until something else is actually gone", "category": "watch", "meta": "Ongoing", "description": "If the offer comes in August, hold it against this page. Only say yes if Flyrank, Sianom, ECell, and Timetable are genuinely closed by then.", "done": false }
+  ],
+  "academics": [
+    { "id": "toc", "title": "Theory of Computation", "credits": 3, "description": "Proof-heavy theory. Needs steady weekly problem sets, not last-minute cramming — it doesn't compress well." },
+    { "id": "cv", "title": "Computer Vision", "credits": 4, "description": "Heaviest technical course. Refresh linear algebra + probability before term starts if it's rusty." },
+    { "id": "nlp", "title": "Natural Language Processing", "credits": 4, "description": "Pairs naturally with CV — shared math foundations. Consider studying them together, not in isolation." },
+    { "id": "or", "title": "MOOC — Operations Research (NPTEL)", "credits": 3, "description": "Self-paced and easy to neglect. Block a fixed weekly slot now or it silently falls behind." },
+    { "id": "intern_cara", "title": "Summer Internship (CARA)", "credits": 2, "description": "Already covered by your CARA work through September — genuine synergy, not extra effort." },
+    { "id": "screenplay", "title": "Script to Screenplay", "credits": 3, "description": "Creative, structure-based. A good counterweight to the technical courses — protect it as your \"different kind of thinking\" slot." },
+    { "id": "cinema", "title": "Understanding Indian Cinema", "credits": 3, "description": "Screening + discussion heavy. Treat screenings as fixed, immovable calendar blocks." },
+    { "id": "drumming", "title": "Drumming — Level 1", "credits": 2, "description": "Physical, low cognitive load, fixed practice slot. This is a built-in stress release — don't let it get skipped for \"more important\" work." }
+  ],
+  "necessities": [
+    { "id": "nec_cv_nlp_env", "category": "TECHNICAL SETUP", "title": "CV / NLP environment", "description": "Python, PyTorch, OpenCV, a working GPU/Colab plan, and a refreshed grip on linear algebra + probability before week one." },
+    { "id": "nec_screenplay_sw", "category": "CREATIVE SETUP", "title": "Screenwriting software", "description": "Final Draft, Celtx, or similar set up ahead of Script to Screenplay — don't lose your first week to tooling." },
+    { "id": "nec_drums", "category": "PHYSICAL", "title": "Drumming practice access", "description": "Confirm practice room/kit access and a fixed slot before term — this is the one course that recovers you rather than draining you." },
+    { "id": "nec_nptel_admin", "category": "ADMIN", "title": "NPTEL enrollment + exam date", "description": "Lock this in now — Swayam windows are unforgiving and don't reopen." },
+    { "id": "nec_budget", "category": "FINANCIAL", "title": "Budget the ₹20k/month", "description": "Two paid roles (library + VC) at ₹10k each — decide now what's savings, what's spend, so money isn't one more thing to think about mid-semester." },
+    { "id": "nec_health", "category": "HEALTH", "title": "Sleep + health baseline", "description": "A basic checkup and a sleep schedule reset before term starts is cheaper than fixing burnout in November." },
+    { "id": "nec_tracker", "category": "SYSTEM", "title": "One single commitment tracker", "description": "All eleven-turned-seven roles, all eight courses, in one place you actually look at weekly — not scattered across memory and group chats." },
+    { "id": "nec_placement_baseline", "category": "PLACEMENT", "title": "Java / DSA / DBMS / DevOps baseline", "description": "Start now, even 30 minutes a day — this is the gap that placement season will expose if it's untouched until October." }
+  ],
+  "pre_semester": [
+    {
+      "title": "Week 1 — Jul 10–16",
+      "theme": "Audit & Decide",
+      "tasks": [
+        { "id": "pre_w1_t1", "text": "Write out every commitment — this page's board is the starting point, correct it where it's wrong.", "done": true },
+        { "id": "pre_w1_t2", "text": "Send the Flyrank exit message. Don't let this slide into week two.", "done": true },
+        { "id": "pre_w1_t3", "text": "Start the Kalpavikas decision — gather what it would actually require before the Jul 20 deadline.", "done": true },
+        { "id": "pre_w1_t4", "text": "Check NPTEL enrollment window for Operations Research and lock in the exam date.", "done": true }
+      ]
+    },
+    {
+      "title": "Week 2 — Jul 17–23",
+      "theme": "Handoffs & Boundaries",
+      "tasks": [
+        { "id": "pre_w2_t1", "text": "Confirm the ECell exit in writing with the team lead.", "done": false },
+        { "id": "pre_w2_t2", "text": "Write the Timetable Team adoption plan and send it to whoever owns the tool going forward.", "done": false },
+        { "id": "pre_w2_t3", "text": "Have the VC internship hours conversation. Name a weekly cap out loud.", "done": false },
+        { "id": "pre_w2_t4", "text": "Scope the Poethra presidency with the outgoing president.", "done": false },
+        { "id": "pre_w2_t5", "text": "Decide on Kalpavikas 2.0 — deadline is Jul 20. Say yes or no, not \"let's see.\"", "done": false }
+      ]
+    },
+    {
+      "title": "Week 3 — Jul 24–30",
+      "theme": "Course & Technical Prep",
+      "tasks": [
+        { "id": "pre_w3_t1", "text": "Get syllabi for TOC, CV, and NLP — know what week one actually demands.", "done": false },
+        { "id": "pre_w3_t2", "text": "Refresh linear algebra + probability — a few focused sessions, not a full course.", "done": false },
+        { "id": "pre_w3_t3", "text": "Set up your CV/NLP environment (Python, PyTorch, OpenCV, compute plan).", "done": false },
+        { "id": "pre_w3_t4", "text": "Set up screenwriting software and skim Script to Screenplay's likely structure.", "done": false },
+        { "id": "pre_w3_t5", "text": "Confirm drumming practice access and a fixed weekly slot.", "done": false },
+        { "id": "pre_w3_t6", "text": "Write up the drone project — close that loop for good.", "done": false }
+      ]
+    },
+    {
+      "title": "Week 4 — Jul 31–Aug 3",
+      "theme": "System & Rest",
+      "tasks": [
+        { "id": "pre_w4_t1", "text": "Build the single commitment tracker — every course, every kept role, one place.", "done": false },
+        { "id": "pre_w4_t2", "text": "Reset your sleep schedule to match term-time waking hours before term forces it.", "done": false },
+        { "id": "pre_w4_t3", "text": "Do a basic health check-in — nothing dramatic, just a baseline.", "done": false },
+        { "id": "pre_w4_t4", "text": "Take two genuinely unstructured days. Not \"catch-up\" days — actual rest, before the load starts.", "done": false }
+      ]
+    }
+  ],
+  "in_semester": [
+    {
+      "phase": "Phase 1 · Weeks 1–4",
+      "month": "AUGUST",
+      "intensity": 2,
+      "theme": "Onboarding — find the rhythm before you add anything back",
+      "tasks": [
+        "Attend everything the first two weeks before committing hours anywhere — you're calibrating real workload, not remembered workload.",
+        "Confirm which \"kept\" roles are actually active this term (Poethra presidency, AWS SBC, FOSS United).",
+        "Start CV/NLP foundations immediately — these compound, falling behind in week 2 costs you in week 10.",
+        "Hit the first NPTEL weekly deadline on time — set the precedent early.",
+        "Library job and CARA internship both still running — enjoy the last month of that income/credit overlap."
+      ]
+    },
+    {
+      "phase": "Phase 2 · Weeks 5–10",
+      "month": "SEPTEMBER",
+      "intensity": 3,
+      "theme": "Transition — two commitments end, bandwidth opens",
+      "tasks": [
+        "Library Assistant and CARA internship both wind down this month — plan the transition, don't let either end abruptly.",
+        "Likely window for Internal Assessment 1 — confirm dates and protect a study block for TOC and the technical courses.",
+        "Once CARA ends, redirect that freed time deliberately — into placement prep, not into a new commitment by default.",
+        "Reassess the VC internship hours cap now that your other obligations have shifted."
+      ]
+    },
+    {
+      "phase": "Phase 3 · Weeks 11–16",
+      "month": "OCTOBER – EARLY NOV",
+      "intensity": 4,
+      "theme": "Deep work — the bandwidth you freed up gets spent on purpose",
+      "tasks": [
+        "This is the window to actually close the Java / DSA / DBMS / DevOps gap — fewer competing commitments than any other phase.",
+        "Placement Coordinator duties likely intensify here as the season approaches — keep the pre-decided time cap.",
+        "CV and NLP move into project territory — this is where the math refresh from July pays off.",
+        "Keep the NPTEL weekly cadence going — don't let it slip because \"everything else is busier now.\""
+      ]
+    },
+    {
+      "phase": "Phase 4 · Weeks 17–20",
+      "month": "MID NOV – DEC",
+      "intensity": 5,
+      "theme": "Convergence — this is the highest-load stretch of the semester",
+      "tasks": [
+        "Likely window for Internal Assessment 2, NPTEL's proctored exam, and CV/NLP project submissions landing close together — check exact dates and map them onto one calendar the moment they're announced.",
+        "This is where role-overload actually bites if it hasn't been trimmed already — revisit this page's Cut list and make sure it actually happened.",
+        "Start winding down active club responsibilities for a clean handoff, especially anything with a successor waiting (Vyoma is already handled; do the same for Poethra if you're not continuing past this year).",
+        "Protect drumming and screenings as fixed blocks — this is exactly the phase where \"low-stakes\" courses get sacrificed first, which is backwards."
+      ]
+    },
+    {
+      "phase": "Phase 5 · Weeks 21–24",
+      "month": "JANUARY",
+      "intensity": 3,
+      "theme": "Close-out — end-semester exams and a real review",
+      "tasks": [
+        "End-semester exam prep and exams for all eight courses.",
+        "Run a full semester review: what actually got carried, what got dropped, what you'd cut earlier next time.",
+        "Decide what changes for Semester 6 before you're back in the habit of saying yes to everything."
+      ]
+    }
+  ],
+  "weekly_rhythm": [
+    { "num": "01", "title": "Sunday — Review + Plan", "desc": "30 minutes. What's due this week, what's overdue, what got dropped last week and why." },
+    { "num": "02", "title": "Protect one deep-work block", "desc": "A fixed morning or afternoon with no meetings, no club pings, for CV/NLP or TOC problem sets." },
+    { "num": "03", "title": "Hit the NPTEL slot", "desc": "Same time every week. Self-paced courses die from irregularity, not difficulty." },
+    { "num": "04", "title": "Keep the fixed creative blocks", "desc": "Script to Screenplay work, Indian Cinema screenings, drumming practice — treat these as immovable, not optional." },
+    { "num": "05", "title": "One \"no\" per week, if needed", "desc": "If a new ask arrives, hold it against the Keep/Cut/Watch board before answering." },
+    { "num": "06", "title": "One fully unscheduled evening", "desc": "Not for catching up. For nothing in particular." }
+  ],
+  "stress_audit": {
+    "causes": [
+      { "title": "Role overload / identity diffusion", "description": "Eleven roles pull you between technical, creative, entrepreneurial, and admin identities in the same week. That switching itself is tiring, separate from the work." },
+      { "title": "Difficulty saying no", "description": "Flyrank shows the pattern clearly — you got in before realizing what it was. The instinct to keep opportunities open, even bad ones, is worth noticing in yourself." },
+      { "title": "Undefined scope roles", "description": "Class Rep \"some instances\" and the Placement Coordinator role without a time cap are stressful precisely because you can't tell when you've done enough." },
+      { "title": "Compressed placement-prep window", "description": "Java, DSA, DBMS, and DevOps sitting untouched while 24 credits and multiple roles run in parallel is a real, specific source of dread if left unaddressed." },
+      { "title": "Convergence in Nov–Dec", "description": "Internal exams, NPTEL's proctored exam, and CV/NLP project deadlines are likely to cluster in the same few weeks — the single highest-risk stretch of the whole semester." },
+      { "title": "Over-identifying with titles", "description": "\"Head of,\" \"Director of,\" \"President of\" are easy to let become who you are rather than what you do. When one ends (Vyoma, ECell), it can feel like a loss even when it's the right call." }
+    ],
+    "remedies": [
+      { "title": "\"I don't have the bandwidth\"", "description": "\"No, but thank you — I don't have the bandwidth to do this well right now\" is a full sentence. Write it once, reuse it, stop improvising it under guilt." },
+      { "title": "Turn vague roles into defined ones", "description": "Ask the actual question: \"what's the recurring ask, and how many hours does that take?\" A named cost is far lighter than an unnamed one." },
+      { "title": "Daily 30 minutes, not weekend cramming", "description": "Placement prep started now, in small blocks, avoids the panic-mode version of the same work in October." },
+      { "title": "Map Nov–Dec the moment dates land", "description": "As soon as exam and deadline dates are announced, put them on one calendar together. Seeing the convergence early is what makes it survivable." },
+      { "title": "Let roles end without a replacement", "description": "When Vyoma and ECell close, don't backfill the identity gap with a new commitment immediately. Sit in the space for a week before deciding it needs filling." },
+      { "title": "Protect drumming and screenings as recovery", "description": "They're built into your credit load, but they function as decompression. Treat them that way rather than optimizing them." },
+      { "title": "Keep at least one non-productive social space", "description": "Friends or contexts that have nothing to do with any of the eleven roles — somewhere you're not \"Head of\" anything." }
+    ]
+  },
+  "rules": [
+    { "num": "01", "title": "Subtract before you add", "desc": "No new commitment gets accepted until an existing one has actually been closed." },
+    { "num": "02", "title": "Name every cost", "desc": "If you can't say how many hours a role takes, that's the first thing to fix — before deciding whether to keep it." },
+    { "num": "03", "title": "Fixed blocks are immovable", "desc": "Drumming, screenings, NPTEL, deep-work — once scheduled, they don't get sacrificed for \"urgent\" requests." },
+    { "num": "04", "title": "Review every Sunday", "desc": "Thirty minutes, every week, no exceptions, all the way to January." },
+    { "num": "05", "title": "Endings don't need replacing", "desc": "Vyoma and ECell closing is progress, not a gap to fill immediately." },
+    { "num": "06", "title": "November is the danger zone", "desc": "Map it the second real dates exist. Everything else on this page exists to make that phase survivable." }
+  ]
+};
+
+// Custom Cursor
+document.addEventListener('mousemove', e => {
+  const c = document.getElementById('cursor');
+  c.style.left = e.clientX + 'px';
+  c.style.top = e.clientY + 'px';
+});
+
+// Initialize Firebase & Firestore
+function initFirebaseApp() {
+  const storedConfig = localStorage.getItem('firebase_config');
+  if (!storedConfig) {
+    showAuthWarning();
+    return;
+  }
+  
+  try {
+    const config = JSON.parse(storedConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
+    }
+    db = firebase.firestore();
+    setupAuthStateListener();
+  } catch (e) {
+    console.error("Firebase Initialization Error:", e);
+    showAuthWarning();
+  }
+}
+
+// Setup Auth Listener
+function setupAuthStateListener() {
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+      currentUid = user.uid;
+      document.getElementById('auth-warning-container').style.display = 'none';
+      document.getElementById('main-content-container').style.display = 'block';
+      document.getElementById('sections-nav-links').style.opacity = '1';
+      document.getElementById('sections-nav-links').style.pointerEvents = 'auto';
+      await loadUserData();
+    } else {
+      currentUid = null;
+      showAuthWarning();
+    }
+  });
+}
+
+function showAuthWarning() {
+  document.getElementById('auth-warning-container').style.display = 'block';
+  document.getElementById('main-content-container').style.display = 'none';
+  document.getElementById('sections-nav-links').style.opacity = '0.3';
+  document.getElementById('sections-nav-links').style.pointerEvents = 'none';
+}
+
+// Load Data from Firestore user document
+async function loadUserData() {
+  if (!db || !currentUid) return;
+  
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    const docSnap = await docRef.get();
+    
+    if (docSnap.exists) {
+      semesterData = docSnap.data();
+    } else {
+      // Initialize with default template data
+      console.log("No document found. Initializing new user document in Firestore...");
+      semesterData = { ...DEFAULT_PLAN_DATA };
+      await docRef.set(semesterData);
+    }
+    renderDashboard();
+  } catch (e) {
+    console.error("Error loading Firestore document:", e);
+    alert("Error loading your database plan from Firestore. Check your console and Firestore security rules.");
+  }
+}
+
+// Save back to Firestore in real-time
+async function saveUserData() {
+  if (!db || !currentUid || !semesterData) return;
+  
+  const toast = document.getElementById('sync-status-toast');
+  toast.style.display = 'block';
+  
+  try {
+    semesterData.last_updated = new Date().toISOString();
+    await db.collection('users').doc(currentUid).set(semesterData);
+    toast.textContent = "Synced to Firestore";
+    setTimeout(() => { toast.style.display = 'none'; }, 1000);
+  } catch (e) {
+    console.error("Firestore Save Error:", e);
+    toast.textContent = "Error saving changes!";
+    toast.style.background = "var(--red)";
+    setTimeout(() => { toast.style.display = 'none'; toast.style.background = "var(--ink)"; }, 3000);
+  }
+}
+
+// Render Dashboard Elements
+function renderDashboard() {
+  if (!semesterData) return;
+
+  // Stats
+  const activeCommitments = semesterData.commitments.filter(c => c.category === 'keep' || c.category === 'watch').length;
+  const credits = semesterData.academics.reduce((sum, item) => sum + item.credits, 0);
+  const cuts = semesterData.commitments.filter(c => c.category === 'cut').length;
+  
+  document.getElementById('stat-commitments').textContent = activeCommitments;
+  document.getElementById('stat-credits').textContent = credits;
+  document.getElementById('stat-cuts').textContent = cuts;
+  
+  // Warning banner stats
+  const remainingExits = semesterData.commitments.filter(c => c.category === 'cut' && !isCommitmentExited(c.id)).length;
+  document.getElementById('warning-exits').textContent = remainingExits + " unresolved exit" + (remainingExits === 1 ? "" : "s");
+
+  // Dynamic Ticker Track
+  const tickerTrack = document.getElementById('ticker-track');
+  tickerTrack.innerHTML = '';
+  semesterData.commitments.filter(c => c.category === 'cut' || c.category === 'watch').forEach(c => {
+    tickerTrack.innerHTML += `<span>${c.title.toUpperCase()} — ${c.meta.toUpperCase()}</span><span class="sep">/</span>`;
+  });
+  // Repeat for wrap continuity
+  semesterData.commitments.filter(c => c.category === 'cut' || c.category === 'watch').forEach(c => {
+    tickerTrack.innerHTML += `<span>${c.title.toUpperCase()} — ${c.meta.toUpperCase()}</span><span class="sep">/</span>`;
+  });
+
+  // Commitments Board
+  const commitmentsContainer = document.getElementById('commitments-container');
+  commitmentsContainer.innerHTML = '';
+  semesterData.commitments.forEach(c => {
+    commitmentsContainer.innerHTML += `
+      <div class="card c-${c.category}">
+        <div class="meta">${c.meta}</div>
+        <h4>${c.title}</h4>
+        <p>${c.description}</p>
+      </div>
+    `;
+  });
+
+  // Keep/Cut/Watch Lists
+  const keepCont = document.getElementById('triage-keep-container');
+  const cutCont = document.getElementById('triage-cut-container');
+  const watchCont = document.getElementById('triage-watch-container');
+  keepCont.innerHTML = '';
+  cutCont.innerHTML = '';
+  watchCont.innerHTML = '';
+  
+  semesterData.commitments.forEach(c => {
+    const html = `
+      <div class="triage-item">
+        <h5>${c.title}</h5>
+        <p>${c.description}</p>
+      </div>
+    `;
+    if (c.category === 'keep') keepCont.innerHTML += html;
+    else if (c.category === 'cut') cutCont.innerHTML += html;
+    else if (c.category === 'watch') watchCont.innerHTML += html;
+  });
+
+  // Executables
+  const execContainer = document.getElementById('executables-container');
+  execContainer.innerHTML = '';
+  semesterData.executables.forEach(e => {
+    execContainer.innerHTML += `
+      <div class="exec-item ${e.done ? 'done' : ''}">
+        <div class="check">
+          <div class="task-check ${e.done ? 'checked' : ''}" onclick="toggleExecutable('${e.id}')">✓</div>
+        </div>
+        <div class="meta-col"><span class="badge ${e.category}">${e.meta}</span></div>
+        <div>
+          <div class="exec-title">${e.title}</div>
+          <div class="exec-body">${e.description}</div>
+        </div>
+        <div></div>
+      </div>
+    `;
+  });
+
+  // Academics
+  const academicsContainer = document.getElementById('academics-container');
+  academicsContainer.innerHTML = '';
+  semesterData.academics.forEach(a => {
+    academicsContainer.innerHTML += `
+      <div class="subj-card">
+        <div class="credits">${a.credits}</div>
+        <h4>${a.title}</h4>
+        <p>${a.description}</p>
+      </div>
+    `;
+  });
+
+  // Necessities
+  const necessitiesContainer = document.getElementById('necessities-container');
+  necessitiesContainer.innerHTML = '';
+  semesterData.necessities.forEach(n => {
+    necessitiesContainer.innerHTML += `
+      <div class="card c-watch">
+        <div class="meta">${n.category}</div>
+        <h4>${n.title}</h4>
+        <p>${n.description}</p>
+      </div>
+    `;
+  });
+
+  // Pre-Semester Checklist
+  const preSemContainer = document.getElementById('pre-semester-container');
+  preSemContainer.innerHTML = '';
+  semesterData.pre_semester.forEach((w, wIdx) => {
+    let tasksHtml = '';
+    w.tasks.forEach(t => {
+      tasksHtml += `
+        <div class="wtask ${t.done ? 'done' : ''}">
+          <div class="task-check ${t.done ? 'checked' : ''}" onclick="togglePreSemTask(${wIdx}, '${t.id}')">✓</div>
+          <p>${t.text}</p>
+        </div>
+      `;
+    });
+    preSemContainer.innerHTML += `
+      <div class="week-block">
+        <div class="week-head"><h4>${w.title}</h4><span>${w.theme}</span></div>
+        <div class="week-tasks">${tasksHtml}</div>
+      </div>
+    `;
+  });
+
+  // In-Semester Phase rows
+  const inSemContainer = document.getElementById('in-semester-container');
+  inSemContainer.innerHTML = '';
+  semesterData.in_semester.forEach(p => {
+    let intensityHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      intensityHtml += `<div class="${i <= p.intensity ? 'on' : ''}"></div>`;
+    }
+    let tasksHtml = '';
+    p.tasks.forEach(t => {
+      tasksHtml += `<li>${t}</li>`;
+    });
+    inSemContainer.innerHTML += `
+      <div class="phase-row">
+        <div class="phase-sidebar">
+          <div class="tag">${p.phase}</div>
+          <h4>${p.month}</h4>
+          <div class="intensity">${intensityHtml}</div>
+        </div>
+        <div class="phase-body">
+          <p class="name">${p.theme}</p>
+          <ul>${tasksHtml}</ul>
+        </div>
+      </div>
+    `;
+  });
+
+  // Weekly rhythms
+  const rhythmContainer = document.getElementById('weekly-rhythm-container');
+  rhythmContainer.innerHTML = '';
+  semesterData.weekly_rhythm.forEach(r => {
+    rhythmContainer.innerHTML += `
+      <div class="rule-card">
+        <div class="n">${r.num}</div>
+        <h5>${r.title}</h5>
+        <p>${r.desc}</p>
+      </div>
+    `;
+  });
+
+  // Stress Audit
+  const causesContainer = document.getElementById('stress-causes-container');
+  const remediesContainer = document.getElementById('stress-remedies-container');
+  causesContainer.innerHTML = '';
+  remediesContainer.innerHTML = '';
+  
+  semesterData.stress_audit.causes.forEach(c => {
+    causesContainer.innerHTML += `
+      <div class="cause">
+        <h5>${c.title}</h5>
+        <p>${c.description}</p>
+      </div>
+    `;
+  });
+  semesterData.stress_audit.remedies.forEach(r => {
+    remediesContainer.innerHTML += `
+      <div class="remedy">
+        <h5>${r.title}</h5>
+        <p>${r.description}</p>
+      </div>
+    `;
+  });
+
+  // Rules Board
+  const rulesContainer = document.getElementById('rules-container');
+  rulesContainer.innerHTML = '';
+  semesterData.rules.forEach(r => {
+    rulesContainer.innerHTML += `
+      <div class="card c-keep">
+        <div class="meta">RULE ${r.num}</div>
+        <h4>${r.title}</h4>
+        <p>${r.desc}</p>
+      </div>
+    `;
+  });
+
+  // Observe and apply fade-in transitions
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+}
+
+// Helpers
+function isCommitmentExited(id) {
+  if (id === 'flyrank') {
+    const t = semesterData.executables.find(e => e.id === 'exec_flyrank');
+    return t ? t.done : false;
+  }
+  if (id === 'ecell') {
+    const t = semesterData.executables.find(e => e.id === 'exec_ecell');
+    return t ? t.done : false;
+  }
+  return false;
+}
+
+// Toggle Executables
+function toggleExecutable(id) {
+  const item = semesterData.executables.find(e => e.id === id);
+  if (item) {
+    item.done = !item.done;
+    renderDashboard();
+    saveUserData();
+  }
+}
+
+// Toggle Pre-Sem Tasks
+function togglePreSemTask(wIdx, tId) {
+  const task = semesterData.pre_semester[wIdx].tasks.find(t => t.id === tId);
+  if (task) {
+    task.done = !task.done;
+    renderDashboard();
+    saveUserData();
+  }
+}
+
+// On Load Initializer
+window.addEventListener('DOMContentLoaded', initFirebaseApp);
+</script>
+</body>
+</html>

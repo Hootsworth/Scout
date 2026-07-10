@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEM 05 // ASSISTANT SETUP</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #f5f2eb;
+  --paper:  #faf8f3;
+  --paper2: #ede9e0;
+  --paper3: #e5e0d4;
+  --ink:    #1a1814;
+  --ink2:   #3d3a33;
+  --ink3:   #7a7670;
+  --red:    #c13d2e;
+  --amber:  #c47d1a;
+  --teal:   #2a6b5e;
+  --blue:   #2c4f8a;
+  --line:   rgba(26,24,20,0.10);
+  --line2:  rgba(26,24,20,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--ink2); font-family:'Syne',sans-serif;
+  cursor:crosshair; position:relative; overflow-x:hidden;
+}
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9998; mix-blend-mode:multiply;
+}
+#cursor { width:6px;height:6px;background:var(--red);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply; }
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--ink3);}
+
+.sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
+.sidenav .logo{font-family:'Bebas Neue';color:var(--red);font-size:20px;writing-mode:vertical-rl;letter-spacing:0.1em;}
+.sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
+.sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
+.sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
+.sidenav .links a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink3);font-family:'Syne Mono';font-size:10px;letter-spacing:0.2em;text-transform:uppercase;transition:color .15s;}
+.sidenav .links a:hover{color:var(--red);}
+.sidenav .links a.active{color:var(--red);font-weight:700;}
+.sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
+
+.main{margin-left:60px;}
+section{padding:80px;border-bottom:1px solid var(--line);position:relative;}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+
+.hero{padding:100px 80px;position:relative;overflow:hidden;}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px);background-size:48px 48px;}
+.eyebrow{display:flex;align-items:center;gap:16px;margin-bottom:32px;position:relative;}
+.eyebrow .bar{width:40px;height:1px;background:var(--red);}
+.eyebrow span{font-family:'Syne Mono';font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--red);}
+.hero h1{font-family:'Bebas Neue';font-size:clamp(56px,10vw,100px);line-height:.9;position:relative;}
+.hero h1 .outline{-webkit-text-stroke:1.5px var(--ink);color:transparent;}
+
+.section-label{display:flex;align-items:baseline;gap:16px;margin-bottom:12px;}
+.section-num{font-family:'Syne Mono';font-size:11px;border:1px solid var(--line);padding:4px 10px;color:var(--ink3);}
+.section-title{font-family:'Bebas Neue';font-size:clamp(36px,5vw,52px);}
+.section-desc{font-family:'Instrument Serif';font-style:italic;font-size:18px;color:var(--ink3);max-width:680px;margin-bottom:48px;}
+
+.grid-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.setup-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 32px;
+  position: relative;
+  margin-bottom: 24px;
+}
+.setup-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--ink);
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+.form-group input, .form-group textarea {
+  width: 100%;
+  background: var(--paper2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--red);
+}
+
+.btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  padding: 12px 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.btn.btn-red {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+.btn.btn-red:hover {
+  background: transparent;
+  color: var(--red);
+}
+.btn.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+.btn.btn-outline:hover {
+  background: var(--paper2);
+}
+
+.auth-status {
+  padding: 12px 18px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 12px;
+  margin-bottom: 20px;
+  background: rgba(42, 107, 94, 0.10);
+  border: 1px solid rgba(42, 107, 94, 0.25);
+  color: var(--teal);
+}
+.auth-status.disconnected {
+  background: rgba(193, 61, 46, 0.10);
+  border: 1px solid rgba(193, 61, 46, 0.25);
+  color: var(--red);
+}
+
+.instruction-box {
+  background: var(--paper2);
+  border-left: 3px solid var(--amber);
+  padding: 20px;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink2);
+  margin-bottom: 20px;
+}
+.instruction-box code {
+  font-family: 'Syne Mono', monospace;
+  font-style: normal;
+  background: var(--paper3);
+  padding: 2px 6px;
+  font-size: 13px;
+}
+
+code.block {
+  display: block;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 16px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 16px;
+  border: 1px solid rgba(245,242,235,0.15);
+}
+
+footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.15em;color:var(--ink3);text-transform:uppercase;display:flex;justify-content:space-between;}
+
+@media(max-width:900px){
+  .sidenav{display:none;}
+  .main{margin-left:0;}
+  section{padding:24px;}
+  .grid-cols-2 { grid-template-columns:1fr; gap:20px; }
+  .hero{padding:56px 24px;}
+  footer{padding:32px 24px;flex-direction:column;gap:8px;}
+}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+
+<!-- NAVIGATION SIDEBAR -->
+<nav class="sidenav">
+  <div class="logo">SEM05</div>
+  
+  <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
+    <span class="nav-group-title">Menu</span>
+    <div class="links">
+      <a href="index.html">Plan</a>
+      <a href="assistant.html">Chat</a>
+      <a href="settings.html" class="active">Setup</a>
+    </div>
+  </div>
+
+  <div class="nav-group" style="flex-grow: 1; justify-content: flex-start; overflow-y: auto; padding-top: 10px;">
+    <span class="nav-group-title">Sections</span>
+    <div class="links" style="gap: 18px;">
+      <a href="#firebase-auth">Auth</a>
+      <a href="#keys-config">Config</a>
+      <a href="#token-generator">Token Gen</a>
+    </div>
+  </div>
+  
+  <div class="tag">JUL 2026 → JAN 2027</div>
+</nav>
+
+<div class="main">
+
+  <div class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="eyebrow"><div class="bar"></div><span>Academic Assistant Configuration</span></div>
+    <h1>SETTINGS &amp;<br><span class="outline">INTEGRATIONS</span></h1>
+  </div>
+
+  <!-- SECTION: FIREBASE AUTHENTICATION -->
+  <section id="firebase-auth" class="fade-in">
+    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Firebase Auth &amp; Firestore</h2></div>
+    <p class="section-desc">Connect your account. Firebase is used to authenticate you and manage links to your Google Calendar and Gmail. Only Google Log In and Email/Password are allowed.</p>
+    
+    <div class="grid-cols-2">
+      <div>
+        <div class="setup-card">
+          <h3>Connection Status</h3>
+          <div id="auth-status-box" class="auth-status disconnected">Disconnected</div>
+          <div id="auth-info" style="font-size: 13.5px; line-height: 1.5; color: var(--ink3);">
+            Please sign in. Signing in retrieves your personalized operations checklist and allows the AI assistant to read/write your data securely.
+          </div>
+          <div id="uid-display-container" style="display:none; margin-top:12px; font-family: 'Syne Mono', monospace; font-size:12px; color: var(--teal);">
+            Your UID: <code id="user-uid-code">--</code>
+          </div>
+          <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-red" onclick="signInWithGoogle()">Sign in with Google</button>
+            <button class="btn btn-outline" id="logout-btn" style="display: none;" onclick="signOutUser()">Log Out</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="setup-card">
+          <h3>Email Log In / Sign Up</h3>
+          <form id="email-auth-form" onsubmit="handleEmailAuth(event)">
+            <div class="form-group">
+              <label for="email-input">Email Address</label>
+              <input type="email" id="email-input" required>
+            </div>
+            <div class="form-group">
+              <label for="password-input">Password</label>
+              <input type="password" id="password-input" required>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="submit" class="btn" name="action" value="login">Log In</button>
+              <button type="submit" class="btn btn-outline" name="action" value="signup">Sign Up</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: KEYS AND SYSTEM CONFIGURATION -->
+  <section id="keys-config" class="fade-in">
+    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">API Keys &amp; Backend config</h2></div>
+    <p class="section-desc">These keys are saved locally in your browser's <code>localStorage</code>. They are used client-side by your assistant chatbot to edit the schedule and process queries.</p>
+    
+    <div class="grid-cols-2">
+      <div>
+        <div class="setup-card">
+          <h3>Local API Credentials</h3>
+          <div class="form-group">
+            <label for="gemini-key">Gemini API Key</label>
+            <input type="password" id="gemini-key" placeholder="AI functionality key">
+          </div>
+          <div class="form-group">
+            <label for="brevo-key">Brevo API Key</label>
+            <input type="password" id="brevo-key" placeholder="SMTP/Email notifications key">
+          </div>
+          <div class="form-group">
+            <label for="user-email-target">Target Email (Weekly Updates)</label>
+            <input type="email" id="user-email-target" placeholder="Where notifications are sent">
+          </div>
+          <button class="btn btn-red" onclick="saveApiKeys()">Save API Keys</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="setup-card">
+          <h3>GitHub Actions Cron Secrets</h3>
+          <div class="instruction-box">
+            To run the background sync scanner in GitHub, configure these secrets in your repository (**Settings &gt; Secrets and variables &gt; Actions**):
+          </div>
+          <ul style="font-family:'Instrument Serif', serif; font-size:16px; font-style:italic; line-height:1.5; padding-left:20px; color:var(--ink2);">
+            <li><code>GEMINI_API_KEY</code>: Your Gemini Key</li>
+            <li><code>BREVO_API_KEY</code>: Your Brevo key (noreply@singulr.tech)</li>
+            <li><code>USER_EMAIL</code>: Target Email for updates</li>
+            <li><code>USER_UID</code>: Your Firebase UID (displayed in Connection Status above)</li>
+            <li><code>FIREBASE_SERVICE_ACCOUNT</code>: Content of downloaded Firebase Service Account Private Key (JSON)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase Config Setup Card -->
+    <div class="setup-card" style="margin-top: 32px;">
+      <h3>Firebase Web Client Configuration</h3>
+      <p style="font-size: 13.5px; color: var(--ink3); margin-bottom: 20px;">
+        Provide your Firebase Project Client SDK config snippet (JSON format) so this page can connect to your authentication backend.
+      </p>
+      <div class="form-group">
+        <textarea id="firebase-config-json" rows="6" style="font-family: 'Syne Mono', monospace; font-size: 12px;" placeholder='{
+  "apiKey": "...",
+  "authDomain": "...",
+  "projectId": "...",
+  "appId": "..."
+}'></textarea>
+      </div>
+      <button class="btn" onclick="saveFirebaseConfig()">Save Firebase Configuration</button>
+    </div>
+  </section>
+
+  <!-- SECTION: BACKGROUND GOOGLE TOKEN GENERATOR -->
+  <section id="token-generator" class="fade-in">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">OAuth Refresh Token Generator</h2></div>
+    <p class="section-desc">Generate a Google Refresh Token so your GitHub Actions background job can read your emails and update your Google Calendar offline. Setup your Client ID and Client Secret from Google Cloud Console first.</p>
+    
+    <div class="setup-card">
+      <div class="instruction-box">
+        <h4>How to set up in Google Cloud Console:</h4>
+        1. Go to the <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a>.<br>
+        2. Create a project and enable the <b>Google Calendar API</b> and <b>Gmail API</b>.<br>
+        3. Go to <b>APIs &amp; Services &gt; OAuth consent screen</b>. Set User Type to <b>External</b>, and add your email as a Test User.<br>
+        4. Go to <b>Credentials &gt; Create Credentials &gt; OAuth client ID</b>. Choose <b>Web application</b>.<br>
+        5. Add <code><span id="redirect-uri-display">https://your-pages-url/settings.html</span></code> as an <b>Authorized redirect URI</b>.<br>
+        6. Save and copy the Client ID and Client Secret below.
+      </div>
+
+      <div class="grid-cols-2">
+        <div>
+          <div class="form-group">
+            <label for="oauth-client-id">OAuth Client ID</label>
+            <input type="text" id="oauth-client-id" placeholder="12345-abcde.apps.googleusercontent.com">
+          </div>
+          <div class="form-group">
+            <label for="oauth-client-secret">OAuth Client Secret</label>
+            <input type="password" id="oauth-client-secret" placeholder="Your secret key">
+          </div>
+          <button class="btn btn-red" onclick="startGoogleAuthFlow()">1. Authorize Google APIs</button>
+        </div>
+
+        <div>
+          <div class="form-group">
+            <label>Generated Google Refresh Token</label>
+            <code class="block" id="generated-refresh-token">Click Authorize on the left first...</code>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; color: var(--ink3); margin-bottom: 12px;">
+            Copy this token and add it to your GitHub Repository Secrets as <code>GOOGLE_REFRESH_TOKEN</code>.
+            Also add <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> to your secrets!
+          </p>
+          <button class="btn btn-outline" onclick="copyRefreshToken()">Copy Token</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Semester 5 Operations Plan</span>
+    <span>Built Jul 10, 2026 — Configuration Setup</span>
+  </footer>
+</div>
+
+<!-- Firebase CDN Libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+// Local Cursor
+document.addEventListener('mousemove', e => {
+  const c = document.getElementById('cursor');
+  c.style.left = e.clientX + 'px';
+  c.style.top = e.clientY + 'px';
+});
+
+// Setup redirects URL display
+const currentUrl = window.location.origin + window.location.pathname;
+document.getElementById('redirect-uri-display').textContent = currentUrl;
+
+// Dynamic rendering for fade-ins
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+// Default Fallback Firebase configuration
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  appId: ""
+};
+
+// Initial Config Load
+let firebaseConfig = null;
+const storedConfig = localStorage.getItem('firebase_config');
+if (storedConfig) {
+  try {
+    firebaseConfig = JSON.parse(storedConfig);
+    document.getElementById('firebase-config-json').value = JSON.stringify(firebaseConfig, null, 2);
+  } catch(e) {
+    firebaseConfig = DEFAULT_FIREBASE_CONFIG;
+  }
+} else {
+  firebaseConfig = DEFAULT_FIREBASE_CONFIG;
+  document.getElementById('firebase-config-json').value = '';
+}
+
+// Load other local storage keys
+document.getElementById('gemini-key').value = localStorage.getItem('gemini_api_key') || '';
+document.getElementById('brevo-key').value = localStorage.getItem('brevo_api_key') || '';
+document.getElementById('user-email-target').value = localStorage.getItem('user_email_target') || '';
+document.getElementById('oauth-client-id').value = localStorage.getItem('oauth_client_id') || '';
+document.getElementById('oauth-client-secret').value = localStorage.getItem('oauth_client_secret') || '';
+
+// Initialize Firebase if config exists
+let firebaseAuth = null;
+let db = null;
+if (firebaseConfig && firebaseConfig.apiKey) {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    firebaseAuth = firebase.auth();
+    db = firebase.firestore();
+    setupAuthListener();
+  } catch(e) {
+    console.error("Firebase Init Error:", e);
+    document.getElementById('auth-status-box').textContent = "Initialization Failed";
+  }
+} else {
+  document.getElementById('auth-status-box').textContent = "Firebase Config Required";
+  document.getElementById('auth-status-box').className = "auth-status disconnected";
+}
+
+// Listen for auth state changes
+function setupAuthListener() {
+  if (!firebaseAuth) return;
+  firebaseAuth.onAuthStateChanged(user => {
+    const statusBox = document.getElementById('auth-status-box');
+    const authInfo = document.getElementById('auth-info');
+    const logoutBtn = document.getElementById('logout-btn');
+    const uidContainer = document.getElementById('uid-display-container');
+    const uidCode = document.getElementById('user-uid-code');
+    
+    if (user) {
+      statusBox.textContent = `Connected: ${user.email}`;
+      statusBox.className = "auth-status";
+      authInfo.innerHTML = `Signed in successfully. Firestore database connection is open and active.`;
+      logoutBtn.style.display = 'inline-flex';
+      uidContainer.style.display = 'block';
+      uidCode.textContent = user.uid;
+      
+      // Save signed in email as user target email if not set
+      if (!localStorage.getItem('user_email_target')) {
+        localStorage.setItem('user_email_target', user.email);
+        document.getElementById('user-email-target').value = user.email;
+      }
+    } else {
+      statusBox.textContent = "Disconnected";
+      statusBox.className = "auth-status disconnected";
+      authInfo.textContent = "Please sign in using Google or email credentials to authenticate Firestore calls.";
+      logoutBtn.style.display = 'none';
+      uidContainer.style.display = 'none';
+    }
+  });
+}
+
+// Sign In With Google
+function signInWithGoogle() {
+  if (!firebaseAuth) {
+    alert("Please configure your Firebase Settings first and click Save.");
+    return;
+  }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('https://www.googleapis.com/auth/calendar');
+  provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+  
+  firebaseAuth.signInWithPopup(provider)
+    .then(result => {
+      const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      localStorage.setItem('google_access_token', token);
+      alert("Authenticated with Google successfully!");
+    })
+    .catch(error => {
+      console.error(error);
+      alert("Sign in failed: " + error.message);
+    });
+}
+
+// Handle Email Authentication Form
+function handleEmailAuth(event) {
+  event.preventDefault();
+  if (!firebaseAuth) {
+    alert("Please configure your Firebase Settings first.");
+    return;
+  }
+  
+  const email = document.getElementById('email-input').value;
+  const password = document.getElementById('password-input').value;
+  const action = event.submitter.value;
+  
+  if (action === 'login') {
+    firebaseAuth.signInWithEmailAndPassword(email, password)
+      .then(() => alert("Signed in successfully!"))
+      .catch(e => alert("Error: " + e.message));
+  } else {
+    firebaseAuth.createUserWithEmailAndPassword(email, password)
+      .then(() => alert("User account created and signed in!"))
+      .catch(e => alert("Error: " + e.message));
+  }
+}
+
+// Sign Out
+function signOutUser() {
+  if (firebaseAuth) {
+    firebaseAuth.signOut()
+      .then(() => {
+        localStorage.removeItem('google_access_token');
+        alert("Logged out successfully.");
+      });
+  }
+}
+
+// Save Configurations
+function saveFirebaseConfig() {
+  const jsonStr = document.getElementById('firebase-config-json').value;
+  if (!jsonStr.trim()) {
+    localStorage.removeItem('firebase_config');
+    alert("Firebase configuration cleared. Reloading...");
+    window.location.reload();
+    return;
+  }
+  try {
+    const config = JSON.parse(jsonStr);
+    localStorage.setItem('firebase_config', JSON.stringify(config));
+    alert("Firebase Config Saved! Page will reload to reinitialize.");
+    window.location.reload();
+  } catch(e) {
+    alert("Invalid JSON format: " + e.message);
+  }
+}
+
+function saveApiKeys() {
+  localStorage.setItem('gemini_api_key', document.getElementById('gemini-key').value.trim());
+  localStorage.setItem('brevo_api_key', document.getElementById('brevo-key').value.trim());
+  localStorage.setItem('user_email_target', document.getElementById('user-email-target').value.trim());
+  alert("API Keys saved locally!");
+}
+
+// Start Google OAuth Refresh Token Flow
+function startGoogleAuthFlow() {
+  const clientId = document.getElementById('oauth-client-id').value.trim();
+  const clientSecret = document.getElementById('oauth-client-secret').value.trim();
+  
+  if (!clientId || !clientSecret) {
+    alert("Please enter both Google OAuth Client ID and Client Secret first.");
+    return;
+  }
+  
+  localStorage.setItem('oauth_client_id', clientId);
+  localStorage.setItem('oauth_client_secret', clientSecret);
+  
+  const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/gmail.readonly');
+  const redirectUri = encodeURIComponent(currentUrl);
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=select_account%20consent`;
+  
+  window.location.href = authUrl;
+}
+
+// Process OAuth redirect params
+async function processOAuthRedirect() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  if (!code) return;
+  
+  window.history.replaceState({}, document.title, window.location.pathname);
+  
+  const clientId = localStorage.getItem('oauth_client_id');
+  const clientSecret = localStorage.getItem('oauth_client_secret');
+  
+  if (!clientId || !clientSecret) {
+    document.getElementById('generated-refresh-token').textContent = "Error: OAuth credentials lost during redirect. Please enter Client ID and Secret again.";
+    return;
+  }
+  
+  document.getElementById('generated-refresh-token').textContent = "Exchanging code for tokens, please wait...";
+  
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        code: code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: currentUrl,
+        grant_type: 'authorization_code'
+      })
+    });
+    
+    const data = await response.json();
+    if (data.refresh_token) {
+      document.getElementById('generated-refresh-token').textContent = data.refresh_token;
+      localStorage.setItem('google_refresh_token', data.refresh_token);
+      alert("Google API authorization complete! Refresh token generated.");
+    } else {
+      throw new Error(data.error_description || data.error || "No refresh token returned. Make sure you grant consent.");
+    }
+  } catch(e) {
+    console.error(e);
+    document.getElementById('generated-refresh-token').textContent = `Token exchange failed: ${e.message}`;
+  }
+}
+
+function copyRefreshToken() {
+  const tokenCode = document.getElementById('generated-refresh-token').textContent;
+  if (tokenCode && !tokenCode.includes('Click') && !tokenCode.includes('wait') && !tokenCode.includes('failed')) {
+    navigator.clipboard.writeText(tokenCode);
+    alert("Refresh Token copied to clipboard!");
+  } else {
+    alert("No valid refresh token to copy.");
+  }
+}
+
+// Check redirect
+processOAuthRedirect();
+</script>
+</body>
+</html>
