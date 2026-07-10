@@ -568,6 +568,15 @@ body::after {
         </select>
       </div>
 
+      <!-- Pressure Mode Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; background:rgba(193,61,46,0.06); padding:8px 12px; border:1px solid var(--red); border-radius:2px;">
+        <label style="font-family:'Syne',sans-serif; font-size:11px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--red); font-weight:700; margin:0;">
+          <input type="checkbox" id="pressure-mode-toggle" onchange="togglePressureMode(this)" style="accent-color:var(--red); cursor:pointer;">
+          ⚠️ PRESSURE MODE (30m Live Timer)
+        </label>
+        <span id="pressure-timer-display" style="font-family:'Syne Mono',monospace; font-size:12px; font-weight:700; color:var(--red); display:none;">30:00</span>
+      </div>
+
       <div style="flex:1; display:flex; flex-direction:column; position:relative; min-height: 350px;">
         <textarea id="code-editor-textarea" style="flex:1; width:100%; font-family:'Syne Mono',monospace; font-size:13px; background:var(--paper2); border:1px solid var(--line); padding:16px; color:var(--ink); resize:none; line-height: 1.4; outline:none;" placeholder="# Type your coding solution here...&#10;# Click the Submit button below for the AI Interviewer to review your code."></textarea>
       </div>
@@ -596,6 +605,17 @@ body::after {
           <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
           Submit Quiz Answers
         </button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: INTERACTIVE VISUALIZER (HIDDEN BY DEFAULT) -->
+    <div class="editor-pane" id="visualizer-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+        <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ink); letter-spacing:0.04em;">Interactive Visualizer</h3>
+        <button class="btn btn-outline" style="font-size:9px; padding:4px 8px;" onclick="closeVisualizer()">Close</button>
+      </div>
+      <div id="visualizer-output-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
+        <!-- Populated dynamically with SVG diagrams or slideshows -->
       </div>
     </div>
 
@@ -1135,6 +1155,207 @@ Please review my answers, point out which ones were wrong, explain the correct r
   }
 }
 
+// 1. One-Click Code Apply helper
+function applyCodeToEditor(btn) {
+  const codeWrapper = btn.parentNode;
+  const codeBlock = codeWrapper.querySelector('code');
+  if (codeBlock) {
+    const codeText = codeBlock.textContent || codeBlock.innerText;
+    document.getElementById('code-editor-textarea').value = codeText;
+    
+    // Auto-reveal the code editor pane and close others
+    document.getElementById('editor-pane-container').style.display = 'flex';
+    document.getElementById('quiz-pane-container').style.display = 'none';
+    document.getElementById('visualizer-pane-container').style.display = 'none';
+    
+    // Auto-highlight/flash editor container
+    const editor = document.getElementById('editor-pane-container');
+    editor.style.boxShadow = '0 0 15px var(--red)';
+    setTimeout(() => { editor.style.boxShadow = 'none'; }, 800);
+  }
+}
+
+// 2. Interactive Chat Checkbox Database Toggles
+async function toggleChatTaskStatus(cb) {
+  const title = cb.getAttribute('data-task-title');
+  const isDone = cb.checked;
+  
+  if (!semesterData) return;
+  
+  let found = false;
+  
+  // Update in Executables
+  if (semesterData.executables) {
+    const execTask = semesterData.executables.find(e => e.title.toLowerCase().trim() === title.toLowerCase().trim());
+    if (execTask) {
+      execTask.done = isDone;
+      found = true;
+    }
+  }
+  
+  // Update in Pre-Semester
+  if (semesterData.pre_semester) {
+    semesterData.pre_semester.forEach(week => {
+      if (week.tasks) {
+        const preTask = week.tasks.find(t => t.task.toLowerCase().trim() === title.toLowerCase().trim());
+        if (preTask) {
+          preTask.done = isDone;
+          found = true;
+        }
+      }
+    });
+  }
+  
+  if (found) {
+    // Save to Firestore using merge: true to protect schema
+    semesterData.last_updated = new Date().toISOString();
+    await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
+    appendMessage('system-log', `Task "${title}" status set to ${isDone ? 'DONE' : 'PENDING'} (Synced to Firestore).`);
+  } else {
+    // If not found in existing list, optionally append as new executable task
+    if (isDone) {
+      if (!semesterData.executables) semesterData.executables = [];
+      semesterData.executables.push({
+        id: "exec_" + Date.now(),
+        title: title,
+        done: true,
+        urgency: "high"
+      });
+      semesterData.last_updated = new Date().toISOString();
+      await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
+      appendMessage('system-log', `Added new task "${title}" to your commitments as DONE.`);
+    }
+  }
+}
+
+// 3. Pressure Mode countdown timers
+let pressureTimerInterval = null;
+let pressureTimeRemaining = 1800; // 30 minutes in seconds
+let pressureTimeElapsed = 0;
+
+function togglePressureMode(cb) {
+  const display = document.getElementById('pressure-timer-display');
+  if (cb.checked) {
+    display.style.display = 'inline';
+    pressureTimeRemaining = 1800;
+    pressureTimeElapsed = 0;
+    updatePressureTimerDisplay();
+    
+    clearInterval(pressureTimerInterval);
+    pressureTimerInterval = setInterval(() => {
+      if (pressureTimeRemaining > 0) {
+        pressureTimeRemaining--;
+        pressureTimeElapsed++;
+        updatePressureTimerDisplay();
+      } else {
+        clearInterval(pressureTimerInterval);
+        alert("Time's up! Pressure Mode is automatically submitting your code for AI review.");
+        submitCodeForReview(true);
+      }
+    }, 1000);
+  } else {
+    clearInterval(pressureTimerInterval);
+    display.style.display = 'none';
+  }
+}
+
+function updatePressureTimerDisplay() {
+  const mins = Math.floor(pressureTimeRemaining / 60);
+  const secs = pressureTimeRemaining % 60;
+  document.getElementById('pressure-timer-display').textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+
+// 4. Interactive visualizer slideshow pane
+let activeVisualizerSteps = [];
+let activeVisualizerIndex = 0;
+
+function loadVisualizerIntoPane(visData) {
+  activeVisualizerSteps = visData.steps || [];
+  activeVisualizerIndex = 0;
+  
+  // Display Visualizer and close others
+  document.getElementById('editor-pane-container').style.display = 'none';
+  document.getElementById('quiz-pane-container').style.display = 'none';
+  document.getElementById('visualizer-pane-container').style.display = 'flex';
+  
+  renderVisualizerStep();
+}
+
+function renderVisualizerStep() {
+  const container = document.getElementById('visualizer-output-content');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  if (activeVisualizerSteps.length === 0) {
+    container.innerHTML = `<span style="font-family:'Instrument Serif',serif; font-style:italic;">No visualizer steps loaded.</span>`;
+    return;
+  }
+  
+  const step = activeVisualizerSteps[activeVisualizerIndex];
+  
+  // Render step label
+  const label = document.createElement('div');
+  label.style.fontFamily = 'Syne';
+  label.style.fontSize = '13px';
+  label.style.fontWeight = '700';
+  label.style.color = 'var(--ink)';
+  label.style.textAlign = 'center';
+  label.style.lineHeight = '1.4';
+  label.textContent = `Step ${activeVisualizerIndex + 1} of ${activeVisualizerSteps.length}: ${step.label}`;
+  container.appendChild(label);
+  
+  // Render SVG or shape HTML
+  const wrapper = document.createElement('div');
+  wrapper.style.width = '100%';
+  wrapper.style.display = 'flex';
+  wrapper.style.justifyContent = 'center';
+  wrapper.style.padding = '10px';
+  wrapper.style.border = '1px solid var(--line2)';
+  wrapper.style.background = '#faf8f3';
+  wrapper.innerHTML = step.svg;
+  container.appendChild(wrapper);
+  
+  // Prev/Next Navigation Controls
+  const nav = document.createElement('div');
+  nav.style.display = 'flex';
+  nav.style.gap = '12px';
+  nav.style.marginTop = '16px';
+  
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'btn btn-outline';
+  prevBtn.style.padding = '4px 10px';
+  prevBtn.style.fontSize = '10px';
+  prevBtn.textContent = '◀ Prev';
+  prevBtn.disabled = activeVisualizerIndex === 0;
+  prevBtn.onclick = () => {
+    if (activeVisualizerIndex > 0) {
+      activeVisualizerIndex--;
+      renderVisualizerStep();
+    }
+  };
+  
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn btn-outline';
+  nextBtn.style.padding = '4px 10px';
+  nextBtn.style.fontSize = '10px';
+  nextBtn.textContent = 'Next ▶';
+  nextBtn.disabled = activeVisualizerIndex === activeVisualizerSteps.length - 1;
+  nextBtn.onclick = () => {
+    if (activeVisualizerIndex < activeVisualizerSteps.length - 1) {
+      activeVisualizerIndex++;
+      renderVisualizerStep();
+    }
+  };
+  
+  nav.appendChild(prevBtn);
+  nav.appendChild(nextBtn);
+  container.appendChild(nav);
+}
+
+function closeVisualizer() {
+  document.getElementById('visualizer-pane-container').style.display = 'none';
+}
+
 // Tool definitions for Gemini
 const GEMINI_TOOLS = [
   {
@@ -1229,6 +1450,8 @@ function clearThinking() {
 function parseMarkdown(md) {
   // Strip json-quiz blocks completely from the main message body to keep it clean in chat
   let cleanedMd = md.replace(/```json-quiz[\s\S]*?```/g, '');
+  // Strip json-visualizer blocks completely from the main message body to keep it clean in chat
+  cleanedMd = cleanedMd.replace(/```json-visualizer[\s\S]*?```/g, '');
 
   // Escape HTML entities to prevent injection
   let html = cleanedMd
@@ -1239,8 +1462,36 @@ function parseMarkdown(md) {
   // 1. Code blocks: ```language ... ```
   const codeBlocks = [];
   html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    let cleanCode = code.trim();
+    let isHtmlOrSvg = false;
+    
+    // Check if there is a language prefix (like xml, html, svg)
+    if (cleanCode.startsWith('xml\n') || cleanCode.startsWith('xml\r\n')) {
+      cleanCode = cleanCode.replace(/^xml\r?\n/, '').trim();
+      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      isHtmlOrSvg = true;
+    } else if (cleanCode.startsWith('html\n') || cleanCode.startsWith('html\r\n')) {
+      cleanCode = cleanCode.replace(/^html\r?\n/, '').trim();
+      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      isHtmlOrSvg = true;
+    } else if (cleanCode.startsWith('svg\n') || cleanCode.startsWith('svg\r\n')) {
+      cleanCode = cleanCode.replace(/^svg\r?\n/, '').trim();
+      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      isHtmlOrSvg = true;
+    } else {
+      // Unescape HTML entities inside code block if it is SVG/HTML tags
+      const unescaped = cleanCode
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+      if (unescaped.startsWith('<svg') || unescaped.startsWith('<div') || unescaped.startsWith('<table')) {
+        cleanCode = unescaped;
+        isHtmlOrSvg = true;
+      }
+    }
+    
     const id = `%%CODEBLOCK${codeBlocks.length}%%`;
-    codeBlocks.push(code.trim());
+    codeBlocks.push({ code: cleanCode, isHtml: isHtmlOrSvg });
     return id;
   });
 
@@ -1330,8 +1581,26 @@ function parseMarkdown(md) {
   const processed2 = [];
 
   for (let line of lines2) {
-    const ulMatch = line.match(/^(\s*)(?:[-*+])\s+(.+)$/);
-    const olMatch = line.match(/^(\s*)(?:\d+\.)\s+(.+)$/);
+    let cleanLine = line;
+    
+    // Check for interactive checkbox patterns: [ ] or [x]
+    const checkboxMatch = cleanLine.match(/^(\s*)(?:[-*+])\s+\[([ xX])\]\s+(.+)$/);
+    if (checkboxMatch) {
+      const checked = checkboxMatch[2].toLowerCase() === 'x';
+      const taskTitle = checkboxMatch[3].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+      
+      const checkboxHtml = `
+        <label class="interactive-checkbox-lbl" style="display:flex; align-items:center; gap:8px; cursor:pointer; margin: 6px 0; font-family:'Syne',sans-serif; font-size:13.5px; color:var(--ink2);">
+          <input type="checkbox" class="interactive-chat-checkbox" data-task-title="${taskTitle}" ${checked ? 'checked' : ''} onchange="toggleChatTaskStatus(this)" style="accent-color:var(--red); cursor:pointer; width:14px; height:14px; margin:0;">
+          <span style="${checked ? 'text-decoration:line-through; opacity:0.5;' : ''}">${taskTitle}</span>
+        </label>
+      `;
+      processed2.push(checkboxHtml);
+      continue;
+    }
+
+    const ulMatch = cleanLine.match(/^(\s*)(?:[-*+])\s+(.+)$/);
+    const olMatch = cleanLine.match(/^(\s*)(?:\d+\.)\s+(.+)$/);
 
     if (ulMatch) {
       if (!inUl) {
@@ -1354,7 +1623,7 @@ function parseMarkdown(md) {
         processed2.push('</ol>');
         inOl = false;
       }
-      processed2.push(line);
+      processed2.push(cleanLine);
     }
   }
   if (inUl) processed2.push('</ul>');
@@ -1370,8 +1639,18 @@ function parseMarkdown(md) {
   html = html.replace(/_(.*?)_/g, '<em>$1</em>');
 
   // Restore Code Blocks
-  codeBlocks.forEach((code, idx) => {
-    html = html.replace(`%%CODEBLOCK${idx}%%`, `<pre><code>${code}</code></pre>`);
+  codeBlocks.forEach((item, idx) => {
+    if (item.isHtml) {
+      html = html.replace(`%%CODEBLOCK${idx}%%`, item.code);
+    } else {
+      const wrapped = `
+        <div class="code-block-wrapper" style="position:relative; margin: 12px 0;">
+          <button class="btn btn-outline" style="position:absolute; right:10px; top:10px; font-size:9px; padding:4px 8px; z-index:10; background:var(--paper2); font-family:'Syne',sans-serif; text-transform:uppercase; letter-spacing:0.05em; border-color:var(--line);" onclick="applyCodeToEditor(this)">Apply Code</button>
+          <pre style="margin:0;"><code style="font-family:'Syne Mono',monospace; font-size:12px; line-height:1.4;">${item.code}</code></pre>
+        </div>
+      `;
+      html = html.replace(`%%CODEBLOCK${idx}%%`, wrapped);
+    }
   });
 
   // Restore Inline Code
@@ -1384,7 +1663,7 @@ function parseMarkdown(md) {
   const formattedParagraphs = paragraphs.map(p => {
     const trimmed = p.trim();
     if (!trimmed) return '';
-    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
+    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr') || trimmed.startsWith('<label')) {
       return trimmed;
     }
     return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
@@ -1469,15 +1748,27 @@ function toggleInterviewMode() {
   }
 }
 
-async function submitCodeForReview() {
+async function submitCodeForReview(forceSubmit = false) {
   const code = document.getElementById('code-editor-textarea').value.trim();
   const lang = document.getElementById('code-lang-selector').value;
-  if (!code) {
+  if (!code && !forceSubmit) {
     alert("Please write some code in the editor first!");
     return;
   }
   
-  const promptText = `Please review my ${lang} code. Here is my current implementation:\n\n\`\`\`${lang}\n${code}\n\`\`\``;
+  // Handle pressure mode cleanup
+  let speedContext = "";
+  const pmToggle = document.getElementById('pressure-mode-toggle');
+  if (pmToggle && pmToggle.checked) {
+    clearInterval(pressureTimerInterval);
+    pmToggle.checked = false;
+    document.getElementById('pressure-timer-display').style.display = 'none';
+    const mins = Math.floor(pressureTimeElapsed / 60);
+    const secs = pressureTimeElapsed % 60;
+    speedContext = `\n[Pressure Mode active. Time taken: ${mins} minutes, ${secs} seconds against a 30m limit. Analyze my speed and efficiency under this constraint.]`;
+  }
+  
+  const promptText = `Please review my ${lang} code. Here is my current implementation:\n\n\`\`\`${lang}\n${code}\n\`\`\`${speedContext}`;
   
   appendMessage('user', `[Submitting ${lang} code for review...]`);
   
@@ -1646,6 +1937,17 @@ async function handleOpenAIResponse(data) {
         console.error("Failed to parse MCQ quiz data:", e);
       }
     }
+    
+    // Check for Visualizer trigger
+    if (text.includes('```json-visualizer')) {
+      const jsonStr = text.split('```json-visualizer')[1].split('```')[0].trim();
+      try {
+        const visData = JSON.parse(jsonStr);
+        loadVisualizerIntoPane(visData);
+      } catch(e) {
+        console.error("Failed to parse visualizer data:", e);
+      }
+    }
   }
 }
 
@@ -1701,9 +2003,42 @@ Format each item inside the JSON array exactly like this (do not write any other
 ]
 \`\`\`
 
-== VISUAL CHARTS & GRAPHS ==
-You can generate inline SVG charts (such as bar charts, pie charts, or progress curves) in your response messages when summarizing performance stats or schedules.
-Keep the SVG nodes clean, responsive, and styled to match the retro-minimalist theme colors (e.g., background #faf8f3, borders var(--line), highlights using var(--red), var(--teal), and var(--amber)). Do not use plain bright primary colors.
+== VISUAL CHARTS, GRAPHS & SVG MINDMAPS ==
+You can generate inline SVG drawings (such as bar charts, pie charts, progress curves, mindmaps, or academic trees with clickable/labeled nodes) in your response messages when explaining concepts or summarizing progress.
+Keep the SVG nodes clean, responsive, and styled to match the retro-minimalist theme colors:
+- Background: #faf8f3
+- Borders / Lines: var(--line)
+- Highlights / Accents: var(--red), var(--teal), var(--amber)
+- Typography: font-family: "Syne", sans-serif, or font-family: "Syne Mono", monospace
+Do not use plain, bright primary colors. Ensure SVG code blocks are wrapped in ```xml ... ``` or ```svg ... ``` so the client renders them directly instead of showing XML code text.
+
+== ALGORITHM SLIDESHOWS & VISUALIZERS ==
+If you are explaining a step-by-step algorithm partition or structural dry run (like BST insertion, QuickSort partitioning, Dijkstra, etc.), output a slideshow visualizer block marked with language \`json-visualizer\` like this (do not write any other text or characters inside the json-visualizer code block):
+\`\`\`json-visualizer
+{
+  "title": "Topic Name Here",
+  "steps": [
+    {
+      "label": "Step description text",
+      "svg": "<svg ...> SVG drawings representing this state </svg>"
+    },
+    {
+      "label": "Next step description text",
+      "svg": "<svg ...> SVG drawings representing this next state </svg>"
+    }
+  ]
+}
+\`\`\`
+The client will automatically load this array into an interactive slideshow visualizer with Prev/Next buttons in the split-pane area.
+
+== STAR BEHAVIORAL INTERVIEW ROUNDS ==
+If the user requests a "Behavioral Prep" or "HR round", adopt the persona of a senior behavioral interviewer:
+1. Ask questions targeting key competencies (conflict, leadership, deadlines).
+2. Evaluate the user's responses specifically against the STAR method metrics: Situation (S), Task (T), Action (A), Result (R).
+3. Rate their answer in a structured markdown table from 1-10 for each dimension, explain gaps, and coach them on phrasing.
+
+== PRESSURE MODE INTERVIEWS ==
+Inform the user that they can activate a live 30-minute ticking timer in the Interactive Editor by checking the "Pressure Mode" toggle. If they submit under Pressure Mode, critique their coding speed, elapsed time, and stress efficiency.
 `;
 
   prompt += `
@@ -1817,6 +2152,17 @@ async function handleGeminiResponse(data, systemInstruction) {
         loadQuizIntoPane(quizData);
       } catch(e) {
         console.error("Failed to parse MCQ quiz data:", e);
+      }
+    }
+
+    // Check for Visualizer trigger
+    if (text.includes('```json-visualizer')) {
+      const jsonStr = text.split('```json-visualizer')[1].split('```')[0].trim();
+      try {
+        const visData = JSON.parse(jsonStr);
+        loadVisualizerIntoPane(visData);
+      } catch(e) {
+        console.error("Failed to parse visualizer data:", e);
       }
     }
   }
