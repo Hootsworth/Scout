@@ -9,6 +9,21 @@ from email.mime.text import MIMEText
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+import markdown
+
+# Helper to load local .env if present
+def load_local_env():
+    if os.path.exists(".env"):
+        print("Loading environment variables from local .env file...")
+        with open(".env", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    os.environ[key.strip()] = val.strip().strip('"').strip("'")
+
+# Run env loader before anything else
+load_local_env()
 
 # Load Environment Secrets
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -21,9 +36,19 @@ USER_EMAIL = os.environ.get("USER_EMAIL")
 USER_UID = os.environ.get("USER_UID")
 FIREBASE_SERVICE_ACCOUNT = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
 
+# If FIREBASE_SERVICE_ACCOUNT is missing, but firebase_key.json is available, load it
+if not FIREBASE_SERVICE_ACCOUNT and os.path.exists("firebase_key.json"):
+    print("FIREBASE_SERVICE_ACCOUNT is empty. Loading credentials from local firebase_key.json...")
+    try:
+        with open("firebase_key.json", "r") as f:
+            FIREBASE_SERVICE_ACCOUNT = f.read().strip()
+            os.environ["FIREBASE_SERVICE_ACCOUNT"] = FIREBASE_SERVICE_ACCOUNT
+    except Exception as e:
+        print(f"Failed to load firebase_key.json: {e}")
+
 # Check required parameters
 if not all([GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT]):
-    print("Error: Missing required environment variables. Please check GitHub Secrets.")
+    print("Error: Missing required environment variables. Please check GitHub Secrets or local .env file.")
     print("Required: GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT")
     sys.exit(1)
 
@@ -232,10 +257,10 @@ Upcoming tasks in pre-semester schedule:
 Newly parsed classroom/calendar events:
 {json.dumps(new_events, indent=2)}
 
-Keep it professional, action-oriented, and write in the style of their operations plan: direct, realistic, focusing on reducing switching costs and building baseline habits. Output it in rich HTML suitable for an email (use simple tags like <h3>, <p>, <ul>, <li>).
+Keep it professional, action-oriented, and write in the style of their operations plan: direct, realistic, focusing on reducing switching costs and building baseline habits. You can use tables, lists, headers, blockquotes, code blocks, and bold text. Output your response in clear Markdown.
 """
     
-    ai_summary = "<p>No AI analysis could be generated.</p>"
+    ai_summary = "No AI analysis could be generated."
     headers = {"Content-Type": "application/json"}
     body = {
         "contents": [{"parts": [{"text": ai_prompt}]}]
@@ -247,6 +272,15 @@ Keep it professional, action-oriented, and write in the style of their operation
         except Exception as e:
             print("Failed to extract AI summary text:", e)
             
+    # Convert ai_summary from Markdown to HTML
+    ai_summary_html = "<p>No AI analysis could be generated.</p>"
+    if ai_summary:
+        try:
+            ai_summary_html = markdown.markdown(ai_summary, extensions=['tables', 'fenced_code'])
+        except Exception as e:
+            print("Failed to convert markdown to html:", e)
+            ai_summary_html = ai_summary.replace("\n", "<br>").replace("**", "<strong>")
+
     # Compile Lists
     new_events_html = ""
     if new_events:
@@ -278,6 +312,20 @@ Keep it professional, action-oriented, and write in the style of their operation
         ul {{ padding-left: 20px; }}
         li {{ margin-bottom: 8px; line-height: 1.5; }}
         .ai-coaching {{ border-left: 3px solid #c47d1a; padding-left: 15px; margin: 20px 0; font-style: italic; background: rgba(196,125,26,0.03); padding-top: 10px; padding-bottom: 10px; }}
+        
+        /* Markdown rendering inside email styling */
+        .ai-coaching h1, .ai-coaching h2, .ai-coaching h3, .ai-coaching h4 {{ font-style: normal; color: #1a1814; font-family: sans-serif; margin-top: 16px; margin-bottom: 8px; }}
+        .ai-coaching h3 {{ font-size: 16px; }}
+        .ai-coaching h4 {{ font-size: 14px; }}
+        .ai-coaching p {{ margin-bottom: 12px; }}
+        .ai-coaching table {{ border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; font-style: normal; }}
+        .ai-coaching th, .ai-coaching td {{ border: 1px solid rgba(26,24,20,0.15); padding: 8px 12px; text-align: left; }}
+        .ai-coaching th {{ background-color: rgba(26,24,20,0.05); font-weight: bold; }}
+        .ai-coaching tr:nth-child(even) {{ background-color: rgba(26,24,20,0.02); }}
+        .ai-coaching pre {{ background: #ede9e0; padding: 10px; border-radius: 4px; overflow-x: auto; font-style: normal; }}
+        .ai-coaching code {{ font-family: monospace; font-size: 12px; background: #ede9e0; padding: 2px 4px; border-radius: 2px; font-style: normal; }}
+        .ai-coaching pre code {{ padding: 0; background: transparent; }}
+        .ai-coaching blockquote {{ border-left: 3px solid #c13d2e; padding-left: 12px; margin: 12px 0; color: #7a7670; font-style: italic; }}
       </style>
     </head>
     <body>
@@ -287,7 +335,7 @@ Keep it professional, action-oriented, and write in the style of their operation
         
         <div class="ai-coaching">
           <h2>AI Planner Recommendation</h2>
-          {ai_summary}
+          {ai_summary_html}
         </div>
         
         <h2>Newly Synced Calendar Deadlines</h2>

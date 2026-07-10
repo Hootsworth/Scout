@@ -1,0 +1,16 @@
+# Firebase service account credentials
+firebase_key.json
+*.json.json
+
+# Local environment variables
+.env
+.env.local
+
+# Python cache and virtual environment
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# OS files
+.DS_Store

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="logo.png">
 <title>SEM 05 // SCOUT CHAT</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
 <style>
@@ -36,6 +37,27 @@ body::after {
 
 .sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
 .sidenav .logo{font-family:'Bebas Neue';color:var(--red);font-size:20px;writing-mode:vertical-rl;letter-spacing:0.1em;}
+.sidenav .logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid var(--red);
+  background: white;
+  transition: transform 0.2s ease;
+  margin-bottom: 12px;
+}
+.sidenav .logo-container:hover {
+  transform: scale(1.1);
+}
+.sidenav .logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
 .sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
 .sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
@@ -43,6 +65,104 @@ body::after {
 .sidenav .links a:hover{color:var(--red);}
 .sidenav .links a.active{color:var(--red);font-weight:700;}
 .sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
+
+/* Custom rich text formatting elements inside assistant message */
+.message-row.assistant .message h1,
+.message-row.assistant .message h2,
+.message-row.assistant .message h3,
+.message-row.assistant .message h4 {
+  font-family: 'Syne', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+.message-row.assistant .message h1 { font-size: 20px; }
+.message-row.assistant .message h2 { font-size: 18px; }
+.message-row.assistant .message h3 { font-size: 16px; }
+.message-row.assistant .message h4 { font-size: 14px; }
+
+.message-row.assistant .message p {
+  margin-bottom: 12px;
+}
+
+.message-row.assistant .message ul,
+.message-row.assistant .message ol {
+  margin-left: 20px;
+  margin-bottom: 12px;
+  font-family: 'Syne', sans-serif;
+  font-style: normal;
+  font-size: 14.5px;
+}
+.message-row.assistant .message li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+/* Code blocks */
+.message-row.assistant .message pre {
+  background: var(--paper2);
+  border: 1px solid var(--line);
+  padding: 12px;
+  overflow-x: auto;
+  margin: 12px 0;
+  border-radius: 4px;
+}
+.message-row.assistant .message code {
+  font-family: 'Syne Mono', monospace;
+  font-size: 12.5px;
+  font-style: normal;
+  background: var(--paper2);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.message-row.assistant .message pre code {
+  padding: 0;
+  background: transparent;
+  display: block;
+}
+
+/* Tables */
+.message-row.assistant .message .table-container {
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.message-row.assistant .message table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Syne', sans-serif;
+  font-style: normal;
+  font-size: 13.5px;
+  background: var(--paper);
+}
+.message-row.assistant .message th,
+.message-row.assistant .message td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+}
+.message-row.assistant .message th {
+  background: var(--paper2);
+  font-weight: 700;
+  color: var(--ink);
+}
+.message-row.assistant .message tr:nth-child(even) {
+  background: rgba(26,24,20,0.02);
+}
+
+/* Blockquotes */
+.message-row.assistant .message blockquote {
+  border-left: 3px solid var(--red);
+  padding-left: 15px;
+  margin: 12px 0;
+  color: var(--ink3);
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  font-style: italic;
+}
 
 .main-chat-container {
   margin-left: 60px;
@@ -294,7 +414,9 @@ body::after {
 
 <!-- NAVIGATION SIDEBAR -->
 <nav class="sidenav">
-  <div class="logo">SEM05</div>
+  <a href="index.html" class="logo-container">
+    <img src="logo.png" alt="Scout Logo" class="logo-img">
+  </a>
   
   <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
     <span class="nav-group-title">Menu</span>
@@ -598,18 +720,177 @@ function clearThinking() {
   statusText.textContent = 'Agent Ready';
 }
 
+// Robust markdown-to-HTML parser
+function parseMarkdown(md) {
+  // Escape HTML entities to prevent injection
+  let html = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 1. Code blocks: ```language ... ```
+  const codeBlocks = [];
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(code.trim());
+    return id;
+  });
+
+  // 2. Inline code: `code`
+  const inlineCodes = [];
+  html = html.replace(/`(.*?)`/g, (match, code) => {
+    const id = `__INLINE_CODE_${inlineCodes.length}__`;
+    inlineCodes.push(code);
+    return id;
+  });
+
+  // 3. Tables
+  const lines = html.split('\n');
+  let inTable = false;
+  let tableRows = [];
+  const processedLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('|') && line.endsWith('|')) {
+      inTable = true;
+      const cells = line.split('|').slice(1, -1).map(c => c.trim());
+      tableRows.push(cells);
+    } else {
+      if (inTable) {
+        processedLines.push(renderTableHTML(tableRows));
+        tableRows = [];
+        inTable = false;
+      }
+      processedLines.push(lines[i]);
+    }
+  }
+  if (inTable) {
+    processedLines.push(renderTableHTML(tableRows));
+  }
+  html = processedLines.join('\n');
+
+  function renderTableHTML(rows) {
+    if (rows.length === 0) return '';
+    let hasHeader = false;
+    let startIdx = 0;
+    if (rows.length > 1) {
+      const secondRow = rows[1];
+      const isSep = secondRow.every(cell => cell.match(/^:?-+:?$/));
+      if (isSep) {
+        hasHeader = true;
+        startIdx = 2;
+      }
+    }
+    
+    let tableHtml = '<div class="table-container"><table>';
+    if (hasHeader) {
+      tableHtml += '<thead><tr>';
+      rows[0].forEach(cell => {
+        tableHtml += `<th>${cell}</th>`;
+      });
+      tableHtml += '</tr></thead>';
+    }
+    tableHtml += '<tbody>';
+    for (let r = startIdx; r < rows.length; r++) {
+      tableHtml += '<tr>';
+      rows[r].forEach(cell => {
+        tableHtml += `<td>${cell}</td>`;
+      });
+      tableHtml += '</tr>';
+    }
+    tableHtml += '</tbody></table></div>';
+    return tableHtml;
+  }
+
+  // 4. Headings
+  html = html.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, content) => {
+    const level = hashes.length;
+    return `<h${level}>${content}</h${level}>`;
+  });
+
+  // 5. Blockquotes
+  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // 6. Horizontal Rules
+  html = html.replace(/^(?:-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
+
+  // 7. Lists
+  const lines2 = html.split('\n');
+  let inUl = false;
+  let inOl = false;
+  const processed2 = [];
+
+  for (let line of lines2) {
+    const ulMatch = line.match(/^(\s*)(?:[-*+])\s+(.+)$/);
+    const olMatch = line.match(/^(\s*)(?:\d+\.)\s+(.+)$/);
+
+    if (ulMatch) {
+      if (!inUl) {
+        processed2.push('<ul>');
+        inUl = true;
+      }
+      processed2.push(`<li>${ulMatch[2]}</li>`);
+    } else if (olMatch) {
+      if (!inOl) {
+        processed2.push('<ol>');
+        inOl = true;
+      }
+      processed2.push(`<li>${olMatch[2]}</li>`);
+    } else {
+      if (inUl) {
+        processed2.push('</ul>');
+        inUl = false;
+      }
+      if (inOl) {
+        processed2.push('</ol>');
+        inOl = false;
+      }
+      processed2.push(line);
+    }
+  }
+  if (inUl) processed2.push('</ul>');
+  if (inOl) processed2.push('</ol>');
+  html = processed2.join('\n');
+
+  // 8. Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+  // 9. Italics
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+  // Restore Code Blocks
+  codeBlocks.forEach((code, idx) => {
+    html = html.replace(`__CODE_BLOCK_${idx}__`, `<pre><code>${code}</code></pre>`);
+  });
+
+  // Restore Inline Code
+  inlineCodes.forEach((code, idx) => {
+    html = html.replace(`__INLINE_CODE_${idx}__`, `<code>${code}</code>`);
+  });
+
+  // Replace double newlines with paragraphs
+  const paragraphs = html.split(/\n{2,}/);
+  const formattedParagraphs = paragraphs.map(p => {
+    const trimmed = p.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
+      return trimmed;
+    }
+    return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+  });
+
+  return formattedParagraphs.join('\n');
+}
+
 // Word-by-word swoosh render
 function renderAnimatedText(container, rawText) {
-  // Format markdown-like syntax first
-  let html = rawText
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
+  // Format markdown using the robust parser
+  let html = parseMarkdown(rawText);
 
   // Wrap each word in an animated span
-  // Split on spaces but preserve HTML tags intact
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
   let wordIndex = 0;
@@ -625,14 +906,18 @@ function renderAnimatedText(container, rawText) {
           const span = document.createElement('span');
           span.className = 'word-token';
           span.textContent = word;
-          span.style.animationDelay = `${wordIndex * 0.045}s`;
+          span.style.animationDelay = `${wordIndex * 0.02}s`;
           wordIndex++;
           frag.appendChild(span);
         }
       });
       node.parentNode.replaceChild(frag, node);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'CODE') {
-      Array.from(node.childNodes).forEach(wrapTextNodes);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = node.tagName.toUpperCase();
+      // Skip wrapping inside code blocks and tables to maintain formatting/layout
+      if (tag !== 'CODE' && tag !== 'PRE' && tag !== 'TABLE' && tag !== 'TR' && tag !== 'TD' && tag !== 'TH' && tag !== 'THEAD' && tag !== 'TBODY') {
+        Array.from(node.childNodes).forEach(wrapTextNodes);
+      }
     }
   }
 
