@@ -1451,12 +1451,70 @@ async function sendEmailViaBrevo(subject, body) {
   }
 }
 
+// Auto-refresh Google Access Token using client-side keys and refresh token
+async function refreshGoogleAccessToken() {
+  const clientId = localStorage.getItem('oauth_client_id');
+  const clientSecret = localStorage.getItem('oauth_client_secret');
+  const refreshToken = localStorage.getItem('google_refresh_token');
+  
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.warn("Auto-token refresh skipped: credentials or refresh token missing.");
+    return null;
+  }
+  
+  console.log("Access token expired. Refreshing Google OAuth access token...");
+  try {
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token'
+      })
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.access_token) {
+        localStorage.setItem('google_access_token', data.access_token);
+        googleToken = data.access_token;
+        console.log("Google access token successfully refreshed.");
+        return data.access_token;
+      }
+    } else {
+      const err = await res.text();
+      console.error("Token refresh request failed:", err);
+    }
+  } catch (e) {
+    console.error("Error refreshing Google token:", e);
+  }
+  return null;
+}
+
+// Wrapper to transparently handle token expiration with auto-retry
+async function fetchWithTokenRefresh(url, options = {}) {
+  options.headers = options.headers || {};
+  options.headers['Authorization'] = `Bearer ${googleToken}`;
+  
+  let res = await fetch(url, options);
+  if (res.status === 401) {
+    const newToken = await refreshGoogleAccessToken();
+    if (newToken) {
+      options.headers['Authorization'] = `Bearer ${newToken}`;
+      res = await fetch(url, options);
+    }
+  }
+  return res;
+}
+
 // 1. Fetch Calendar Events
 async function fetchGoogleCalendar() {
   const timeMin = new Date().toISOString();
-  const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=10&orderBy=startTime&singleEvents=true`, {
-    headers: { 'Authorization': `Bearer ${googleToken}` }
-  });
+  const res = await fetchWithTokenRefresh(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=10&orderBy=startTime&singleEvents=true`);
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error?.message || "Google Calendar listing failed");
@@ -1473,12 +1531,9 @@ async function fetchGoogleCalendar() {
 
 // 2. Create Calendar Event
 async function createGoogleCalendarEvent(title, start, end, desc) {
-  const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+  const res = await fetchWithTokenRefresh(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
     method: 'POST',
-    headers: { 
-      'Authorization': `Bearer ${googleToken}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       summary: title,
       description: desc,
@@ -1496,9 +1551,7 @@ async function createGoogleCalendarEvent(title, start, end, desc) {
 // 3. Scan Gmail
 async function fetchGmailMessages(query) {
   const searchUrl = `https://www.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=5`;
-  const res = await fetch(searchUrl, {
-    headers: { 'Authorization': `Bearer ${googleToken}` }
-  });
+  const res = await fetchWithTokenRefresh(searchUrl);
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error?.message || "Gmail listing failed");
@@ -1507,9 +1560,7 @@ async function fetchGmailMessages(query) {
   if (!data.messages) return { messages: [], note: "No messages matched query" };
   
   const details = await Promise.all(data.messages.map(async (m) => {
-    const detailRes = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=minimal`, {
-      headers: { 'Authorization': `Bearer ${googleToken}` }
-    });
+    const detailRes = await fetchWithTokenRefresh(`https://www.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=minimal`);
     if (detailRes.ok) {
       const detailData = await detailRes.json();
       return {
