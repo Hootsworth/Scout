@@ -125,6 +125,24 @@ body::after {
   display: block;
 }
 
+/* Inline SVG Chart Rendering */
+.message-row.assistant .message svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 12px 0;
+  border: 1px solid var(--line);
+  background: #faf8f3;
+}
+.code-block-wrapper {
+  position: relative;
+  margin: 12px 0;
+}
+.code-block-wrapper pre {
+  padding-top: 36px !important; /* room for Apply Code button */
+}
+
+
 /* Tables */
 .message-row.assistant .message .table-container {
   overflow-x: auto;
@@ -1465,27 +1483,27 @@ function parseMarkdown(md) {
     let cleanCode = code.trim();
     let isHtmlOrSvg = false;
     
-    // Check if there is a language prefix (like xml, html, svg)
-    if (cleanCode.startsWith('xml\n') || cleanCode.startsWith('xml\r\n')) {
-      cleanCode = cleanCode.replace(/^xml\r?\n/, '').trim();
-      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-      isHtmlOrSvg = true;
-    } else if (cleanCode.startsWith('html\n') || cleanCode.startsWith('html\r\n')) {
-      cleanCode = cleanCode.replace(/^html\r?\n/, '').trim();
-      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-      isHtmlOrSvg = true;
-    } else if (cleanCode.startsWith('svg\n') || cleanCode.startsWith('svg\r\n')) {
-      cleanCode = cleanCode.replace(/^svg\r?\n/, '').trim();
+    // Strip known language prefix (xml, html, svg) — case insensitive, handles newline variants
+    const langPrefixMatch = cleanCode.match(/^(xml|html|svg|XML|HTML|SVG)\r?\n/);
+    if (langPrefixMatch) {
+      cleanCode = cleanCode.slice(langPrefixMatch[0].length).trim();
       cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
       isHtmlOrSvg = true;
     } else {
-      // Unescape HTML entities inside code block if it is SVG/HTML tags
+      // Unescape HTML entities and check if the content starts with known HTML/SVG tags
       const unescaped = cleanCode
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>');
-      if (unescaped.startsWith('<svg') || unescaped.startsWith('<div') || unescaped.startsWith('<table')) {
-        cleanCode = unescaped;
+      const trimmedUnescaped = unescaped.replace(/^[a-zA-Z0-9_-]+\r?\n/, ''); // strip any residual lang prefix
+      if (
+        unescaped.startsWith('<svg') ||
+        unescaped.startsWith('<div') ||
+        unescaped.startsWith('<table') ||
+        trimmedUnescaped.startsWith('<svg') ||
+        trimmedUnescaped.startsWith('<div')
+      ) {
+        cleanCode = unescaped.startsWith('<') ? unescaped : trimmedUnescaped;
         isHtmlOrSvg = true;
       }
     }
@@ -2004,13 +2022,35 @@ Format each item inside the JSON array exactly like this (do not write any other
 \`\`\`
 
 == VISUAL CHARTS, GRAPHS & SVG MINDMAPS ==
-You can generate inline SVG drawings (such as bar charts, pie charts, progress curves, mindmaps, or academic trees with clickable/labeled nodes) in your response messages when explaining concepts or summarizing progress.
-Keep the SVG nodes clean, responsive, and styled to match the retro-minimalist theme colors:
-- Background: #faf8f3
-- Borders / Lines: var(--line)
-- Highlights / Accents: var(--red), var(--teal), var(--amber)
-- Typography: font-family: "Syne", sans-serif, or font-family: "Syne Mono", monospace
-Do not use plain, bright primary colors. Ensure SVG code blocks are wrapped in \`\`\`xml ... \`\`\` or \`\`\`svg ... \`\`\` so the client renders them directly instead of showing XML code text.
+CRITICAL RULES FOR ALL CHART AND GRAPH OUTPUT:
+1. When the user asks for a chart, graph, pie chart, bar chart, or any visual — you MUST output a real, complete SVG drawing with actual data-driven shapes, bars, text labels, and colors.
+2. NEVER output a chart that is blank, nearly blank, or has no visible shapes. Every chart must have actual bar/arc/path/text elements that clearly communicate the data.
+3. Always wrap your SVG in a code block tagged as \`\`\`xml so the client renders it directly as graphics (NOT as raw code text).
+4. SVG MUST always include: a viewBox attribute, a width of "100%" max 500, concrete pixel-positioned drawing elements, and text labels.
+5. Color palette (use these exact hex codes, not CSS variables):
+   - Bars/main: #c13d2e (red), #3d7a6a (teal), #c8a84b (amber), #5d4d7a (purple)
+   - Background: #faf8f3
+   - Text: #1a1a1a
+   - Grid lines: #d0cdc8
+6. Always include a chart title text element at top, axis labels on x-axis and y-axis, value labels on each bar/segment, and a legend if applicable.
+7. For pie charts: use SVG <path> elements with d="M cx cy L x1 y1 A r r 0 large-arc-flag sweep-flag x2 y2 Z" arcs. Include label text lines pointing to each slice.
+8. For bar charts: use <rect> elements, y-axis, x-axis line, grid lines, and value labels above each bar.
+9. DO NOT wrap the SVG in any other outer div or container. Output ONLY the SVG itself inside the \`\`\`xml block.
+
+Example of a correct bar chart SVG output format:
+\`\`\`xml
+<svg width="500" height="280" viewBox="0 0 500 280" style="font-family: 'Syne', sans-serif; background: #faf8f3;">
+  <text x="250" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="#1a1a1a">Chart Title</text>
+  <line x1="60" y1="220" x2="460" y2="220" stroke="#d0cdc8" stroke-width="1"/>
+  <rect x="80" y="80" width="70" height="140" fill="#c13d2e"/>
+  <text x="115" y="75" text-anchor="middle" font-size="12" fill="#1a1a1a">Value A</text>
+  <text x="115" y="240" text-anchor="middle" font-size="11" fill="#1a1a1a">Label A</text>
+  <rect x="200" y="120" width="70" height="100" fill="#3d7a6a"/>
+  <text x="235" y="115" text-anchor="middle" font-size="12" fill="#1a1a1a">Value B</text>
+  <text x="235" y="240" text-anchor="middle" font-size="11" fill="#1a1a1a">Label B</text>
+</svg>
+\`\`\`
+
 
 == ALGORITHM SLIDESHOWS & VISUALIZERS ==
 If you are explaining a step-by-step algorithm partition or structural dry run (like BST insertion, QuickSort partitioning, Dijkstra, etc.), output a slideshow visualizer block marked with language \`json-visualizer\` like this (do not write any other text or characters inside the json-visualizer code block):
