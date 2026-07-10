@@ -401,6 +401,16 @@ def generate_weekly_report(semester_data, new_events):
     executables = semester_data.get("executables", [])
     pending_execs = [e["title"] for e in executables if not e.get("done")]
     done_execs = [e["title"] for e in executables if e.get("done")]
+    commitments = semester_data.get("commitments", [])
+    commitment_counts = {
+        "keep": len([c for c in commitments if c.get("category") == "keep"]),
+        "cut": len([c for c in commitments if c.get("category") == "cut"]),
+        "watch": len([c for c in commitments if c.get("category") == "watch"]),
+    }
+    deadline_signals = len(new_events) + len([
+        a for a in semester_data.get("classroom_assignments", [])
+        if a.get("due_date") and a.get("due_date") != "No due date" and a.get("status") != "TURNED_IN"
+    ])
 
     # Prompt Gemini for report summary
     model = "gemini-2.5-flash"
@@ -420,6 +430,22 @@ Upcoming tasks in pre-semester schedule:
 
 Newly parsed classroom/calendar events:
 {json.dumps(new_events, indent=2)}
+
+Commitment counts:
+{json.dumps(commitment_counts, indent=2)}
+
+Known deadline pressure signals:
+{deadline_signals}
+
+Active prep warnings:
+{json.dumps(semester_data.get("prep_warnings", []), indent=2)}
+
+Generate a weekly planning-agent report with:
+1. A Keep / Cut / Watch recommendation table with reasons.
+2. Scope-creep warning badges in text form: role count, watch count, deadline pressure, GitHub/LeetCode drift.
+3. A subtract-before-add coaching note.
+4. An energy-budget note: name the highest-switching-cost area and the recovery margin needed.
+5. A deadline-pressure plan for the next 7 days.
 
 Keep it professional, action-oriented, and write in the style of their operations plan: direct, realistic, focusing on reducing switching costs and building baseline habits. You can use tables, lists, headers, blockquotes, code blocks, and bold text. Output your response in clear Markdown.
 """
@@ -504,6 +530,14 @@ Keep it professional, action-oriented, and write in the style of their operation
         
         <h2>Newly Synced Calendar Deadlines</h2>
         {new_events_html}
+
+        <h2>Commitment Status</h2>
+        <ul>
+          <li><b>Keep:</b> {commitment_counts["keep"]}</li>
+          <li><b>Cut / End:</b> {commitment_counts["cut"]}</li>
+          <li><b>Watch:</b> {commitment_counts["watch"]}</li>
+          <li><b>Deadline pressure signals:</b> {deadline_signals}</li>
+        </ul>
 
         <h2>Pending Executables Checklist</h2>
         {pending_execs_html}

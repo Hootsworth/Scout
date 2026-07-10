@@ -134,6 +134,69 @@ body::after {
   border: 1px solid var(--line);
   background: #faf8f3;
 }
+.message-row.assistant .message .auto-chart {
+  margin: 14px 0;
+}
+.message-row.assistant .message .chart-fallback {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  background: var(--paper2);
+  color: var(--ink3);
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+}
+.message-actions,
+.chart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.message-action-btn,
+.chart-action-btn {
+  border: 1px solid var(--line);
+  background: var(--paper2);
+  color: var(--ink2);
+  padding: 4px 7px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.message-action-btn:hover,
+.chart-action-btn:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.dashboard-stat,
+.warning-badge,
+.planner-card {
+  border: 1px solid var(--line);
+  background: var(--paper2);
+  padding: 10px;
+}
+.dashboard-stat .num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 34px;
+  color: var(--ink);
+  line-height: 1;
+}
+.dashboard-stat .lbl,
+.warning-badge,
+.planner-card {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.warning-badge.high { border-color: var(--red); color: var(--red); }
+.warning-badge.medium { border-color: var(--amber); color: var(--amber); }
+.warning-badge.low { border-color: var(--teal); color: var(--teal); }
 .code-block-wrapper {
   position: relative;
   margin: 12px 0;
@@ -509,6 +572,9 @@ body::after {
         <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
         Start Interview Mode
       </button>
+      <button class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="openCommitmentDashboard()">
+        Dashboard
+      </button>
       <!-- Model toggle -->
       <div class="model-toggle">
         <button id="btn-gemini" class="active" onclick="setProvider('gemini')">Gemini</button>
@@ -564,6 +630,7 @@ body::after {
         <div class="prompt-chip" onclick="sendPrompt('Check my Gmail for any new deadlines or tasks')">Scan Gmail</div>
         <div class="prompt-chip" onclick="sendPrompt('What events do I have on my calendar for the next 7 days?')">List Calendar</div>
         <div class="prompt-chip" onclick="sendPrompt('Suggest a weekly study plan for CV and NLP')">Suggest Plan</div>
+        <div class="prompt-chip" onclick="sendPrompt('Run my weekly planning agent: propose Keep, Cut, and Watch changes with reasons.')">Weekly Agent</div>
         <div class="prompt-chip" onclick="sendPrompt('I want to mark ECell exit task as done')">Exit ECell</div>
       </div>
 
@@ -637,6 +704,17 @@ body::after {
       </div>
     </div>
 
+    <!-- RIGHT PANE: COMMITMENT DASHBOARD (HIDDEN BY DEFAULT) -->
+    <div class="editor-pane" id="commitment-dashboard-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+        <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ink); letter-spacing:0.04em;">Commitment Dashboard</h3>
+        <button class="btn btn-outline" style="font-size:9px; padding:4px 8px;" onclick="closeCommitmentDashboard()">Close</button>
+      </div>
+      <div id="commitment-dashboard-content" style="display:flex; flex-direction:column; gap:16px;">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -665,6 +743,7 @@ let semesterData = null;
 let activeProvider = 'gemini'; // 'gemini' | 'openai'
 let isInterviewMode = false;
 let currentChatId = null;
+let latestCalendarEvents = [];
 
 function setProvider(p) {
   activeProvider = p;
@@ -781,6 +860,7 @@ async function loadUserData() {
       
       loadActiveChatSession();
       renderChatsList();
+      ensureWeeklyCommitmentSnapshot();
     } else {
       document.getElementById('welcome-message-box').innerHTML = `
         Hello! I couldn't find a plan database for you in Firestore. 
@@ -899,6 +979,7 @@ async function saveChatHistory() {
     }
     
     // Use set with merge: true to avoid deleting other semesterData fields (critical DB safeguard!)
+    ensureWeeklyCommitmentSnapshot();
     semesterData.last_updated = new Date().toISOString();
     await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
     console.log("Chat history successfully synced to Firestore.");
@@ -1042,6 +1123,8 @@ function loadQuizIntoPane(quizData) {
   
   // Show Quiz Pane and Hide Code Editor
   document.getElementById('editor-pane-container').style.display = 'none';
+  document.getElementById('visualizer-pane-container').style.display = 'none';
+  document.getElementById('commitment-dashboard-container').style.display = 'none';
   document.getElementById('quiz-pane-container').style.display = 'flex';
   
   document.getElementById('quiz-progress-badge').textContent = `${quizData.length} Questions`;
@@ -1185,6 +1268,7 @@ function applyCodeToEditor(btn) {
     document.getElementById('editor-pane-container').style.display = 'flex';
     document.getElementById('quiz-pane-container').style.display = 'none';
     document.getElementById('visualizer-pane-container').style.display = 'none';
+    document.getElementById('commitment-dashboard-container').style.display = 'none';
     
     // Auto-highlight/flash editor container
     const editor = document.getElementById('editor-pane-container');
@@ -1294,6 +1378,7 @@ function loadVisualizerIntoPane(visData) {
   // Display Visualizer and close others
   document.getElementById('editor-pane-container').style.display = 'none';
   document.getElementById('quiz-pane-container').style.display = 'none';
+  document.getElementById('commitment-dashboard-container').style.display = 'none';
   document.getElementById('visualizer-pane-container').style.display = 'flex';
   
   renderVisualizerStep();
@@ -1330,7 +1415,7 @@ function renderVisualizerStep() {
   wrapper.style.padding = '10px';
   wrapper.style.border = '1px solid var(--line2)';
   wrapper.style.background = '#faf8f3';
-  wrapper.innerHTML = step.svg;
+  renderSvgOrFallback(wrapper, step.svg, 'This visualizer step has missing or invalid SVG.');
   container.appendChild(wrapper);
   
   // Prev/Next Navigation Controls
@@ -1372,6 +1457,40 @@ function renderVisualizerStep() {
 
 function closeVisualizer() {
   document.getElementById('visualizer-pane-container').style.display = 'none';
+}
+
+function normalizeVisualMarkup(markup) {
+  if (!markup || typeof markup !== 'string') return '';
+  return markup
+    .trim()
+    .replace(/^```(?:xml|svg|html)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim();
+}
+
+function isRenderableSvg(markup) {
+  const normalized = normalizeVisualMarkup(markup);
+  if (!normalized || !normalized.startsWith('<svg')) return false;
+  try {
+    const parsed = new DOMParser().parseFromString(normalized, 'image/svg+xml');
+    return !parsed.querySelector('parsererror') && !!parsed.documentElement?.matches('svg');
+  } catch (e) {
+    return false;
+  }
+}
+
+function renderSvgOrFallback(container, markup, fallbackText) {
+  const normalized = normalizeVisualMarkup(markup);
+  if (isRenderableSvg(normalized)) {
+    container.innerHTML = normalized;
+    return true;
+  }
+
+  const fallback = document.createElement('div');
+  fallback.className = 'chart-fallback';
+  fallback.textContent = fallbackText || 'This visual could not be rendered because the SVG was missing or invalid.';
+  container.replaceChildren(fallback);
+  return false;
 }
 
 // Tool definitions for Gemini
@@ -1443,6 +1562,28 @@ const GEMINI_TOOLS = [
           },
           "required": ["subject", "body"]
         }
+      },
+      {
+        "name": "web_search",
+        "description": "Searches the public web for current information. Supports normal queries and Google-dork style operators such as site:, filetype:, intitle:, inurl:, and exact quoted phrases. Use only for public information.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "query": { "type": "STRING", "description": "Search query or dork." }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "scrape_webpage",
+        "description": "Reads a public web page URL as markdown-like text using a reader service. Use for public pages only, not logged-in/private pages.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "url": { "type": "STRING", "description": "Public http(s) URL to read." }
+          },
+          "required": ["url"]
+        }
       }
     ]
   }
@@ -1479,16 +1620,19 @@ function parseMarkdown(md) {
 
   // 1. Code blocks: ```language ... ```
   const codeBlocks = [];
-  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-    let cleanCode = code.trim();
-    let isHtmlOrSvg = false;
+  html = html.replace(/```([a-zA-Z0-9_-]+)?[ \t]*\r?\n([\s\S]*?)```|```([\s\S]*?)```/g, (match, lang, codeWithLang, codeWithoutLang) => {
+    let cleanCode = (codeWithLang ?? codeWithoutLang ?? '').trim();
+    const normalizedLang = (lang || '').toLowerCase();
+    let isHtmlOrSvg = ['xml', 'html', 'svg'].includes(normalizedLang);
     
-    // Strip known language prefix (xml, html, svg) — case insensitive, handles newline variants
-    const langPrefixMatch = cleanCode.match(/^(xml|html|svg|XML|HTML|SVG)\r?\n/);
+    // Strip known language prefix (xml, html, svg) when legacy parsing included it in the body.
+    const langPrefixMatch = cleanCode.match(/^(xml|html|svg)\r?\n/i);
     if (langPrefixMatch) {
       cleanCode = cleanCode.slice(langPrefixMatch[0].length).trim();
       cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
       isHtmlOrSvg = true;
+    } else if (isHtmlOrSvg) {
+      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     } else {
       // Unescape HTML entities and check if the content starts with known HTML/SVG tags
       const unescaped = cleanCode
@@ -1690,11 +1834,346 @@ function parseMarkdown(md) {
   return formattedParagraphs.join('\n');
 }
 
+function extractCommitmentStatusCounts(rawText) {
+  if (!rawText || !/Commitment Status/i.test(rawText)) return null;
+  const findCount = (patterns) => {
+    for (const pattern of patterns) {
+      const match = rawText.match(pattern);
+      if (match) return Number(match[1]);
+    }
+    return null;
+  };
+
+  const keep = findCount([/\bKeep\s*\((\d+)\)/i, /\bKeep\s*[:\-]\s*(\d+)/i]);
+  const cut = findCount([/\bCut\/End(?:ing)?\s*\((\d+)\)/i, /\bCut\/Ending\s*\((\d+)\)/i, /\bCut\s*[:\-]\s*(\d+)/i]);
+  const watch = findCount([/\bWatch\s*\((\d+)\)/i, /\bWatch\s*[:\-]\s*(\d+)/i]);
+
+  if ([keep, cut, watch].every(count => Number.isFinite(count))) {
+    return [
+      { label: 'Keep', value: keep, color: '#3d7a6a' },
+      { label: 'Cut/End', value: cut, color: '#c13d2e' },
+      { label: 'Watch', value: watch, color: '#c8a84b' }
+    ];
+  }
+  return null;
+}
+
+function buildCommitmentStatusChart(rawText) {
+  const data = extractCommitmentStatusCounts(rawText);
+  if (!data) return '';
+
+  const maxValue = Math.max(...data.map(item => item.value), 1);
+  const bars = data.map((item, index) => {
+    const x = 92 + index * 118;
+    const barHeight = Math.round((item.value / maxValue) * 138);
+    const y = 208 - barHeight;
+    return `
+      <rect x="${x}" y="${y}" width="68" height="${barHeight}" fill="${item.color}"/>
+      <text x="${x + 34}" y="${Math.max(52, y - 8)}" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">${item.value}</text>
+      <text x="${x + 34}" y="232" text-anchor="middle" font-size="12" fill="#1a1a1a">${item.label}</text>
+    `;
+  }).join('');
+
+  return `
+    <div class="auto-chart" aria-label="Commitment status chart">
+      <svg width="100%" height="270" viewBox="0 0 500 270" role="img" aria-label="Commitment Status Breakdown" style="font-family:'Syne',sans-serif; background:#faf8f3;">
+        <title>Commitment Status Breakdown</title>
+        <text x="250" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">Commitment Status Breakdown</text>
+        <line x1="58" y1="70" x2="460" y2="70" stroke="#d0cdc8" stroke-width="1" opacity="0.55"/>
+        <line x1="58" y1="116" x2="460" y2="116" stroke="#d0cdc8" stroke-width="1" opacity="0.55"/>
+        <line x1="58" y1="162" x2="460" y2="162" stroke="#d0cdc8" stroke-width="1" opacity="0.55"/>
+        <line x1="58" y1="208" x2="460" y2="208" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="58" y1="50" x2="58" y2="208" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="22" y="132" transform="rotate(-90 22 132)" text-anchor="middle" font-size="11" fill="#1a1a1a">Roles</text>
+        ${bars}
+      </svg>
+    </div>
+  `;
+}
+
 // Render formatted markdown inside the message
 function renderAnimatedText(container, rawText) {
   // Format markdown using the robust parser
   let html = parseMarkdown(rawText);
+  const hasVisual = /<svg[\s>]/i.test(html);
+  if (!hasVisual) {
+    html = buildCommitmentStatusChart(rawText) + html;
+  }
   container.innerHTML = html;
+  decorateAssistantMessage(container, rawText);
+}
+
+function decorateAssistantMessage(container, rawText) {
+  container.dataset.rawMarkdown = rawText || '';
+  addMessageActions(container, rawText || '');
+  addChartActions(container);
+}
+
+function addMessageActions(container, rawText) {
+  const actions = document.createElement('div');
+  actions.className = 'message-actions';
+  actions.innerHTML = `
+    <button class="message-action-btn" onclick="copyResponse(this)">Copy</button>
+    <button class="message-action-btn" onclick="downloadResponseMarkdown(this)">MD</button>
+    <button class="message-action-btn" onclick="printResponsePdf(this)">PDF</button>
+  `;
+  container.appendChild(actions);
+}
+
+function addChartActions(container) {
+  container.querySelectorAll('svg').forEach((svg, idx) => {
+    if (svg.nextElementSibling?.classList?.contains('chart-actions')) return;
+    const actions = document.createElement('div');
+    actions.className = 'chart-actions';
+    actions.innerHTML = `
+      <button class="chart-action-btn" onclick="copyChartSvg(this)">Copy SVG</button>
+      <button class="chart-action-btn" onclick="downloadChartSvg(this, ${idx})">SVG</button>
+      <button class="chart-action-btn" onclick="downloadChartPng(this, ${idx})">PNG</button>
+    `;
+    svg.insertAdjacentElement('afterend', actions);
+  });
+}
+
+async function copyResponse(btn) {
+  const msg = btn.closest('.message');
+  await navigator.clipboard.writeText(msg?.dataset.rawMarkdown || msg?.innerText || '');
+  flashAction(btn, 'Copied');
+}
+
+function downloadResponseMarkdown(btn) {
+  const msg = btn.closest('.message');
+  const markdown = msg?.dataset.rawMarkdown || msg?.innerText || '';
+  downloadBlob(markdown, `scout-response-${Date.now()}.md`, 'text/markdown');
+}
+
+function printResponsePdf(btn) {
+  const msg = btn.closest('.message');
+  const clone = msg?.cloneNode(true);
+  clone?.querySelectorAll('.message-actions,.chart-actions').forEach(el => el.remove());
+  const printable = window.open('', '_blank', 'width=760,height=900');
+  if (!printable) return;
+  printable.document.write(`
+    <html><head><title>Scout Response</title>
+    <style>body{font-family:Arial,sans-serif;line-height:1.55;color:#1a1814;padding:32px;} svg{max-width:100%;height:auto;} pre{white-space:pre-wrap;background:#f2eee5;padding:12px;}</style>
+    </head><body>${clone?.innerHTML || ''}</body></html>
+  `);
+  printable.document.close();
+  printable.focus();
+  printable.print();
+}
+
+async function copyChartSvg(btn) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  await navigator.clipboard.writeText(serializeSvg(svg));
+  flashAction(btn, 'Copied');
+}
+
+function downloadChartSvg(btn, idx) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  downloadBlob(serializeSvg(svg), `scout-chart-${idx + 1}-${Date.now()}.svg`, 'image/svg+xml');
+}
+
+function downloadChartPng(btn, idx) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  const svgText = serializeSvg(svg);
+  const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const box = svg.viewBox?.baseVal;
+    canvas.width = Math.max(1, Math.round(box?.width || svg.getBoundingClientRect().width || 500));
+    canvas.height = Math.max(1, Math.round(box?.height || svg.getBoundingClientRect().height || 300));
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#faf8f3';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(pngBlob => {
+      if (pngBlob) downloadBlob(pngBlob, `scout-chart-${idx + 1}-${Date.now()}.png`, 'image/png');
+    });
+  };
+  img.src = url;
+}
+
+function serializeSvg(svg) {
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  return new XMLSerializer().serializeToString(clone);
+}
+
+function downloadBlob(content, filename, type) {
+  const blob = content instanceof Blob ? content : new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function flashAction(btn, label) {
+  const original = btn.textContent;
+  btn.textContent = label;
+  setTimeout(() => { btn.textContent = original; }, 900);
+}
+
+function getCommitmentCounts(data = semesterData) {
+  const commitments = data?.commitments || [];
+  return {
+    keep: commitments.filter(c => c.category === 'keep').length,
+    cut: commitments.filter(c => c.category === 'cut').length,
+    watch: commitments.filter(c => c.category === 'watch').length
+  };
+}
+
+function ensureWeeklyCommitmentSnapshot() {
+  if (!semesterData) return;
+  const counts = getCommitmentCounts();
+  const today = new Date();
+  const weekKey = `${today.getFullYear()}-W${getWeekNumber(today)}`;
+  if (!semesterData.commitment_snapshots) semesterData.commitment_snapshots = [];
+  const existing = semesterData.commitment_snapshots.find(s => s.week === weekKey);
+  if (existing) {
+    existing.counts = counts;
+    existing.updated_at = today.toISOString();
+  } else {
+    semesterData.commitment_snapshots.push({ week: weekKey, counts, updated_at: today.toISOString() });
+  }
+  semesterData.commitment_snapshots = semesterData.commitment_snapshots.slice(-12);
+}
+
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7).toString().padStart(2, '0');
+}
+
+function getDeadlineLoad() {
+  const calendarDeadlines = latestCalendarEvents.filter(e => /deadline|exam|cie|presentation|submission|due/i.test(`${e.summary || ''} ${e.description || ''}`)).length;
+  const classroomDeadlines = (semesterData?.classroom_assignments || []).filter(a => a.due_date && a.due_date !== 'No due date' && a.status !== 'TURNED_IN').length;
+  return calendarDeadlines + classroomDeadlines;
+}
+
+function buildScopeWarnings() {
+  const counts = getCommitmentCounts();
+  const activeRoles = counts.keep + counts.watch;
+  const deadlineLoad = getDeadlineLoad();
+  const calendarLoad = latestCalendarEvents.length;
+  const warnings = [];
+
+  warnings.push({
+    level: activeRoles >= 10 ? 'high' : activeRoles >= 7 ? 'medium' : 'low',
+    text: `${activeRoles} active roles. ${activeRoles >= 7 ? 'Subtract before adding anything new.' : 'Role count is contained.'}`
+  });
+  warnings.push({
+    level: counts.watch >= 4 ? 'high' : counts.watch >= 2 ? 'medium' : 'low',
+    text: `${counts.watch} watch roles. Watch-list items need weekly hour caps.`
+  });
+  warnings.push({
+    level: deadlineLoad >= 5 ? 'high' : deadlineLoad >= 3 ? 'medium' : 'low',
+    text: `${deadlineLoad} known deadline signals from Classroom/Calendar.`
+  });
+  warnings.push({
+    level: calendarLoad >= 8 ? 'high' : calendarLoad >= 4 ? 'medium' : 'low',
+    text: `${calendarLoad} upcoming calendar events currently loaded in chat.`
+  });
+  return warnings;
+}
+
+function buildCommitmentTrendSvg() {
+  const snapshots = (semesterData?.commitment_snapshots || []).slice(-8);
+  const counts = getCommitmentCounts();
+  const data = snapshots.length ? snapshots : [{ week: 'Now', counts }];
+  const max = Math.max(1, ...data.flatMap(s => [s.counts.keep || 0, s.counts.cut || 0, s.counts.watch || 0]));
+  const series = [
+    { key: 'keep', color: '#3d7a6a', label: 'Keep' },
+    { key: 'cut', color: '#c13d2e', label: 'Cut' },
+    { key: 'watch', color: '#c8a84b', label: 'Watch' }
+  ];
+  const pointsFor = key => data.map((s, idx) => {
+    const x = data.length === 1 ? 250 : 55 + idx * (390 / (data.length - 1));
+    const y = 210 - ((s.counts[key] || 0) / max) * 145;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const labels = data.map((s, idx) => {
+    const x = data.length === 1 ? 250 : 55 + idx * (390 / (data.length - 1));
+    return `<text x="${x}" y="235" text-anchor="middle" font-size="9" fill="#1a1a1a">${s.week}</text>`;
+  }).join('');
+  const lines = series.map(item => `<polyline points="${pointsFor(item.key)}" fill="none" stroke="${item.color}" stroke-width="3"/><text x="${360}" y="${40 + series.indexOf(item) * 16}" font-size="10" fill="${item.color}">${item.label}</text>`).join('');
+  return `
+    <svg width="100%" height="260" viewBox="0 0 500 260" role="img" aria-label="Keep Cut Watch trend chart" style="font-family:'Syne',sans-serif; background:#faf8f3;">
+      <title>Keep Cut Watch Trend</title>
+      <text x="250" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">Keep / Cut / Watch Trends</text>
+      <line x1="45" y1="210" x2="455" y2="210" stroke="#1a1a1a"/>
+      <line x1="45" y1="55" x2="45" y2="210" stroke="#1a1a1a"/>
+      <line x1="45" y1="132" x2="455" y2="132" stroke="#d0cdc8"/>
+      ${lines}
+      ${labels}
+    </svg>
+  `;
+}
+
+function openCommitmentDashboard() {
+  document.getElementById('editor-pane-container').style.display = 'none';
+  document.getElementById('quiz-pane-container').style.display = 'none';
+  document.getElementById('visualizer-pane-container').style.display = 'none';
+  document.getElementById('commitment-dashboard-container').style.display = 'flex';
+  renderCommitmentDashboard();
+}
+
+function closeCommitmentDashboard() {
+  document.getElementById('commitment-dashboard-container').style.display = 'none';
+}
+
+function renderCommitmentDashboard() {
+  const el = document.getElementById('commitment-dashboard-content');
+  if (!el) return;
+  if (!semesterData) {
+    el.innerHTML = '<div class="chart-fallback">No semester data loaded yet.</div>';
+    return;
+  }
+  ensureWeeklyCommitmentSnapshot();
+  const counts = getCommitmentCounts();
+  const warnings = buildScopeWarnings();
+  const plannerCards = buildWeeklyPlanningCards();
+  el.innerHTML = `
+    <div class="dashboard-grid">
+      <div class="dashboard-stat"><div class="num">${counts.keep}</div><div class="lbl">Keep</div></div>
+      <div class="dashboard-stat"><div class="num">${counts.cut}</div><div class="lbl">Cut / End</div></div>
+      <div class="dashboard-stat"><div class="num">${counts.watch}</div><div class="lbl">Watch</div></div>
+    </div>
+    <div>${buildCommitmentTrendSvg()}</div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${warnings.map(w => `<div class="warning-badge ${w.level}">${w.text}</div>`).join('')}
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <h4 style="font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--ink);">Weekly Planning Agent</h4>
+      ${plannerCards.map(card => `<div class="planner-card"><b>${card.title}</b><br>${card.reason}</div>`).join('')}
+    </div>
+  `;
+  addChartActions(el);
+}
+
+function buildWeeklyPlanningCards() {
+  const commitments = semesterData?.commitments || [];
+  const cards = [];
+  commitments.filter(c => c.category === 'cut').slice(0, 2).forEach(c => {
+    cards.push({ title: `Cut: ${c.title}`, reason: c.description || 'Finish the exit/handoff so the role stops occupying attention.' });
+  });
+  commitments.filter(c => c.category === 'watch').slice(0, 3).forEach(c => {
+    cards.push({ title: `Watch: ${c.title}`, reason: 'Keep only with a named weekly hour cap and a clear stop condition.' });
+  });
+  commitments.filter(c => c.category === 'keep').slice(0, 2).forEach(c => {
+    cards.push({ title: `Keep: ${c.title}`, reason: 'Protect this only if it serves a core technical, creative, financial, or identity pillar.' });
+  });
+  return cards.length ? cards : [{ title: 'No planning items found', reason: 'Load or initialize commitments to generate weekly recommendations.' }];
 }
 
 // Appending message to window
@@ -2002,6 +2481,18 @@ The user's GitHub commits activity and LeetCode solved problems are periodically
 *Fallback Rules:* If github_commits_this_week is undefined or missing in the JSON plan, assume it is 0. If config.github_commit_goal is undefined or missing, assume the weekly goal is 5 commits. If config.leetcode_solved_goal is undefined or missing, assume the weekly goal is 3 solved problems.
 If the user asks "check if i reached my weekly commit goal for github?" or "how am I doing on coding target?", read these fields from the database and report the results immediately instead of saying you cannot access GitHub or trying to read calendar/Gmail.
 
+== MEMORY-AWARE COACHING RULES ==
+Use these rules whenever giving planning, commitment, workload, or career advice:
+1. Subtract before you add: no new recurring commitment should be recommended unless an existing one is cut, ended, delegated, or explicitly time-boxed.
+2. Energy budget: every recommendation must account for weekly hours, switching cost, recovery time, and the user's active academic load.
+3. Deadline pressure: treat exams, submissions, presentations, CIEs, placement prep goals, GitHub/LeetCode targets, and calendar events as real constraints.
+4. Watch roles are not replacements for cut roles. They require boundaries: owner, weekly cap, stop condition, and next review date.
+5. When the user asks for a weekly planning agent, produce Keep / Cut / Watch recommendations with reasons, risks, and one concrete next action per item.
+
+== PUBLIC WEB RESEARCH ==
+You may use web_search and scrape_webpage for current public information, including Google-dork style public search operators like site:, filetype:, intitle:, inurl:, and quoted phrases.
+Safety boundary: only research public information. Do not use search operators to find private data, credentials, exposed secrets, personal documents, paywalled content, or anything requiring login/bypass. If current facts may have changed, use web_search before answering.
+
 == MCQ ASSESSMENTS & QUIZ MODE ==
 If requested to test the user's knowledge, start a quiz, or test placement topics, generate exactly 10 questions (MCQs, fill in the blanks, or short sentence answers) in a single code block marked with \`json-quiz\`.
 Format each item inside the JSON array exactly like this (do not write any other text or characters inside the json-quiz code block):
@@ -2099,7 +2590,9 @@ Inform the user that they can activate a live 30-minute ticking timer in the Int
 - update_semester_schedule: Write back to Firestore
 - list_calendar_events: Next 7 days of Google Calendar
 - create_calendar_event: Add an event to Google Calendar
-- list_recent_emails: Search Gmail for academic emails`;
+- list_recent_emails: Search Gmail for academic emails
+- web_search: Search current public web with normal queries or public dorks
+- scrape_webpage: Read a public webpage as text`;
 
   return prompt;
 }
@@ -2131,7 +2624,9 @@ const TOOL_LABELS = {
   list_recent_emails:       'Scanning Gmail...',
   read_semester_schedule:   'Reading Firestore database...',
   update_semester_schedule: 'Updating Firestore database...',
-  send_email:               'Sending email via Brevo...'
+  send_email:               'Sending email via Brevo...',
+  web_search:               'Searching public web...',
+  scrape_webpage:           'Reading public webpage...'
 };
 
 // Handle response + tool loops
@@ -2227,9 +2722,75 @@ async function executeTool(name, args) {
       return await updateSemesterDataInFirestore(args.updates);
     case 'send_email':
       return await sendEmailViaBrevo(args.subject, args.body);
+    case 'web_search':
+      return await webSearch(args.query);
+    case 'scrape_webpage':
+      return await scrapeWebpage(args.url);
     default:
       throw new Error("Unknown tool: " + name);
   }
+}
+
+async function webSearch(query) {
+  if (!query || !query.trim()) throw new Error('Search query is required.');
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  const readerUrl = `https://r.jina.ai/http://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  try {
+    const res = await fetch(readerUrl);
+    if (res.ok) {
+      const text = await res.text();
+      return {
+        query,
+        search_url: searchUrl,
+        reader_source: readerUrl,
+        results_text: text.slice(0, 6000)
+      };
+    }
+  } catch (e) {
+    console.warn('Reader search failed:', e);
+  }
+  return {
+    query,
+    search_url: searchUrl,
+    note: 'Search reader could not fetch results from this browser. Use the search_url, then scrape specific public result URLs.'
+  };
+}
+
+async function scrapeWebpage(url) {
+  if (!/^https?:\/\//i.test(url || '')) throw new Error('A public http(s) URL is required.');
+  const candidates = getReaderUrls(url);
+  let text = '';
+  let readerUrl = candidates[0];
+  let lastStatus = '';
+  for (const candidate of candidates) {
+    try {
+      const res = await fetch(candidate);
+      lastStatus = `HTTP ${res.status}`;
+      if (res.ok) {
+        text = await res.text();
+        readerUrl = candidate;
+        break;
+      }
+    } catch (e) {
+      lastStatus = e.message;
+    }
+  }
+  if (!text) throw new Error(`Webpage reader failed (${lastStatus})`);
+  return {
+    url,
+    reader_url: readerUrl,
+    content: text.slice(0, 12000),
+    truncated: text.length > 12000
+  };
+}
+
+function getReaderUrls(url) {
+  const noScheme = url.replace(/^https?:\/\//i, '');
+  return [
+    `https://r.jina.ai/http://${noScheme}`,
+    `https://r.jina.ai/http://${url}`,
+    `https://r.jina.ai/http://r.jina.ai/http://${url}`
+  ];
 }
 
 // Send email via Brevo HTTP API — recipient locked to user's own email only
@@ -2335,13 +2896,17 @@ async function fetchGoogleCalendar() {
     throw new Error(err.error?.message || "Google Calendar listing failed");
   }
   const data = await res.json();
-  return data.items.map(item => ({
+  latestCalendarEvents = (data.items || []).map(item => ({
     id: item.id,
     summary: item.summary,
     start: item.start.dateTime || item.start.date,
     end: item.end.dateTime || item.end.date,
     description: item.description || ''
   }));
+  if (document.getElementById('commitment-dashboard-container')?.style.display === 'flex') {
+    renderCommitmentDashboard();
+  }
+  return latestCalendarEvents;
 }
 
 // 2. Create Calendar Event
