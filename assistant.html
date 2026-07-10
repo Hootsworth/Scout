@@ -287,17 +287,41 @@ body::after {
   max-width: 90%;
 }
 
-/* Word-by-word Apple swoosh animation */
-@keyframes wordSwoop {
-  0%   { opacity: 0; transform: translateY(10px) scale(0.95); filter: blur(4px); }
-  60%  { opacity: 1; transform: translateY(-1px) scale(1.01); filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+/* Staggered block swoop fade-in animation for message text blocks */
+@keyframes swoopFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.word-token {
-  display: inline-block;
+.message > p, 
+.message > h1, 
+.message > h2, 
+.message > h3, 
+.message > h4, 
+.message > ul, 
+.message > ol, 
+.message > .table-container, 
+.message > pre, 
+.message > blockquote {
   opacity: 0;
-  animation: wordSwoop 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: swoopFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+.message > *:nth-child(1) { animation-delay: 0.04s; }
+.message > *:nth-child(2) { animation-delay: 0.12s; }
+.message > *:nth-child(3) { animation-delay: 0.20s; }
+.message > *:nth-child(4) { animation-delay: 0.28s; }
+.message > *:nth-child(5) { animation-delay: 0.36s; }
+.message > *:nth-child(6) { animation-delay: 0.44s; }
+.message > *:nth-child(7) { animation-delay: 0.52s; }
+.message > *:nth-child(8) { animation-delay: 0.60s; }
+.message > *:nth-child(9) { animation-delay: 0.68s; }
+.message > *:nth-child(10) { animation-delay: 0.76s; }
+
 
 /* Thinking bar — single persistent line */
 #thinking-bar {
@@ -764,7 +788,7 @@ function parseMarkdown(md) {
   // 1. Code blocks: ```language ... ```
   const codeBlocks = [];
   html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-    const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+    const id = `%%CODEBLOCK${codeBlocks.length}%%`;
     codeBlocks.push(code.trim());
     return id;
   });
@@ -772,7 +796,7 @@ function parseMarkdown(md) {
   // 2. Inline code: `code`
   const inlineCodes = [];
   html = html.replace(/`(.*?)`/g, (match, code) => {
-    const id = `__INLINE_CODE_${inlineCodes.length}__`;
+    const id = `%%INLINECODE${inlineCodes.length}%%`;
     inlineCodes.push(code);
     return id;
   });
@@ -896,12 +920,12 @@ function parseMarkdown(md) {
 
   // Restore Code Blocks
   codeBlocks.forEach((code, idx) => {
-    html = html.replace(`__CODE_BLOCK_${idx}__`, `<pre><code>${code}</code></pre>`);
+    html = html.replace(`%%CODEBLOCK${idx}%%`, `<pre><code>${code}</code></pre>`);
   });
 
   // Restore Inline Code
   inlineCodes.forEach((code, idx) => {
-    html = html.replace(`__INLINE_CODE_${idx}__`, `<code>${code}</code>`);
+    html = html.replace(`%%INLINECODE${idx}%%`, `<code>${code}</code>`);
   });
 
   // Replace double newlines with paragraphs
@@ -918,45 +942,11 @@ function parseMarkdown(md) {
   return formattedParagraphs.join('\n');
 }
 
-// Word-by-word swoosh render
+// Render formatted markdown inside the message
 function renderAnimatedText(container, rawText) {
   // Format markdown using the robust parser
   let html = parseMarkdown(rawText);
-
-  // Wrap each word in an animated span
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
-  let wordIndex = 0;
-
-  function wrapTextNodes(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const words = node.textContent.split(/(\s+)/);
-      const frag = document.createDocumentFragment();
-      words.forEach(word => {
-        if (/\s+/.test(word)) {
-          frag.appendChild(document.createTextNode(word));
-        } else if (word) {
-          const span = document.createElement('span');
-          span.className = 'word-token';
-          span.textContent = word;
-          span.style.animationDelay = `${wordIndex * 0.02}s`;
-          wordIndex++;
-          frag.appendChild(span);
-        }
-      });
-      node.parentNode.replaceChild(frag, node);
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const tag = node.tagName.toUpperCase();
-      // Skip wrapping inside code blocks and tables to maintain formatting/layout
-      if (tag !== 'CODE' && tag !== 'PRE' && tag !== 'TABLE' && tag !== 'TR' && tag !== 'TD' && tag !== 'TH' && tag !== 'THEAD' && tag !== 'TBODY') {
-        Array.from(node.childNodes).forEach(wrapTextNodes);
-      }
-    }
-  }
-
-  Array.from(tempDiv.childNodes).forEach(wrapTextNodes);
-  container.innerHTML = '';
-  container.appendChild(tempDiv);
+  container.innerHTML = html;
 }
 
 // Appending message to window
@@ -1203,6 +1193,19 @@ Your primary task is to act as a strict, helpful, and realistic technical interv
 `;
   }
   
+  prompt += `
+== GITHUB & LEETCODE SYNCHRONIZED PROGRESS DATA ==
+The user's GitHub commits activity and LeetCode solved problems are periodically crawled and saved directly in the Firestore database document.
+- GitHub username is in config.github_username
+- LeetCode username is in config.leetcode_username
+- GitHub weekly commit goal is in config.github_commit_goal
+- LeetCode weekly solve goal is in config.leetcode_solved_goal
+- Current week commits is in github_commits_this_week
+- Current week solved count is in leetcode_solved_this_week
+- Any active warnings about falling behind these targets are listed under prep_warnings.
+If the user asks "check if i reached my weekly commit goal for github?" or "how am I doing on coding target?", read these fields from the database and report the results immediately instead of saying you cannot access GitHub or trying to read calendar/Gmail.
+`;
+
   prompt += `
 == AGENTIC BEHAVIOR RULES ==
 1. PLAN FIRST: Form a silent numbered plan before acting on multi-step requests.
