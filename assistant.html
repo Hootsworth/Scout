@@ -1020,8 +1020,11 @@ function clearThinking() {
 
 // Robust markdown-to-HTML parser
 function parseMarkdown(md) {
+  // Strip json-quiz blocks completely from the main message body to keep it clean in chat
+  let cleanedMd = md.replace(/```json-quiz[\s\S]*?```/g, '');
+
   // Escape HTML entities to prevent injection
-  let html = md
+  let html = cleanedMd
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
