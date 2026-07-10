@@ -143,6 +143,43 @@ body::after {
   max-width: 90%;
 }
 
+/* Word-by-word Apple swoosh animation */
+@keyframes wordSwoop {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.95); filter: blur(4px); }
+  60%  { opacity: 1; transform: translateY(-1px) scale(1.01); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.word-token {
+  display: inline-block;
+  opacity: 0;
+  animation: wordSwoop 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Thinking bar — single persistent line */
+#thinking-bar {
+  display: none;
+  padding: 10px 40px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--ink3);
+  background: var(--bg);
+  border-top: 1px solid var(--line2);
+  gap: 10px;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#thinking-bar.active { display: flex; }
+#thinking-bar .spinner {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 1.5px solid var(--ink3);
+  border-top-color: var(--red);
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .quick-prompts {
   padding: 16px 40px;
   display: flex;
@@ -283,6 +320,12 @@ body::after {
         Hello! I am Scout, your personal academic assistant. I am loading your profile from Firestore...
       </div>
     </div>
+  </div>
+
+  <!-- THINKING BAR - single persistent line -->
+  <div id="thinking-bar">
+    <div class="spinner"></div>
+    <span id="thinking-text">Thinking...</span>
   </div>
 
   <!-- QUICK CHIPS -->
@@ -480,26 +523,83 @@ const GEMINI_TOOLS = [
 // Message History State
 let conversationHistory = [];
 
+// Thinking bar helpers
+function setThinking(text) {
+  const bar = document.getElementById('thinking-bar');
+  const label = document.getElementById('thinking-text');
+  label.textContent = text;
+  bar.classList.add('active');
+  statusText.textContent = text;
+}
+function clearThinking() {
+  document.getElementById('thinking-bar').classList.remove('active');
+  statusText.textContent = 'Agent Ready';
+}
+
+// Word-by-word swoosh render
+function renderAnimatedText(container, rawText) {
+  // Format markdown-like syntax first
+  let html = rawText
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+
+  // Wrap each word in an animated span
+  // Split on spaces but preserve HTML tags intact
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  let wordIndex = 0;
+
+  function wrapTextNodes(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const words = node.textContent.split(/(\s+)/);
+      const frag = document.createDocumentFragment();
+      words.forEach(word => {
+        if (/\s+/.test(word)) {
+          frag.appendChild(document.createTextNode(word));
+        } else if (word) {
+          const span = document.createElement('span');
+          span.className = 'word-token';
+          span.textContent = word;
+          span.style.animationDelay = `${wordIndex * 0.045}s`;
+          wordIndex++;
+          frag.appendChild(span);
+        }
+      });
+      node.parentNode.replaceChild(frag, node);
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'CODE') {
+      Array.from(node.childNodes).forEach(wrapTextNodes);
+    }
+  }
+
+  Array.from(tempDiv.childNodes).forEach(wrapTextNodes);
+  container.innerHTML = '';
+  container.appendChild(tempDiv);
+}
+
 // Appending message to window
 function appendMessage(role, text, isSystem = false) {
+  // System logs just update the thinking bar — no new DOM rows
+  if (isSystem) {
+    setThinking(text);
+    return;
+  }
+
   const container = document.getElementById('chat-messages-container');
   const row = document.createElement('div');
-  row.className = isSystem ? "message-row system-log" : `message-row ${role}`;
-  
+  row.className = `message-row ${role}`;
+
   const msg = document.createElement('div');
-  msg.className = "message";
-  
+  msg.className = 'message';
+
   if (role === 'assistant') {
-    let formattedText = text
-      .replace(/\n/g, '<br>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>');
-    msg.innerHTML = formattedText;
+    renderAnimatedText(msg, text);
   } else {
     msg.textContent = text;
   }
-  
+
   row.appendChild(msg);
   container.appendChild(row);
   container.scrollTop = container.scrollHeight;
@@ -545,35 +645,49 @@ async function sendMessage() {
 
 // Gemini API Invocation
 async function callGeminiApi() {
-  statusText.textContent = "Thinking...";
-  
+  setThinking('Thinking...');
+
+  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
   const systemInstruction = `
-    You are Scout, a personal academic assistant. Today is 2026-07-10T19:16:56+05:30.
-    You help the user manage their tasks, commitments, calendar, and scan emails.
-    
-    Here is their current semester plan context from their Cloud Firestore document:
-    ${JSON.stringify(semesterData, null, 2)}
-    
-    Respond in a supportive, structured, retro-minimalist, direct style matching their website. 
-    Use the tools provided to interact with their Google Calendar, Gmail, and Firestore database.
-    If a tool call succeeds, report it clearly.
+You are Scout — a sharp, agentic personal academic assistant for a single user.
+Current datetime (IST): ${now}
+
+Here is the user's complete semester plan database from Firestore:
+${JSON.stringify(semesterData, null, 2)}
+
+== AGENTIC BEHAVIOR RULES ==
+You operate in a plan-then-execute loop. Follow this strictly:
+
+1. PLAN FIRST: When a request requires multiple steps (e.g. scan Gmail AND add to calendar AND update Firestore), silently form a numbered plan in your head before acting.
+2. EXECUTE SEQUENTIALLY: Call tools one at a time, in order. Never bundle multiple tool calls into one response.
+3. CHAIN WITHOUT ASKING: After each tool result, immediately decide the next step and call the next tool — do not ask the user "should I proceed?". Just proceed.
+4. REPORT AT THE END: Only send a final text response after all tool steps are complete. Summarize what was done clearly.
+5. HANDLE ERRORS: If a tool fails, try an alternative approach or report the specific blocker — never give up silently.
+
+== RESPONSE STYLE ==
+- Direct, structured, no filler phrases
+- Use **bold** for key info, bullet points for lists
+- Italic for context/notes
+- Keep it dense — no unnecessary padding
+- Match the retro-minimalist aesthetic of the interface
+
+== TOOLS AVAILABLE ==
+- read_semester_schedule: Always call this first if you need fresh data
+- update_semester_schedule: Use to mark tasks done, add notes, update any field
+- list_calendar_events: Reads next 7 days of Google Calendar
+- create_calendar_event: Adds an event to Google Calendar
+- list_recent_emails: Searches Gmail for academic emails
   `;
 
-  const modelName = "gemini-3.1-flash-lite";
-  
+  const modelName = 'gemini-2.5-flash';
+
   try {
     const response = await sendGeminiRequest(modelName, systemInstruction);
     await handleGeminiResponse(response, systemInstruction);
   } catch (e) {
-    console.warn(`Model ${modelName} failed or rejected. Falling back to gemini-2.5-flash...`, e);
-    try {
-      const response = await sendGeminiRequest("gemini-2.5-flash", systemInstruction);
-      await handleGeminiResponse(response, systemInstruction);
-    } catch (err) {
-      console.error(err);
-      appendMessage('assistant', "An error occurred while calling the Gemini API: " + err.message);
-      statusText.textContent = "Error";
-    }
+    console.error(e);
+    clearThinking();
+    appendMessage('assistant', 'An error occurred while calling the Gemini API: ' + e.message);
   }
 }
 
@@ -599,51 +713,62 @@ async function sendGeminiRequest(model, systemInstruction) {
   return await res.json();
 }
 
+// Tool display names for the thinking bar
+const TOOL_LABELS = {
+  list_calendar_events:   'Reading Google Calendar...',
+  create_calendar_event:  'Adding event to Calendar...',
+  list_recent_emails:     'Scanning Gmail...',
+  read_semester_schedule: 'Reading Firestore database...',
+  update_semester_schedule: 'Updating Firestore database...'
+};
+
 // Handle response + tool loops
 async function handleGeminiResponse(data, systemInstruction) {
   const candidate = data.candidates?.[0];
   const message = candidate?.content;
   if (!message) {
-    appendMessage('assistant', "I received an empty response from Gemini.");
-    statusText.textContent = "Agent Ready";
+    clearThinking();
+    appendMessage('assistant', 'I received an empty response from Gemini.');
     return;
   }
-  
+
   conversationHistory.push(message);
-  
+
   const part = message.parts?.[0];
   if (part && part.functionCall) {
     const call = part.functionCall;
     const name = call.name;
     const args = call.args;
-    
-    appendMessage('system', `Executing tool: ${name}...`, true);
-    
+
+    // Update the single thinking bar
+    setThinking(TOOL_LABELS[name] || `Running ${name}...`);
+
     let result = null;
     try {
       result = await executeTool(name, args);
-      appendMessage('system', `Tool ${name} executed successfully.`, true);
+      setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name} ✓`);
     } catch(e) {
       console.error(e);
-      result = { "error": e.message };
-      appendMessage('system', `Tool ${name} failed: ${e.message}`, true);
+      result = { error: e.message };
+      setThinking(`⚠ ${name} failed: ${e.message}`);
     }
-    
+
+    // Gemini API requires functionResponse.response to be an object, never an array
+    const safeResult = Array.isArray(result)
+      ? { items: result, count: result.length }
+      : (result && typeof result === 'object' ? result : { value: result });
+
     conversationHistory.push({
-      "role": "function",
-      "parts": [{
-        "functionResponse": {
-          "name": name,
-          "response": result
-        }
-      }]
+      role: 'function',
+      parts: [{ functionResponse: { name, response: safeResult } }]
     });
-    
+
+    // Chain immediately — agentic loop
     await callGeminiApi();
   } else {
-    const text = part?.text || "No response text.";
+    clearThinking();
+    const text = part?.text || 'No response text.';
     appendMessage('assistant', text);
-    statusText.textContent = "Agent Ready";
   }
 }
 
