@@ -1860,7 +1860,7 @@ function parseMarkdown(md) {
   const formattedParagraphs = paragraphs.map(p => {
     const trimmed = p.trim();
     if (!trimmed) return '';
-    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr') || trimmed.startsWith('<label')) {
+    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr') || trimmed.startsWith('<label') || trimmed.startsWith('<svg') || trimmed.startsWith('<table')) {
       return trimmed;
     }
     return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
@@ -1961,6 +1961,7 @@ function addChartActions(container) {
     const actions = document.createElement('div');
     actions.className = 'chart-actions';
     actions.innerHTML = `
+      <button class="chart-action-btn" onclick="copyChartPng(this)">Copy PNG</button>
       <button class="chart-action-btn" onclick="copyChartSvg(this)">Copy SVG</button>
       <button class="chart-action-btn" onclick="downloadChartSvg(this, ${idx})">SVG</button>
       <button class="chart-action-btn" onclick="downloadChartPng(this, ${idx})">PNG</button>
@@ -2004,40 +2005,114 @@ async function copyChartSvg(btn) {
   flashAction(btn, 'Copied');
 }
 
+async function copyChartPng(btn) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  try {
+    const pngBlob = await svgToPngBlob(svg);
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
+      flashAction(btn, 'Copied');
+    } else {
+      downloadBlob(pngBlob, `scout-chart-${Date.now()}.png`, 'image/png');
+      flashAction(btn, 'Downloaded');
+    }
+  } catch (e) {
+    console.error('Copy PNG failed:', e);
+    flashAction(btn, 'Failed');
+  }
+}
+
 function downloadChartSvg(btn, idx) {
   const svg = btn.closest('.chart-actions')?.previousElementSibling;
   if (!svg) return;
   downloadBlob(serializeSvg(svg), `scout-chart-${idx + 1}-${Date.now()}.svg`, 'image/svg+xml');
 }
 
-function downloadChartPng(btn, idx) {
+async function downloadChartPng(btn, idx) {
   const svg = btn.closest('.chart-actions')?.previousElementSibling;
   if (!svg) return;
-  const svgText = serializeSvg(svg);
-  const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    const box = svg.viewBox?.baseVal;
-    canvas.width = Math.max(1, Math.round(box?.width || svg.getBoundingClientRect().width || 500));
-    canvas.height = Math.max(1, Math.round(box?.height || svg.getBoundingClientRect().height || 300));
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#faf8f3';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
-    canvas.toBlob(pngBlob => {
-      if (pngBlob) downloadBlob(pngBlob, `scout-chart-${idx + 1}-${Date.now()}.png`, 'image/png');
-    });
-  };
-  img.src = url;
+  try {
+    const pngBlob = await svgToPngBlob(svg);
+    downloadBlob(pngBlob, `scout-chart-${idx + 1}-${Date.now()}.png`, 'image/png');
+  } catch (e) {
+    console.error('Download PNG failed:', e);
+    flashAction(btn, 'Failed');
+  }
 }
 
 function serializeSvg(svg) {
+  const clone = prepareSvgForExport(svg);
+  return new XMLSerializer().serializeToString(clone);
+}
+
+function prepareSvgForExport(svg) {
   const clone = svg.cloneNode(true);
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  return new XMLSerializer().serializeToString(clone);
+  clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+  const box = getSvgExportBox(svg);
+  clone.setAttribute('width', String(box.width));
+  clone.setAttribute('height', String(box.height));
+  clone.setAttribute('viewBox', `${box.x} ${box.y} ${box.width} ${box.height}`);
+  clone.querySelectorAll('script, foreignObject').forEach(node => node.remove());
+
+  const bgColor = getSvgBackground(svg);
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('x', String(box.x));
+  bg.setAttribute('y', String(box.y));
+  bg.setAttribute('width', String(box.width));
+  bg.setAttribute('height', String(box.height));
+  bg.setAttribute('fill', bgColor);
+  clone.insertBefore(bg, clone.firstChild);
+  return clone;
+}
+
+function getSvgExportBox(svg) {
+  const viewBox = svg.getAttribute('viewBox');
+  if (viewBox) {
+    const nums = viewBox.trim().split(/[\s,]+/).map(Number);
+    if (nums.length === 4 && nums.every(Number.isFinite) && nums[2] > 0 && nums[3] > 0) {
+      return { x: nums[0], y: nums[1], width: nums[2], height: nums[3] };
+    }
+  }
+  const widthAttr = parseFloat(svg.getAttribute('width'));
+  const heightAttr = parseFloat(svg.getAttribute('height'));
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: 0,
+    y: 0,
+    width: Math.max(1, Math.round(widthAttr || rect.width || 500)),
+    height: Math.max(1, Math.round(heightAttr || rect.height || 300))
+  };
+}
+
+function getSvgBackground(svg) {
+  const styleBg = svg.style?.background || '';
+  const computedBg = window.getComputedStyle ? window.getComputedStyle(svg).backgroundColor : '';
+  return styleBg && styleBg !== 'none' ? styleBg : (computedBg && computedBg !== 'rgba(0, 0, 0, 0)' ? computedBg : '#faf8f3');
+}
+
+function svgToPngBlob(svg) {
+  return new Promise((resolve, reject) => {
+    const box = getSvgExportBox(svg);
+    const svgText = serializeSvg(svg);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(box.width));
+      canvas.height = Math.max(1, Math.round(box.height));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = getSvgBackground(svg);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('Canvas PNG export returned empty blob.'));
+      }, 'image/png');
+    };
+    img.onerror = () => reject(new Error('Browser could not rasterize this SVG.'));
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
+  });
 }
 
 function downloadBlob(content, filename, type) {
@@ -2828,6 +2903,51 @@ function getReaderUrls(url) {
   ];
 }
 
+// Helper to parse markdown and format inline HTML style for email client compatibility
+function formatEmailBody(markdownText) {
+  // Convert markdown to HTML using existing parseMarkdown
+  let parsedHtml = parseMarkdown(markdownText);
+  
+  // Transform standard tags to styled inline versions for email clients (Gmail, Outlook, etc.)
+  parsedHtml = parsedHtml
+    .replace(/<table>/gi, '<table cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #dcd7ca; font-family: sans-serif; font-size: 13px; background: #faf8f3; color: #3d3a33;">')
+    .replace(/<thead>/gi, '<thead style="background: #f2eee5;">')
+    .replace(/<th>/gi, '<th style="border: 1px solid #dcd7ca; font-weight: bold; text-align: left; padding: 10px; color: #1a1814;">')
+    .replace(/<td>/gi, '<td style="border: 1px solid #dcd7ca; padding: 10px; color: #3d3a33; line-height: 1.5;">')
+    .replace(/<h1>/gi, '<h1 style="font-family: sans-serif; font-size: 20px; font-weight: bold; color: #1a1814; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #dcd7ca; padding-bottom: 8px;">')
+    .replace(/<h2>/gi, '<h2 style="font-family: sans-serif; font-size: 16px; font-weight: bold; color: #1a1814; margin-top: 20px; margin-bottom: 10px;">')
+    .replace(/<h3>/gi, '<h3 style="font-family: sans-serif; font-size: 14px; font-weight: bold; color: #1a1814; margin-top: 16px; margin-bottom: 8px;">')
+    .replace(/<p>/gi, '<p style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; margin: 12px 0;">')
+    .replace(/<ul>/gi, '<ul style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
+    .replace(/<ol>/gi, '<ol style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
+    .replace(/<li>/gi, '<li style="margin-bottom: 6px; line-height: 1.5;">')
+    .replace(/<blockquote>/gi, '<blockquote style="border-left: 4px solid #c13d2e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #706a5e; background: #fdfcf9; padding: 10px 16px;">')
+    .replace(/<hr>/gi, '<hr style="border: 0; border-top: 1px solid #dcd7ca; margin: 24px 0;">');
+
+  // Wrap in our premium styled email card
+  return `
+    <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+      <div style="margin-bottom: 24px; border-bottom: 2px solid #1a1814; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-collapse: collapse;">
+        <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.05em; color: #1a1814;">SCOUT</span>
+        <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px; text-transform: uppercase;">Academic Update</span>
+      </div>
+      
+      <div style="min-height: 200px;">
+        ${parsedHtml}
+      </div>
+      
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
+        <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+          SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+        </p>
+        <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+          POWERED BY SINGULR.TECH • CONNECTION SECURE
+        </p>
+      </div>
+    </div>
+  `;
+}
+
 // Send email via Brevo HTTP API — recipient locked to user's own email only
 async function sendEmailViaBrevo(subject, body) {
   // Reload in case it was saved after page load
@@ -2837,8 +2957,8 @@ async function sendEmailViaBrevo(subject, body) {
   if (!brevoKey)  throw new Error('Brevo API key not set. Add it on the Setup page.');
   if (!userEmail) throw new Error('Target email not set. Add it on the Setup page.');
 
-  // Wrap plain text in basic HTML if no tags detected
-  const htmlBody = body.includes('<') ? body : `<div style="font-family:sans-serif;line-height:1.6;color:#3d3a33;">${body.replace(/\n/g,'<br>')}</div>`;
+  // Parse markdown and build formatted HTML body
+  const htmlBody = formatEmailBody(body);
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',

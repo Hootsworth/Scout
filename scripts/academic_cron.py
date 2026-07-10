@@ -545,8 +545,14 @@ Keep it professional, action-oriented, and write in the style of their operation
         <h2>Completed Tasks</h2>
         {done_execs_html}
         
-        <hr style="border: 0; border-top: 1px solid rgba(26,24,20,0.1); margin-top: 30px;">
-        <p style="font-size: 11px; color: #7a7670; text-align: center;">Sent by Scout via Brevo SMTP.</p>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(26,24,20,0.1); text-align: center;">
+          <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+            SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+          </p>
+          <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+            POWERED BY SINGULR.TECH • CONNECTION SECURE
+          </p>
+        </div>
       </div>
     </body>
     </html>
