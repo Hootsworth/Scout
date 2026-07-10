@@ -2,14 +2,18 @@ import os
 import json
 import sys
 import datetime
+import smtplib
 import requests
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
 # Load Environment Secrets
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+BREVO_SMTP_LOGIN = os.environ.get("BREVO_SMTP_LOGIN")      # afdac9001@smtp-brevo.com
+BREVO_SMTP_PASSWORD = os.environ.get("BREVO_SMTP_PASSWORD") # Your Brevo SMTP key/password
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 GOOGLE_REFRESH_TOKEN = os.environ.get("GOOGLE_REFRESH_TOKEN")
@@ -18,9 +22,9 @@ USER_UID = os.environ.get("USER_UID")
 FIREBASE_SERVICE_ACCOUNT = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
 
 # Check required parameters
-if not all([GEMINI_API_KEY, BREVO_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT]):
+if not all([GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT]):
     print("Error: Missing required environment variables. Please check GitHub Secrets.")
-    print("Required: GEMINI_API_KEY, BREVO_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT")
+    print("Required: GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT")
     sys.exit(1)
 
 # Initialize Firebase Admin SDK
@@ -171,25 +175,24 @@ def create_calendar_event(access_token, event):
         print(f"Failed to add event: {res.text}")
         return False
 
-# Helper: Send Email via Brevo
+# Helper: Send Email via Brevo SMTP
 def send_brevo_email(subject, html_content):
-    print("Sending update email via Brevo...")
-    url = "https://api.brevo.com/v3/smtp/email"
-    headers = {
-        "api-key": BREVO_API_KEY,
-        "Content-Type": "application/json"
-    }
-    body = {
-        "sender": {"name": "Scout", "email": "noreply@singulr.tech"},
-        "to": [{"email": USER_EMAIL}],
-        "subject": subject,
-        "htmlContent": html_content
-    }
-    res = requests.post(url, headers=headers, json=body)
-    if res.status_code == 201:
+    print("Sending update email via Brevo SMTP...")
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = "Scout <noreply@singulr.tech>"
+        msg['To'] = USER_EMAIL
+        msg.attach(MIMEText(html_content, 'html'))
+
+        with smtplib.SMTP('smtp-relay.brevo.com', 587) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD)
+            server.sendmail('noreply@singulr.tech', USER_EMAIL, msg.as_string())
         print("Weekly status email sent successfully!")
-    else:
-        print(f"Failed to send email: {res.text}")
+    except Exception as e:
+        print(f"Failed to send email via SMTP: {e}")
 
 # Generate Weekly Review HTML
 def generate_weekly_report(semester_data, new_events):
