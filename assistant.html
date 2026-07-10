@@ -1606,7 +1606,37 @@ function clearThinking() {
 }
 
 // Robust markdown-to-HTML parser
+function normalizeEscapedMarkdownText(md) {
+  const segments = String(md || '').split(/(```[\s\S]*?```)/g);
+  return segments.map(segment => {
+    if (segment.startsWith('```')) return segment;
+    return segment
+      .replace(/\\r\\n/g, '\n')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '  ')
+      .replace(/\\"/g, '"')
+      .replace(/\\'/g, "'")
+      .replace(/\\“/g, '“')
+      .replace(/\\”/g, '”');
+  }).join('');
+}
+
+function escapeHtmlAttr(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function renderInvalidVisualFallback(message) {
+  return `<div class="chart-fallback">${message || 'This SVG/chart could not be rendered because the markup was missing or invalid.'}</div>`;
+}
+
 function parseMarkdown(md) {
+  md = normalizeEscapedMarkdownText(md);
+
   // Strip json-quiz blocks completely from the main message body to keep it clean in chat
   let cleanedMd = md.replace(/```json-quiz[\s\S]*?```/g, '');
   // Strip json-visualizer blocks completely from the main message body to keep it clean in chat
@@ -1653,6 +1683,10 @@ function parseMarkdown(md) {
     }
     
     const id = `%%CODEBLOCK${codeBlocks.length}%%`;
+    if (isHtmlOrSvg && cleanCode.trim().startsWith('<svg') && !isRenderableSvg(cleanCode)) {
+      cleanCode = renderInvalidVisualFallback('This SVG/chart could not be rendered because the markup was invalid.');
+      isHtmlOrSvg = true;
+    }
     codeBlocks.push({ code: cleanCode, isHtml: isHtmlOrSvg });
     return id;
   });
@@ -1749,11 +1783,12 @@ function parseMarkdown(md) {
     const checkboxMatch = cleanLine.match(/^(\s*)(?:[-*+])\s+\[([ xX])\]\s+(.+)$/);
     if (checkboxMatch) {
       const checked = checkboxMatch[2].toLowerCase() === 'x';
-      const taskTitle = checkboxMatch[3].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+      const taskTitle = checkboxMatch[3].trim();
+      const taskTitleAttr = escapeHtmlAttr(taskTitle.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"'));
       
       const checkboxHtml = `
         <label class="interactive-checkbox-lbl" style="display:flex; align-items:center; gap:8px; cursor:pointer; margin: 6px 0; font-family:'Syne',sans-serif; font-size:13.5px; color:var(--ink2);">
-          <input type="checkbox" class="interactive-chat-checkbox" data-task-title="${taskTitle}" ${checked ? 'checked' : ''} onchange="toggleChatTaskStatus(this)" style="accent-color:var(--red); cursor:pointer; width:14px; height:14px; margin:0;">
+          <input type="checkbox" class="interactive-chat-checkbox" data-task-title="${taskTitleAttr}" ${checked ? 'checked' : ''} onchange="toggleChatTaskStatus(this)" style="accent-color:var(--red); cursor:pointer; width:14px; height:14px; margin:0;">
           <span style="${checked ? 'text-decoration:line-through; opacity:0.5;' : ''}">${taskTitle}</span>
         </label>
       `;
@@ -1794,11 +1829,11 @@ function parseMarkdown(md) {
 
   // 8. Bold
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  html = html.replace(/(^|[^\w])__([^_\s][\s\S]*?[^_\s])__([^\w]|$)/g, '$1<strong>$2</strong>$3');
 
   // 9. Italics
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+  html = html.replace(/(^|[^\w])_([^_\s][^_\n]*?[^_\s])_([^\w]|$)/g, '$1<em>$2</em>$3');
 
   // Restore Code Blocks
   codeBlocks.forEach((item, idx) => {
