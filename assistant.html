@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SEM 05 // AI ASSISTANT CHAT</title>
+<title>SEM 05 // SCOUT CHAT</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -260,7 +260,7 @@ body::after {
 <div id="auth-warning-container" style="display: none; padding: 120px 80px; text-align: center; margin-left: 60px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
   <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--red);">Authentication Required</h2>
   <p style="font-family: 'Instrument Serif', serif; font-style: italic; font-size: 24px; color: var(--ink3); max-width: 500px; margin: 24px auto;">
-    To open a session with the AI Academic Assistant, please sign in.
+    To open a session with Scout, please sign in.
   </p>
   <button class="btn" onclick="window.location.href='settings.html'">Go to Setup &amp; Sign In</button>
 </div>
@@ -269,7 +269,7 @@ body::after {
 <div class="main-chat-container" id="chat-interface-container" style="display: none;">
   <!-- HEADER -->
   <div class="chat-header">
-    <h1>AI ACADEMIC <span class="outline">ASSISTANT</span></h1>
+    <h1>SCOUT <span class="outline">AI ASSISTANT</span></h1>
     <div class="status-indicator">
       <div class="status-dot" id="agent-status-dot"></div>
       <span id="agent-status-text">Disconnected</span>
@@ -280,7 +280,7 @@ body::after {
   <div class="chat-messages" id="chat-messages-container">
     <div class="message-row assistant">
       <div class="message" id="welcome-message-box">
-        Hello! I am your personal academic assistant. I am loading your profile from Firestore...
+        Hello! I am Scout, your personal academic assistant. I am loading your profile from Firestore...
       </div>
     </div>
   </div>
@@ -296,7 +296,7 @@ body::after {
 
   <!-- CHAT INPUT -->
   <div class="chat-input-container">
-    <input type="text" class="chat-input" id="message-input" placeholder="Ask your assistant anything..." onkeydown="handleKeyPress(event)">
+    <input type="text" class="chat-input" id="message-input" placeholder="Ask Scout anything..." onkeydown="handleKeyPress(event)">
     <button class="send-btn" onclick="sendMessage()">Send</button>
   </div>
 </div>
@@ -535,7 +535,7 @@ async function callGeminiApi() {
   statusText.textContent = "Thinking...";
   
   const systemInstruction = `
-    You are a personal academic assistant. Today is 2026-07-10T19:16:56+05:30.
+    You are Scout, a personal academic assistant. Today is 2026-07-10T19:16:56+05:30.
     You help the user manage their tasks, commitments, calendar, and scan emails.
     
     Here is their current semester plan context from their Cloud Firestore document:

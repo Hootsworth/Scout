@@ -180,7 +180,7 @@ def send_brevo_email(subject, html_content):
         "Content-Type": "application/json"
     }
     body = {
-        "sender": {"name": "AI Academic Assistant", "email": "noreply@singulr.tech"},
+        "sender": {"name": "Scout", "email": "noreply@singulr.tech"},
         "to": [{"email": USER_EMAIL}],
         "subject": subject,
         "htmlContent": html_content
@@ -279,7 +279,7 @@ Keep it professional, action-oriented, and write in the style of their operation
     </head>
     <body>
       <div class="container">
-        <h1>Academic Assistant Weekly Review</h1>
+        <h1>Scout Weekly Review</h1>
         <div class="badge">TIMESTAMP: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>
         
         <div class="ai-coaching">
@@ -297,7 +297,7 @@ Keep it professional, action-oriented, and write in the style of their operation
         {done_execs_html}
         
         <hr style="border: 0; border-top: 1px solid rgba(26,24,20,0.1); margin-top: 30px;">
-        <p style="font-size: 11px; color: #7a7670; text-align: center;">Sent by your Semester 5 Operations Assistant via Brevo SMTP.</p>
+        <p style="font-size: 11px; color: #7a7670; text-align: center;">Sent by Scout via Brevo SMTP.</p>
       </div>
     </body>
     </html>
@@ -305,7 +305,7 @@ Keep it professional, action-oriented, and write in the style of their operation
     return html
 
 def main():
-    print("--- STARTING ACADEMIC ASSISTANT BATCH CRON (FIRESTORE) ---")
+    print("--- STARTING SCOUT BATCH CRON (FIRESTORE) ---")
     
     # 1. Fetch User Data Document from Firestore
     print(f"Fetching Firestore plan document for UID: {USER_UID}...")
@@ -348,7 +348,7 @@ def main():
 
     # 6. Generate weekly planning email report
     report_html = generate_weekly_report(semester_data, newly_added)
-    send_brevo_email("Academic Assistant: Plan Update & Synced Deadlines", report_html)
+    send_brevo_email("Scout: Plan Update & Synced Deadlines", report_html)
     
     # 7. Write run log back to Firestore
     semester_data["last_cron_run"] = datetime.datetime.now().isoformat()
