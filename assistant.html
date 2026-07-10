@@ -1634,8 +1634,112 @@ function renderInvalidVisualFallback(message) {
   return `<div class="chart-fallback">${message || 'This SVG/chart could not be rendered because the markup was missing or invalid.'}</div>`;
 }
 
+function renderPieChartTag(title, slices) {
+  const total = slices.reduce((sum, s) => sum + s.value, 0) || 1;
+  let accumPercent = 0;
+  
+  const circleElements = slices.map(s => {
+    const percent = (s.value / total) * 100;
+    const sliceSize = percent * 3.14;
+    const offset = -accumPercent * 3.14;
+    accumPercent += percent;
+    
+    return `<circle cx="150" cy="150" r="50" stroke-width="100" fill="none" stroke="${s.color || '#3d7a6a'}" stroke-dasharray="${sliceSize.toFixed(1)} 314" stroke-dashoffset="${offset.toFixed(1)}" transform="rotate(-90 150 150)"/>`;
+  }).join('\n');
+  
+  const legendElements = slices.map((s, idx) => {
+    const y = 60 + idx * 24;
+    return `
+      <rect x="290" y="${y}" width="12" height="12" fill="${s.color || '#3d7a6a'}" rx="2"/>
+      <text x="310" y="${y + 10}" font-size="12" font-family="'Syne', sans-serif" fill="#1a1a1a">${s.label} (${s.value})</text>
+    `;
+  }).join('\n');
+
+  return `
+    <div class="auto-chart" aria-label="${title}">
+      <svg width="100%" height="280" viewBox="0 0 500 280" role="img" style="font-family:'Syne',sans-serif; background:#faf8f3; border: 1px solid var(--line);">
+        <title>${title}</title>
+        <text x="250" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">${title}</text>
+        <g>${circleElements}</g>
+        <g>${legendElements}</g>
+      </svg>
+    </div>
+  `;
+}
+
+function renderBarChartTag(title, yLabel, bars) {
+  const maxValue = Math.max(...bars.map(b => b.value), 1);
+  
+  const barElements = bars.map((b, idx) => {
+    const x = 90 + idx * 80;
+    const barHeight = Math.round((b.value / maxValue) * 150);
+    const y = 220 - barHeight;
+    return `
+      <rect x="${x}" y="${y}" width="40" height="${barHeight}" fill="${b.color || '#3d7a6a'}" rx="2"/>
+      <text x="${x + 20}" y="${Math.max(55, y - 8)}" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">${b.value}</text>
+      <text x="${x + 20}" y="240" text-anchor="middle" font-size="11" fill="#1a1a1a">${b.label}</text>
+    `;
+  }).join('\n');
+
+  return `
+    <div class="auto-chart" aria-label="${title}">
+      <svg width="100%" height="280" viewBox="0 0 500 280" role="img" style="font-family:'Syne',sans-serif; background:#faf8f3; border: 1px solid var(--line);">
+        <title>${title}</title>
+        <text x="250" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">${title}</text>
+        <line x1="60" y1="70" x2="460" y2="70" stroke="#d0cdc8" stroke-width="1" opacity="0.5"/>
+        <line x1="60" y1="145" x2="460" y2="145" stroke="#d0cdc8" stroke-width="1" opacity="0.5"/>
+        <line x1="60" y1="220" x2="460" y2="220" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="60" y1="50" x2="60" y2="220" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="25" y="135" transform="rotate(-90 25 135)" text-anchor="middle" font-size="11" fill="#1a1a1a">${yLabel || 'Value'}</text>
+        ${barElements}
+      </svg>
+    </div>
+  `;
+}
+
 function parseMarkdown(md) {
   md = normalizeEscapedMarkdownText(md);
+
+  // Parse custom <pie-chart> tags before HTML escaping
+  md = md.replace(/<pie-chart\b[^>]*>([\s\S]*?)<\/pie-chart>/gi, (match) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const pieNode = doc.querySelector('pie-chart');
+      if (!pieNode) return match;
+      const title = pieNode.getAttribute('title') || 'Chart';
+      const slices = Array.from(pieNode.querySelectorAll('slice')).map(node => ({
+        label: node.getAttribute('label') || '',
+        value: parseFloat(node.getAttribute('value') || '0'),
+        color: node.getAttribute('color') || '#3d7a6a'
+      }));
+      return renderPieChartTag(title, slices);
+    } catch(e) {
+      console.error("Pie Chart parsing error:", e);
+      return match;
+    }
+  });
+
+  // Parse custom <bar-chart> tags before HTML escaping
+  md = md.replace(/<bar-chart\b[^>]*>([\s\S]*?)<\/bar-chart>/gi, (match) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const barNode = doc.querySelector('bar-chart');
+      if (!barNode) return match;
+      const title = barNode.getAttribute('title') || 'Chart';
+      const yLabel = barNode.getAttribute('y-label') || 'Value';
+      const bars = Array.from(barNode.querySelectorAll('bar')).map(node => ({
+        label: node.getAttribute('label') || '',
+        value: parseFloat(node.getAttribute('value') || '0'),
+        color: node.getAttribute('color') || '#3d7a6a'
+      }));
+      return renderBarChartTag(title, yLabel, bars);
+    } catch(e) {
+      console.error("Bar Chart parsing error:", e);
+      return match;
+    }
+  });
 
   // Strip json-quiz blocks completely from the main message body to keep it clean in chat
   let cleanedMd = md.replace(/```json-quiz[\s\S]*?```/g, '');
@@ -2624,24 +2728,22 @@ Format each item inside the JSON array exactly like this (do not write any other
 
 == VISUAL CHARTS, GRAPHS & SVG MINDMAPS ==
 CRITICAL RULES FOR ALL CHART AND GRAPH OUTPUT:
-1. When the user asks for a chart, graph, pie chart, bar chart, or any visual — you MUST output a real, complete SVG drawing with actual data-driven shapes, bars, text labels, and colors.
-2. NEVER output a chart that is blank, nearly blank, or has no visible shapes. Every chart must have actual bar/arc/path/text elements that clearly communicate the data.
-3. Always wrap your SVG in a code block tagged as \`\`\`xml so the client renders it directly as graphics (NOT as raw code text).
-4. SVG MUST always include: a viewBox attribute (e.g., viewBox="0 0 500 300"), a width of "100%", concrete pixel-positioned drawing elements, and text labels.
-5. Color palette (use these exact hex codes, not CSS variables):
-   - Bars/slices: #c13d2e (red), #3d7a6a (teal), #c8a84b (amber), #5d4d7a (purple)
-   - Background: #faf8f3
-   - Text: #1a1a1a
-   - Grid/guidelines: #d0cdc8
-6. Always include a chart title text element at top, value labels on each segment, and a clear legend explaining colors.
-7. For pie charts (Foolproof Circle Stroke Trick):
-   - Draw slices using overlapping <circle cx="150" cy="150" r="50" stroke-width="100" fill="none" transform="rotate(-90 150 150)"/> elements.
-   - The circumference of radius 50 is 314.
-   - For each slice: set stroke to the slice color, stroke-dasharray to "SLICE_SIZE 314" (where SLICE_SIZE = percentage * 3.14), and stroke-dashoffset to "-START_OFFSET" (where START_OFFSET is the cumulative sum of previous slices' sizes).
-   - This builds perfect pie slices without polar coordinate math!
-   - Draw a color legend on the right (e.g. at x="300" y="80") with small rectangles and text labels.
-8. For bar charts: use <rect> elements, y-axis, x-axis line, grid lines, and value labels above each bar.
-9. DO NOT wrap the SVG in any other outer div or container. Output ONLY the SVG itself inside the \`\`\`xml block.
+1. When the user asks for a chart, graph, pie chart, or bar chart, you MUST use the custom <pie-chart> or <bar-chart> tags. DO NOT output raw <svg> code or paths, as raw SVG code has coordinate math errors and is deprecated.
+2. Pie Chart tag syntax:
+   <pie-chart title="Placement DSA/DAA Study Priorities">
+     <slice label="Arrays" value="40" color="#c13d2e"></slice>
+     <slice label="Trees" value="30" color="#3d7a6a"></slice>
+     <slice label="Graphs" value="30" color="#c8a84b"></slice>
+   </pie-chart>
+3. Bar Chart tag syntax:
+   <bar-chart title="Placement DSA/DAA Study Priorities" y-label="Hours">
+     <bar label="Arrays" value="12" color="#c13d2e"></bar>
+     <bar label="Trees" value="8" color="#3d7a6a"></bar>
+     <bar label="Graphs" value="15" color="#c8a84b"></bar>
+   </bar-chart>
+4. Colors: Use #c13d2e (Red), #3d7a6a (Teal), #c8a84b (Amber), #5d4d7a (Purple).
+5. Always ensure values are positive numbers. Never output empty tags or missing values.
+6. The client will parse these tags automatically and draw the SVGs with high contrast and perfect coordinates. Do not explain these tags to the user, just output them inside your text response whenever visuals are needed.
 
 Example of a correct bar chart SVG output format:
 \`\`\`xml
