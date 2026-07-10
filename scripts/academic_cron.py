@@ -200,6 +200,170 @@ def create_calendar_event(access_token, event):
         print(f"Failed to add event: {res.text}")
         return False
 
+# Helper: Fetch Google Classroom Courses and Assignments (Read-only)
+def fetch_classroom_data(access_token):
+    print("Fetching Google Classroom courses and assignments...")
+    courses_url = "https://classroom.googleapis.com/v1/courses"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    
+    try:
+        res = requests.get(courses_url, headers=headers, timeout=10)
+        if res.status_code != 200:
+            print(f"Failed to fetch Classroom courses: {res.text}")
+            return []
+            
+        courses = res.json().get("courses", [])
+        print(f"Found {len(courses)} Classroom course(s).")
+        
+        assignments = []
+        for course in courses:
+            course_id = course.get("id")
+            course_name = course.get("name")
+            
+            # Fetch coursework for the course
+            cw_url = f"https://classroom.googleapis.com/v1/courses/{course_id}/courseWork"
+            cw_res = requests.get(cw_url, headers=headers, timeout=10)
+            if cw_res.status_code != 200:
+                continue
+                
+            courseworks = cw_res.json().get("courseWork", [])
+            for cw in courseworks:
+                cw_id = cw.get("id")
+                cw_title = cw.get("title")
+                cw_desc = cw.get("description", "")
+                max_points = cw.get("maxPoints", 100)
+                
+                # Parse Due Date
+                due_date_obj = cw.get("dueDate")
+                due_time_obj = cw.get("dueTime")
+                due_date_str = "No due date"
+                if due_date_obj:
+                    year = due_date_obj.get("year")
+                    month = due_date_obj.get("month")
+                    day = due_date_obj.get("day")
+                    due_date_str = f"{year}-{month:02d}-{day:02d}"
+                    if due_time_obj:
+                        hr = due_time_obj.get("hours", 0)
+                        mn = due_time_obj.get("minutes", 0)
+                        due_date_str += f" {hr:02d}:{mn:02d}"
+                
+                # Fetch Student Submission for this coursework
+                sub_url = f"https://classroom.googleapis.com/v1/courses/{course_id}/courseWork/{cw_id}/studentSubmissions"
+                sub_res = requests.get(sub_url, headers=headers, timeout=10)
+                state = "ASSIGNED"
+                grade = None
+                if sub_res.status_code == 200:
+                    submissions = sub_res.json().get("studentSubmissions", [])
+                    if submissions:
+                        sub = submissions[0]
+                        state = sub.get("state", "ASSIGNED")
+                        grade = sub.get("assignedGrade") or sub.get("draftGrade")
+                
+                assignments.append({
+                    "course_name": course_name,
+                    "title": cw_title,
+                    "description": cw_desc,
+                    "due_date": due_date_str,
+                    "status": state,
+                    "grade": grade,
+                    "max_points": max_points
+                })
+        return assignments
+    except Exception as e:
+        print(f"Error fetching Classroom data: {e}")
+        return []
+
+# Helper: Scrape LeetCode Stats via GraphQL
+def fetch_leetcode_stats(username):
+    print(f"Scraping LeetCode stats for user '{username}'...")
+    url = "https://leetcode.com/graphql"
+    query = """
+    query userProblemsSolved($username: String!) {
+      matchedUser(username: $username) {
+        submitStats {
+          acSubmissionNum {
+            difficulty
+            count
+          }
+        }
+      }
+    }
+    """
+    payload = {
+        "query": query,
+        "variables": {"username": username}
+    }
+    try:
+        res = requests.post(url, json=payload, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            user_data = data.get("data", {}).get("matchedUser")
+            if user_data:
+                stats = user_data.get("submitStats", {}).get("acSubmissionNum", [])
+                result = {}
+                for s in stats:
+                    diff = s.get("difficulty").lower()
+                    result[diff] = s.get("count", 0)
+                return result
+            else:
+                print("LeetCode user not found or private profile.")
+        else:
+            print(f"LeetCode GraphQL request failed: {res.text}")
+    except Exception as e:
+        print(f"Error scraping LeetCode: {e}")
+    return {"all": 0, "easy": 0, "medium": 0, "hard": 0}
+
+# Helper: Fetch GitHub commits over the past 7 days
+def fetch_github_commits(username):
+    print(f"Fetching GitHub commits for user '{username}'...")
+    url = f"https://api.github.com/users/{username}/events"
+    try:
+        res = requests.get(url, headers={"User-Agent": "Scout-Agent"}, timeout=10)
+        if res.status_code == 200:
+            events = res.json()
+            commit_count = 0
+            seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+            
+            for event in events:
+                created_at_str = event.get("created_at")
+                if not created_at_str:
+                    continue
+                dt = datetime.datetime.fromisoformat(created_at_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                if dt < seven_days_ago:
+                    continue
+                
+                if event.get("type") == "PushEvent":
+                    commits = event.get("payload", {}).get("commits", [])
+                    commit_count += len(commits)
+                elif event.get("type") == "CreateEvent" and event.get("payload", {}).get("ref_type") == "repository":
+                    commit_count += 1
+            return commit_count
+        else:
+            print(f"GitHub API request failed: {res.text}")
+    except Exception as e:
+        print(f"Error checking GitHub activity: {e}")
+    return 0
+
+# Helper: Send notification to Discord channel
+def send_discord_notification(token, channel_id, content):
+    if not token or not channel_id:
+        return
+    print("Sending update notification to Discord channel...")
+    url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
+    headers = {
+        "Authorization": f"Bot {token}",
+        "Content-Type": "application/json"
+    }
+    payload = {"content": content}
+    try:
+        res = requests.post(url, headers=headers, json=payload, timeout=10)
+        if res.status_code in [200, 201]:
+            print("Discord notification sent successfully!")
+        else:
+            print(f"Failed to send Discord message: {res.status_code} - {res.text}")
+    except Exception as e:
+        print(f"Error sending Discord message: {e}")
+
 # Helper: Send Email via Brevo SMTP
 def send_brevo_email(subject, html_content):
     print("Sending update email via Brevo SMTP...")
@@ -373,17 +537,69 @@ def main():
     # 2. Get Access Token
     google_token = get_google_access_token()
     
-    # 3. Fetch recent emails (past 2 days)
+    # 3. Fetch Google Classroom Data (Read-only)
+    print("Syncing Google Classroom assignments...")
+    classroom_assignments = fetch_classroom_data(google_token)
+    semester_data["classroom_assignments"] = classroom_assignments
+    
+    # 4. Fetch LeetCode and GitHub stats based on preferences
+    user_config = semester_data.get("config", {})
+    github_user = os.environ.get("GITHUB_USERNAME") or user_config.get("github_username")
+    leetcode_user = os.environ.get("LEETCODE_USERNAME") or user_config.get("leetcode_username")
+    
+    try:
+        github_goal = int(os.environ.get("GITHUB_COMMIT_GOAL") or user_config.get("github_commit_goal") or 5)
+    except Exception:
+        github_goal = 5
+        
+    try:
+        leetcode_goal = int(os.environ.get("LEETCODE_SOLVED_GOAL") or user_config.get("leetcode_solved_goal") or 3)
+    except Exception:
+        leetcode_goal = 3
+        
+    discord_token = os.environ.get("DISCORD_BOT_TOKEN") or user_config.get("discord_bot_token")
+    discord_channel = os.environ.get("DISCORD_CHANNEL_ID") or user_config.get("discord_channel_id")
+    
+    leetcode_stats = {}
+    github_commits = 0
+    warnings_list = []
+    
+    if leetcode_user:
+        leetcode_stats = fetch_leetcode_stats(leetcode_user)
+        semester_data["leetcode_stats"] = leetcode_stats
+        
+        current_all = leetcode_stats.get("all", 0)
+        last_all = semester_data.get("last_leetcode_solved", 0)
+        
+        if last_all == 0:
+            semester_data["last_leetcode_solved"] = current_all
+            solved_this_week = 0
+        else:
+            solved_this_week = current_all - last_all
+            
+        semester_data["leetcode_solved_this_week"] = solved_this_week
+        if solved_this_week < leetcode_goal:
+            warnings_list.append(f"Solved {solved_this_week}/{leetcode_goal} problems on LeetCode this week.")
+    
+    if github_user:
+        github_commits = fetch_github_commits(github_user)
+        semester_data["github_commits_this_week"] = github_commits
+        if github_commits < github_goal:
+            warnings_list.append(f"Made {github_commits}/{github_goal} commits on GitHub this week.")
+            
+    semester_data["prep_warnings"] = warnings_list
+    
+    # 5. Fetch recent emails (past 2 days)
     emails = fetch_gmail_messages(google_token, query="classroom", days=2)
     emails += fetch_gmail_messages(google_token, query="exam OR presentation OR CIE", days=2)
     
     # Deduplicate emails by ID
     unique_emails = {e["id"]: e for e in emails}.values()
     
-    # 4. Use Gemini to parse
+    # 6. Use Gemini to parse
     extracted_events = analyze_emails_with_gemini(list(unique_emails))
     
-    # 5. Insert events into Google Calendar
+    # 7. Insert events into Google Calendar
     newly_added = []
     for event in extracted_events:
         try:
@@ -397,14 +613,39 @@ def main():
         except Exception as ex:
             print(f"Error processing event {event.get('title')}: {ex}")
 
-    # 6. Generate weekly planning email report
+    # 8. Generate weekly planning email report
     report_html = generate_weekly_report(semester_data, newly_added)
     send_brevo_email("Scout: Plan Update & Synced Deadlines", report_html)
     
-    # 7. Write run log back to Firestore
+    # 9. Send Discord notification
+    if discord_token and discord_channel:
+        discord_message = "🔔 **Scout Operations Sync Run** 🔔\n"
+        discord_message += f"• Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        if newly_added:
+            discord_message += f"📅 **Added Calendar Deadlines:**\n"
+            for e in newly_added:
+                discord_message += f"  - *{e['title']}* ({e['start_time']})\n"
+        
+        discord_message += "\n💻 **Placement Prep Activity:**\n"
+        if leetcode_user:
+            discord_message += f"  - LeetCode Solved: {semester_data.get('leetcode_solved_this_week', 0)}/{leetcode_goal} problems\n"
+        if github_user:
+            discord_message += f"  - GitHub Commits: {semester_data.get('github_commits_this_week', 0)}/{github_goal} commits\n"
+            
+        if warnings_list:
+            discord_message += "\n⚠️ **Goal Warnings:**\n"
+            for w in warnings_list:
+                discord_message += f"  - {w}\n"
+            discord_message += "\n*Consistency is key! Spend some time coding today.*"
+        else:
+            discord_message += "\n✅ **All placement prep goals met this week!** Outstanding work!"
+            
+        send_discord_notification(discord_token, discord_channel, discord_message)
+    
+    # 10. Write run log back to Firestore
     semester_data["last_cron_run"] = datetime.datetime.now().isoformat()
     doc_ref.set(semester_data)
-    print("Firestore user document updated with run timestamps.")
+    print("Firestore user document updated with classroom, scraping, and sync results.")
     print("--- CRON RUN COMPLETED SUCCESSFULLY ---")
 
 if __name__ == "__main__":

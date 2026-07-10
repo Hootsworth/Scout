@@ -234,6 +234,59 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
+/* Workload Analysis and Heatmap Styles */
+.heatmap-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.heatmap-week {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  transition: transform 0.15s;
+}
+.heatmap-week:hover {
+  transform: scale(1.1);
+  border-color: var(--ink);
+}
+.heatmap-week.level-0 { background: var(--paper2); color: var(--ink3); }
+.heatmap-week.level-1 { background: rgba(42,107,94,0.15); color: var(--teal); }
+.heatmap-week.level-2 { background: rgba(42,107,94,0.4); color: white; }
+.heatmap-week.level-3 { background: rgba(196,125,26,0.6); color: white; }
+.heatmap-week.level-4 { background: rgba(193,61,46,0.8); color: white; }
+
+.deepwork-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.deepwork-card {
+  background: var(--paper2);
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-left: 3px solid var(--teal);
+}
+.deepwork-card h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+}
+.deepwork-card p {
+  font-size: 11.5px;
+  color: var(--ink3);
+}
+
 @media(max-width:900px){
   .sidenav{display:none;}
   .main{margin-left:0;}
@@ -264,6 +317,7 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
     <div class="links">
       <a href="index.html" class="active">Plan</a>
       <a href="assistant.html">Chat</a>
+      <a href="placements.html">Placements</a>
       <a href="settings.html">Setup</a>
     </div>
   </div>
@@ -272,6 +326,7 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
     <span class="nav-group-title">Sections</span>
     <div class="links" style="gap: 18px;" id="sections-nav-links">
       <a href="#situation">Situation</a>
+      <a href="#analysis">Workload</a>
       <a href="#triage">Triage</a>
       <a href="#exec">Executables</a>
       <a href="#academics">Academics</a>
@@ -323,6 +378,33 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
     <p class="section-desc">Everything you're currently holding, in one place. Titles are not the same as workload — a "Head of" role that takes two hours a week and an "unpaid intern" role that quietly takes ten are not equivalent, even if they look equal on a resume.</p>
     <div class="board" id="commitments-container">
       <!-- Loaded dynamically -->
+    </div>
+  </section>
+
+  <!-- 01B ANALYSIS -->
+  <section id="analysis" class="fade-in">
+    <div class="section-label"><span class="section-num">01B</span><h2 class="section-title">Workload &amp; Deep Work</h2></div>
+    <p class="section-desc">Visual workload index and suggested deep-work blocks computed dynamically from your credits, checklist activities, and task checklist.</p>
+    
+    <div class="grid-cols-2">
+      <div>
+        <div class="setup-card" style="margin-bottom:0;">
+          <h3>16-Week Semester Heatmap</h3>
+          <p style="font-size:12px; color:var(--ink3); margin-bottom:16px;">Calculated load based on course credits and active weekly checklist burden.</p>
+          <div class="heatmap-container" id="load-heatmap-container">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="setup-card" style="margin-bottom:0;">
+          <h3>Suggested Deep-Work Focus Slots</h3>
+          <p style="font-size:12px; color:var(--ink3); margin-bottom:16px;">Targeted focus block allocations for your next 3 pending high-priority actions.</p>
+          <div class="deepwork-list" id="deepwork-blocks-container">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -768,6 +850,89 @@ function renderDashboard() {
   // Warning banner stats
   const remainingExits = semesterData.commitments.filter(c => c.category === 'cut' && !isCommitmentExited(c.id)).length;
   document.getElementById('warning-exits').textContent = remainingExits + " unresolved exit" + (remainingExits === 1 ? "" : "s");
+
+  // ── Load Heatmap & Deep Work Calculations ──────────────────────
+  const baseLoad = semesterData.academics.reduce((sum, item) => sum + item.credits, 0);
+  const weekLoads = [];
+  
+  // Pre-semester (Weeks 1 to 4)
+  for (let i = 0; i < 4; i++) {
+    const preSemWeek = semesterData.pre_semester[i];
+    const activeTasksCount = preSemWeek ? preSemWeek.tasks.filter(t => !t.done).length : 0;
+    weekLoads.push(baseLoad + (activeTasksCount * 2.5));
+  }
+  
+  // In-semester (Weeks 5 to 16)
+  // Month 1 / Phase 01: Weeks 5-8
+  const p1 = semesterData.in_semester[0] || { intensity: 2, tasks: [] };
+  const l1 = baseLoad + (p1.intensity * 2) + (p1.tasks.length * 1);
+  for (let i = 0; i < 4; i++) weekLoads.push(l1);
+  
+  // Month 2 / Phase 02: Weeks 9-11
+  const p2 = semesterData.in_semester[1] || { intensity: 3, tasks: [] };
+  const l2 = baseLoad + (p2.intensity * 2) + (p2.tasks.length * 1);
+  for (let i = 0; i < 3; i++) weekLoads.push(l2);
+  
+  // Month 3 / Phase 03: Weeks 12-14
+  const p3 = semesterData.in_semester[2] || { intensity: 4, tasks: [] };
+  const l3 = baseLoad + (p3.intensity * 2) + (p3.tasks.length * 1);
+  for (let i = 0; i < 3; i++) weekLoads.push(l3);
+  
+  // Month 4 / Phase 04: Weeks 15-16
+  const p4 = semesterData.in_semester[3] || { intensity: 5, tasks: [] };
+  const l4 = baseLoad + (p4.intensity * 2) + (p4.tasks.length * 1);
+  for (let i = 0; i < 2; i++) weekLoads.push(l4);
+
+  // Render Heatmap
+  const heatmapContainer = document.getElementById('load-heatmap-container');
+  heatmapContainer.innerHTML = '';
+  
+  weekLoads.forEach((load, idx) => {
+    let level = 0;
+    if (load < 24) level = 0;
+    else if (load < 27) level = 1;
+    else if (load < 30) level = 2;
+    else if (load < 33) level = 3;
+    else level = 4;
+    
+    const weekDiv = document.createElement('div');
+    weekDiv.className = `heatmap-week level-${level}`;
+    weekDiv.title = `Week ${idx + 1}: Workload Score ${load.toFixed(1)}`;
+    weekDiv.innerHTML = `<span>W${idx + 1}</span><span style="font-size:7px; opacity:0.8;">${Math.round(load)}</span>`;
+    heatmapContainer.appendChild(weekDiv);
+  });
+
+  // Render Deep Work blocks
+  const deepworkContainer = document.getElementById('deepwork-blocks-container');
+  deepworkContainer.innerHTML = '';
+
+  const pendingExecs = semesterData.executables.filter(e => !e.done).slice(0, 3);
+
+  if (pendingExecs.length === 0) {
+    deepworkContainer.innerHTML = `
+      <div style="font-family:'Instrument Serif', serif; font-style:italic; font-size:18px; color:var(--ink3); padding: 10px 0;">
+        No pending tasks found. Your calendar is clear! Enjoy the downtime or start planning the next goals.
+      </div>
+    `;
+  } else {
+    pendingExecs.forEach((task, idx) => {
+      const times = [
+        "Monday Morning (09:00 - 12:00 IST)",
+        "Wednesday Afternoon (14:00 - 17:00 IST)",
+        "Friday Morning (10:00 - 12:00 IST)"
+      ];
+      const duration = [3, 3, 2];
+      
+      deepworkContainer.innerHTML += `
+        <div class="deepwork-card">
+          <div style="font-family:'Syne Mono', monospace; font-size:9px; color:var(--red); text-transform:uppercase;">Block 0${idx + 1} // ${duration[idx]} Hours Focus</div>
+          <h4 style="margin-top:4px; font-size:13px; font-weight:700;">Work on: "${task.title}"</h4>
+          <p style="margin-top:6px; font-size:11px;"><b>Suggested Slot:</b> ${times[idx]}</p>
+          <p style="font-size:10px; opacity:0.8; margin-top:2px;"><b>Context:</b> ${task.description || 'No description'}</p>
+        </div>
+      `;
+    });
+  }
 
   // Dynamic Ticker Track
   const tickerTrack = document.getElementById('ticker-track');

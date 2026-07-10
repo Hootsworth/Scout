@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="logo.png">
+<title>SEM 05 // PLACEMENTS TRACKER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #f5f2eb;
+  --paper:  #faf8f3;
+  --paper2: #ede9e0;
+  --paper3: #e5e0d4;
+  --ink:    #1a1814;
+  --ink2:   #3d3a33;
+  --ink3:   #7a7670;
+  --red:    #c13d2e;
+  --amber:  #c47d1a;
+  --teal:   #2a6b5e;
+  --blue:   #2c4f8a;
+  --line:   rgba(26,24,20,0.10);
+  --line2:  rgba(26,24,20,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--ink2); font-family:'Syne',sans-serif;
+  cursor:crosshair; position:relative; overflow-x:hidden;
+}
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9998; mix-blend-mode:multiply;
+}
+#cursor { width:6px;height:6px;background:var(--red);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply; }
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--ink3);}
+
+.sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
+.sidenav .logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid var(--red);
+  background: white;
+  transition: transform 0.2s ease;
+  margin-bottom: 12px;
+}
+.sidenav .logo-container:hover {
+  transform: scale(1.1);
+}
+.sidenav .logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
+.sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
+.sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
+.sidenav .links a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink3);font-family:'Syne Mono';font-size:10px;letter-spacing:0.2em;text-transform:uppercase;transition:color .15s;}
+.sidenav .links a:hover{color:var(--red);}
+.sidenav .links a.active{color:var(--red);font-weight:700;}
+.sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
+
+.main{margin-left:60px;}
+section{padding:80px;border-bottom:1px solid var(--line);position:relative;}
+
+.section-label{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.section-num{font-family:'Syne Mono',monospace;font-size:12px;color:var(--red);border:1px solid var(--red);padding:2px 6px;border-radius:2px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.04em;color:var(--ink);text-transform:uppercase;}
+.section-desc{font-family:'Instrument Serif',serif;font-style:italic;font-size:22px;color:var(--ink3);margin-bottom:48px;max-width:700px;line-height:1.4;}
+
+/* Cards & Layouts */
+.grid-cols-2{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+.grid-cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:40px;}
+.setup-card{background:var(--paper);border:1px solid var(--line);padding:32px;position:relative;margin-bottom:24px;}
+.setup-card h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.03em;color:var(--ink);margin-bottom:20px;border-bottom:1px solid var(--line2);padding-bottom:10px;}
+
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;font-family:'Syne Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;letter-spacing:0.05em;}
+.form-group input, .form-group textarea, .form-group select{
+  width:100%;background:var(--paper2);border:1px solid var(--line);padding:12px;
+  font-family:'Syne',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color .15s;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus{border-color:var(--red);}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--bg);
+  border:1px solid var(--ink);padding:12px 24px;font-family:'Bebas Neue',sans-serif;font-size:15px;
+  letter-spacing:0.05em;cursor:pointer;transition:all .15s;text-transform:uppercase;text-decoration:none;
+}
+.btn:hover{background:var(--red);border-color:var(--red);color:white;}
+.btn-red{background:var(--red);border-color:var(--red);color:white;}
+.btn-red:hover{background:var(--ink);border-color:var(--ink);color:var(--bg);}
+.btn-outline{background:transparent;color:var(--ink);border-color:var(--line);}
+.btn-outline:hover{background:var(--paper2);border-color:var(--ink);}
+
+/* Placements Specific UI */
+.stat-box{background:var(--paper);border:1px solid var(--line);padding:24px;text-align:center;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--red);line-height:1;}
+.stat-lbl{font-family:'Syne Mono',monospace;font-size:9px;color:var(--ink3);text-transform:uppercase;margin-top:6px;}
+
+.board-container{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+.board-column{background:rgba(26,24,20,0.02);border:1px solid var(--line);padding:24px;min-height:500px;}
+.board-column h3{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--ink);margin-bottom:16px;display:flex;justify-content:between;border-bottom:2px solid var(--ink);padding-bottom:8px;}
+
+.job-card{background:var(--paper);border:1px solid var(--line);padding:20px;margin-bottom:16px;position:relative;transition:transform 0.15s, border-color 0.15s;}
+.job-card:hover{transform:translateY(-2px);border-color:var(--ink2);}
+.job-card h4{font-family:'Syne';font-weight:700;font-size:16px;color:var(--ink);margin-bottom:4px;}
+.job-card .company{font-family:'Syne Mono',monospace;font-size:11px;color:var(--ink3);margin-bottom:10px;text-transform:uppercase;}
+.job-card .ctc{display:inline-block;background:var(--paper2);color:var(--teal);font-size:11px;font-family:'Syne Mono',monospace;padding:4px 8px;border-radius:2px;font-weight:700;margin-bottom:12px;}
+.job-card .status-badge{display:inline-block;float:right;font-size:10px;font-family:'Syne Mono',monospace;padding:4px 8px;border-radius:2px;text-transform:uppercase;font-weight:700;}
+
+/* Status badge styles */
+.badge-dreaming { background: rgba(44,79,138,0.1); color: var(--blue); }
+.badge-applied { background: rgba(122,118,112,0.1); color: var(--ink3); }
+.badge-test { background: rgba(196,125,26,0.1); color: var(--amber); }
+.badge-technical { background: rgba(196,125,26,0.15); color: var(--amber); }
+.badge-hr { background: rgba(196,125,26,0.2); color: var(--amber); }
+.badge-offer { background: rgba(42,107,94,0.15); color: var(--teal); border: 1px solid var(--teal); }
+.badge-rejected { background: rgba(193,61,46,0.1); color: var(--red); }
+
+.job-card .jd-summary{font-family:'Instrument Serif',serif;font-style:italic;font-size:14.5px;color:var(--ink2);margin-bottom:12px;line-height:1.3;white-space:pre-line;}
+.job-card .prep-notes{font-family:'Syne';font-size:11.5px;color:var(--ink3);background:var(--paper2);padding:10px;border-left:2px solid var(--red);margin-top:10px;}
+
+.job-card-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:16px;border-top:1px solid var(--line2);padding-top:12px;}
+.job-card-actions button{background:transparent;border:none;font-family:'Syne Mono',monospace;font-size:9.5px;text-transform:uppercase;cursor:pointer;color:var(--ink3);transition:color .15s;}
+.job-card-actions button:hover{color:var(--red);}
+
+.auth-warning{background:rgba(193,61,46,0.05);border:1px solid rgba(193,61,46,0.2);padding:24px;color:var(--red);font-family:'Syne',sans-serif;font-size:14px;margin-bottom:24px;display:none;}
+
+@media(max-width:900px){
+  .sidenav{display:none;}
+  .main{margin-left:0;}
+  section{padding:40px 24px;}
+  .grid-cols-2{grid-template-columns:1fr;}
+  .board-container{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+
+<!-- NAVIGATION SIDEBAR -->
+<nav class="sidenav">
+  <a href="index.html" class="logo-container">
+    <img src="logo.png" alt="Scout Logo" class="logo-img">
+  </a>
+  
+  <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
+    <span class="nav-group-title">Menu</span>
+    <div class="links">
+      <a href="index.html">Plan</a>
+      <a href="assistant.html">Chat</a>
+      <a href="placements.html" class="active">Placements</a>
+      <a href="settings.html">Setup</a>
+    </div>
+  </div>
+
+  <div class="nav-group" style="flex-grow: 1; justify-content: flex-start; overflow-y: auto; padding-top: 10px;">
+    <span class="nav-group-title">Sections</span>
+    <div class="links" style="gap: 18px;">
+      <a href="#stats">Overview</a>
+      <a href="#applications">Applications</a>
+      <a href="#add-drive">Add Opportunity</a>
+    </div>
+  </div>
+  
+  <div class="tag">JUL 2026 → JAN 2027</div>
+</nav>
+
+<div class="main">
+  <!-- AUTH ALERT -->
+  <section style="padding: 24px 80px 0; border-bottom: none;">
+    <div id="auth-warning-box" class="auth-warning">
+      🔒 Please authenticate on the <a href="settings.html">Setup Page</a> to connect with Cloud Firestore and load your placements data.
+    </div>
+  </section>
+
+  <!-- SECTION: PLACEMENTS OVERVIEW -->
+  <section id="stats">
+    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Overview</h2></div>
+    <p class="section-desc">Manage recruitment schedules, CTC offers, online assessments (OA), interview notes, and job descriptions in one unified dashboard.</p>
+    
+    <div class="grid-cols-3">
+      <div class="stat-box">
+        <div class="stat-val" id="total-apps">0</div>
+        <div class="stat-lbl">Total Applications</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="active-apps" style="color:var(--amber);">0</div>
+        <div class="stat-lbl">Active In-Progress</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="offers-count" style="color:var(--teal);">0</div>
+        <div class="stat-lbl">Offers Received</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: APPLICATIONS BOARD -->
+  <section id="applications" style="background:var(--paper);">
+    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Application Board</h2></div>
+    
+    <div class="board-container">
+      <!-- COLUMN 1: ON-CAMPUS RECRUITMENT -->
+      <div class="board-column">
+        <h3>On-Campus Opportunities <span id="on-campus-badge" style="font-size:13px; color:var(--ink3); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
+        <div id="on-campus-list" style="margin-top:20px;">
+          <!-- Managed via JS -->
+        </div>
+      </div>
+
+      <!-- COLUMN 2: OFF-CAMPUS DRIVES -->
+      <div class="board-column">
+        <h3>Off-Campus &amp; Referrals <span id="off-campus-badge" style="font-size:13px; color:var(--ink3); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
+        <div id="off-campus-list" style="margin-top:20px;">
+          <!-- Managed via JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: ADD OPPORTUNITY -->
+  <section id="add-drive">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Add Opportunity</h2></div>
+    
+    <div class="setup-card" style="max-width: 600px; margin: 0;">
+      <h3>New Company Entry</h3>
+      <form id="job-entry-form" onsubmit="addCompanyEntry(event)">
+        <div class="form-group">
+          <label for="company-name">Company Name</label>
+          <input type="text" id="company-name" required placeholder="e.g. Google">
+        </div>
+        <div class="form-group">
+          <label for="job-title">Job Title / Designation</label>
+          <input type="text" id="job-title" required placeholder="e.g. Software Engineer Intern">
+        </div>
+        <div class="form-group">
+          <label for="job-type">Type</label>
+          <select id="job-type">
+            <option value="on-campus">On-Campus Drive</option>
+            <option value="off-campus">Off-Campus Application</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="job-ctc">CTC / Compensation Package</label>
+          <input type="text" id="job-ctc" required placeholder="e.g. 40 LPA or ₹100,000/month">
+        </div>
+        <div class="form-group">
+          <label for="job-status">Application Status</label>
+          <select id="job-status">
+            <option value="dreaming">Dreaming / Target</option>
+            <option value="applied">Applied / Pending OA</option>
+            <option value="test">Online Assessment (OA)</option>
+            <option value="technical">Technical Interview</option>
+            <option value="hr">HR Interview</option>
+            <option value="offer">Offer Extended</option>
+            <option value="rejected">Rejected / Closed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="job-jd">Job Description (JD)</label>
+          <textarea id="job-jd" rows="5" placeholder="Paste JD highlights, requirements, or tech stack here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="job-notes">Preparation &amp; Interview Notes</label>
+          <textarea id="job-notes" rows="4" placeholder="Important topics, Leetcode links, or interview questions asked..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-red">Save Company Entry</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+// Local Cursor
+document.addEventListener('mousemove', e => {
+  const c = document.getElementById('cursor');
+  c.style.left = e.clientX + 'px';
+  c.style.top = e.clientY + 'px';
+});
+
+// Load Config from localStorage
+const storedConfig = localStorage.getItem('firebase_config');
+let db = null;
+let currentUid = null;
+let placements = [];
+
+if (storedConfig) {
+  try {
+    const config = JSON.parse(storedConfig);
+    firebase.initializeApp(config);
+    db = firebase.firestore();
+    
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUid = user.uid;
+        document.getElementById('auth-warning-box').style.display = 'none';
+        loadPlacements();
+      } else {
+        document.getElementById('auth-warning-box').style.display = 'block';
+      }
+    });
+  } catch(e) {
+    console.error("Firebase load error", e);
+    document.getElementById('auth-warning-box').style.display = 'block';
+  }
+} else {
+  document.getElementById('auth-warning-box').style.display = 'block';
+}
+
+// Load Placements from Firestore
+async function loadPlacements() {
+  if (!db || !currentUid) return;
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      placements = data.placements || [];
+      renderBoard();
+    }
+  } catch (e) {
+    console.error("Error loading placements:", e);
+  }
+}
+
+// Save Placements to Firestore
+async function savePlacements() {
+  if (!db || !currentUid) return;
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    await docRef.set({ placements: placements }, { merge: true });
+    renderBoard();
+  } catch (e) {
+    console.error("Error saving placements:", e);
+  }
+}
+
+// Add Placement Entry
+async function addCompanyEntry(e) {
+  e.preventDefault();
+  const name = document.getElementById('company-name').value.trim();
+  const title = document.getElementById('job-title').value.trim();
+  const type = document.getElementById('job-type').value;
+  const ctc = document.getElementById('job-ctc').value.trim();
+  const status = document.getElementById('job-status').value;
+  const jd = document.getElementById('job-jd').value.trim();
+  const notes = document.getElementById('job-notes').value.trim();
+
+  const id = 'company_' + Date.now();
+  placements.push({ id, name, title, type, ctc, status, jd, notes });
+  
+  await savePlacements();
+  document.getElementById('job-entry-form').reset();
+  alert(`Added ${name} successfully!`);
+}
+
+// Delete Entry
+async function deleteEntry(id) {
+  if (confirm("Are you sure you want to delete this company entry?")) {
+    placements = placements.filter(p => p.id !== id);
+    await savePlacements();
+  }
+}
+
+// Update status directly from card dropdown
+async function updateStatus(id, newStatus) {
+  placements = placements.map(p => {
+    if (p.id === id) p.status = newStatus;
+    return p;
+  });
+  await savePlacements();
+}
+
+// Render Placements Board
+function renderBoard() {
+  const onCampusList = document.getElementById('on-campus-list');
+  const offCampusList = document.getElementById('off-campus-list');
+  
+  onCampusList.innerHTML = '';
+  offCampusList.innerHTML = '';
+  
+  let totalCount = placements.length;
+  let activeCount = 0;
+  let offersCount = 0;
+  let onCampusCount = 0;
+  let offCampusCount = 0;
+  
+  placements.forEach(job => {
+    // Stat trackers
+    if (['applied', 'test', 'technical', 'hr'].includes(job.status)) activeCount++;
+    if (job.status === 'offer') offersCount++;
+    
+    // Status text mapping
+    const statusText = job.status.charAt(0).toUpperCase() + job.status.slice(1);
+    const badgeClass = `status-badge badge-${job.status}`;
+    
+    const card = document.createElement('div');
+    card.className = 'job-card';
+    card.innerHTML = `
+      <span class="${badgeClass}">${statusText}</span>
+      <h4>${job.name}</h4>
+      <div class="company">${job.title}</div>
+      <div class="ctc">${job.ctc}</div>
+      
+      ${job.jd ? `<div class="jd-summary"><b>Job Requirements:</b>\n${job.jd}</div>` : ''}
+      ${job.notes ? `<div class="prep-notes"><b>Preparation notes:</b>\n${job.notes}</div>` : ''}
+      
+      <div class="form-group" style="margin-top:12px; margin-bottom: 0;">
+        <select onchange="updateStatus('${job.id}', this.value)" style="padding: 6px; font-size:11px;">
+          <option value="dreaming" ${job.status === 'dreaming' ? 'selected' : ''}>Target / Dreaming</option>
+          <option value="applied" ${job.status === 'applied' ? 'selected' : ''}>Applied / Pending</option>
+          <option value="test" ${job.status === 'test' ? 'selected' : ''}>Online Assessment (OA)</option>
+          <option value="technical" ${job.status === 'technical' ? 'selected' : ''}>Technical Interview</option>
+          <option value="hr" ${job.status === 'hr' ? 'selected' : ''}>HR Interview</option>
+          <option value="offer" ${job.status === 'offer' ? 'selected' : ''}>Offer Extended</option>
+          <option value="rejected" ${job.status === 'rejected' ? 'selected' : ''}>Rejected / Closed</option>
+        </select>
+      </div>
+
+      <div class="job-card-actions">
+        <button onclick="deleteEntry('${job.id}')">Delete Application</button>
+      </div>
+    `;
+    
+    if (job.type === 'on-campus') {
+      onCampusList.appendChild(card);
+      onCampusCount++;
+    } else {
+      offCampusList.appendChild(card);
+      offCampusCount++;
+    }
+  });
+  
+  document.getElementById('total-apps').textContent = totalCount;
+  document.getElementById('active-apps').textContent = activeCount;
+  document.getElementById('offers-count').textContent = offersCount;
+  
+  document.getElementById('on-campus-badge').textContent = `${onCampusCount} Job(s)`;
+  document.getElementById('off-campus-badge').textContent = `${offCampusCount} Job(s)`;
+}
+</script>
+</body>
+</html>

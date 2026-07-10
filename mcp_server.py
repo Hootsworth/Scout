@@ -211,6 +211,117 @@ def sync_academic_assistant() -> str:
     except Exception as e:
         return f"Exception occurred while launching sync job: {str(e)}"
 
+@mcp.tool()
+def get_classroom_assignments() -> str:
+    """Fetch the list of Google Classroom courses, assignments, statuses, and grades from Firestore."""
+    try:
+        db = init_firebase()
+        uid = os.environ.get("USER_UID")
+        if not uid:
+            return "Error: USER_UID environment variable is not set."
+            
+        doc_ref = db.collection("users").document(uid)
+        doc_snap = doc_ref.get()
+        if not doc_snap.exists:
+            return "Error: User plan document does not exist."
+            
+        data = doc_snap.to_dict()
+        assignments = data.get("classroom_assignments", [])
+        return json.dumps(assignments, indent=2)
+    except Exception as e:
+        return f"Error fetching Classroom assignments: {str(e)}"
+
+@mcp.tool()
+def get_placements() -> str:
+    """Fetch the list of on-campus and off-campus placements, applications, statuses, CTC, and notes."""
+    try:
+        db = init_firebase()
+        uid = os.environ.get("USER_UID")
+        if not uid:
+            return "Error: USER_UID environment variable is not set."
+            
+        doc_ref = db.collection("users").document(uid)
+        doc_snap = doc_ref.get()
+        if not doc_snap.exists:
+            return "Error: User plan document does not exist."
+            
+        data = doc_snap.to_dict()
+        placements = data.get("placements", [])
+        return json.dumps(placements, indent=2)
+    except Exception as e:
+        return f"Error fetching placements: {str(e)}"
+
+@mcp.tool()
+def add_placement_opportunity(company: str, role: str, ctc: str, status: str = "applied", jd: str = "", notes: str = "") -> str:
+    """Add a new placement opportunity or job application (on-campus or off-campus) to the tracker in Firestore."""
+    try:
+        db = init_firebase()
+        uid = os.environ.get("USER_UID")
+        if not uid:
+            return "Error: USER_UID environment variable is not set."
+            
+        doc_ref = db.collection("users").document(uid)
+        doc_snap = doc_ref.get()
+        if not doc_snap.exists:
+            return "Error: User plan document does not exist."
+            
+        data = doc_snap.to_dict()
+        placements = data.get("placements", [])
+        
+        new_entry = {
+            "id": f"company_{int(time.time())}",
+            "name": company,
+            "title": role,
+            "type": "off-campus",
+            "ctc": ctc,
+            "status": status,
+            "jd": jd,
+            "notes": notes
+        }
+        placements.append(new_entry)
+        data["placements"] = placements
+        data["last_updated"] = datetime.datetime.now().isoformat()
+        
+        doc_ref.set(data)
+        print(f"MCP Tool: Added placement opportunity '{company}'")
+        return f"Successfully added placement opportunity for {company} ({role}) with CTC {ctc}."
+    except Exception as e:
+        return f"Error adding placement opportunity: {str(e)}"
+
+@mcp.tool()
+def update_placement_status(company_id: str, new_status: str) -> str:
+    """Update the status of a placement application in Firestore (e.g. to technical, hr, offer, rejected)."""
+    try:
+        db = init_firebase()
+        uid = os.environ.get("USER_UID")
+        if not uid:
+            return "Error: USER_UID environment variable is not set."
+            
+        doc_ref = db.collection("users").document(uid)
+        doc_snap = doc_ref.get()
+        if not doc_snap.exists:
+            return "Error: User plan document does not exist."
+            
+        data = doc_snap.to_dict()
+        placements = data.get("placements", [])
+        
+        updated = False
+        for p in placements:
+            if p.get("id") == company_id:
+                p["status"] = new_status
+                updated = True
+                break
+                
+        if updated:
+            data["placements"] = placements
+            data["last_updated"] = datetime.datetime.now().isoformat()
+            doc_ref.set(data)
+            return f"Successfully updated application '{company_id}' status to '{new_status}'."
+        else:
+            return f"Error: Application with ID '{company_id}' could not be found."
+    except Exception as e:
+        return f"Error updating placement status: {str(e)}"
+
 if __name__ == "__main__":
     # Standard MCP initialization through stdin/stdout transport
     mcp.run()

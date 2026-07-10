@@ -244,6 +244,7 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
     <div class="links">
       <a href="index.html">Plan</a>
       <a href="assistant.html">Chat</a>
+      <a href="placements.html">Placements</a>
       <a href="settings.html" class="active">Setup</a>
     </div>
   </div>
@@ -321,7 +322,7 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
     <div class="grid-cols-2">
       <div>
         <div class="setup-card">
-          <h3>Local API Credentials</h3>
+          <h3>Local API & Placement Credentials</h3>
           <div class="form-group">
             <label for="gemini-key">Gemini API Key</label>
             <input type="password" id="gemini-key" placeholder="gemini-3.1-flash-lite key">
@@ -338,7 +339,33 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
             <label for="user-email-target">Target Email (Weekly Updates)</label>
             <input type="email" id="user-email-target" placeholder="Where notifications are sent">
           </div>
-          <button class="btn btn-red" onclick="saveApiKeys()">Save API Keys</button>
+          <hr style="border:0; border-top:1px solid var(--line); margin: 20px 0;">
+          <div class="form-group">
+            <label for="github-username">GitHub Username</label>
+            <input type="text" id="github-username" placeholder="e.g. Hootsworth">
+          </div>
+          <div class="form-group">
+            <label for="leetcode-username">LeetCode Username</label>
+            <input type="text" id="leetcode-username" placeholder="e.g. adityadixit">
+          </div>
+          <div class="form-group">
+            <label for="github-commit-goal">GitHub Weekly Commit Goal</label>
+            <input type="number" id="github-commit-goal" placeholder="e.g. 5" value="5">
+          </div>
+          <div class="form-group">
+            <label for="leetcode-solved-goal">LeetCode Weekly Solve Goal</label>
+            <input type="number" id="leetcode-solved-goal" placeholder="e.g. 3" value="3">
+          </div>
+          <hr style="border:0; border-top:1px solid var(--line); margin: 20px 0;">
+          <div class="form-group">
+            <label for="discord-bot-token">Discord Bot Token</label>
+            <input type="password" id="discord-bot-token" placeholder="Bot token from Discord Portal">
+          </div>
+          <div class="form-group">
+            <label for="discord-channel-id">Discord Channel ID</label>
+            <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
+          </div>
+          <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials & Goals</button>
         </div>
       </div>
 
@@ -480,6 +507,12 @@ document.getElementById('brevo-key').value = localStorage.getItem('brevo_api_key
 document.getElementById('user-email-target').value = localStorage.getItem('user_email_target') || '';
 document.getElementById('oauth-client-id').value = localStorage.getItem('oauth_client_id') || '';
 document.getElementById('oauth-client-secret').value = localStorage.getItem('oauth_client_secret') || '';
+document.getElementById('github-username').value = localStorage.getItem('github_username') || '';
+document.getElementById('leetcode-username').value = localStorage.getItem('leetcode_username') || '';
+document.getElementById('github-commit-goal').value = localStorage.getItem('github_commit_goal') || '5';
+document.getElementById('leetcode-solved-goal').value = localStorage.getItem('leetcode_solved_goal') || '3';
+document.getElementById('discord-bot-token').value = localStorage.getItem('discord_bot_token') || '';
+document.getElementById('discord-channel-id').value = localStorage.getItem('discord_channel_id') || '';
 
 // Initialize Firebase if config exists
 let firebaseAuth = null;
@@ -541,6 +574,10 @@ function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/calendar');
   provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+  provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
+  provider.addScope('https://www.googleapis.com/auth/classroom.coursework.me.readonly');
+  provider.addScope('https://www.googleapis.com/auth/classroom.student-submissions.me.readonly');
+  provider.addScope('https://www.googleapis.com/auth/classroom.announcements.readonly');
   
   firebaseAuth.signInWithPopup(provider)
     .then(result => {
@@ -619,7 +656,13 @@ function saveApiKeys() {
   localStorage.setItem('openai_api_key', document.getElementById('openai-key').value.trim());
   localStorage.setItem('brevo_api_key', document.getElementById('brevo-key').value.trim());
   localStorage.setItem('user_email_target', document.getElementById('user-email-target').value.trim());
-  alert("API Keys saved locally!");
+  localStorage.setItem('github_username', document.getElementById('github-username').value.trim());
+  localStorage.setItem('leetcode_username', document.getElementById('leetcode-username').value.trim());
+  localStorage.setItem('github_commit_goal', document.getElementById('github-commit-goal').value.trim());
+  localStorage.setItem('leetcode_solved_goal', document.getElementById('leetcode-solved-goal').value.trim());
+  localStorage.setItem('discord_bot_token', document.getElementById('discord-bot-token').value.trim());
+  localStorage.setItem('discord_channel_id', document.getElementById('discord-channel-id').value.trim());
+  alert("Credentials and placement configuration saved locally!");
 }
 
 // Start Google OAuth Refresh Token Flow
@@ -635,7 +678,7 @@ function startGoogleAuthFlow() {
   localStorage.setItem('oauth_client_id', clientId);
   localStorage.setItem('oauth_client_secret', clientSecret);
   
-  const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/gmail.readonly');
+  const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly https://www.googleapis.com/auth/classroom.student-submissions.me.readonly https://www.googleapis.com/auth/classroom.announcements.readonly');
   const redirectUri = encodeURIComponent(currentUrl);
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=select_account%20consent`;
   
