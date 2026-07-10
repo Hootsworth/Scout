@@ -2627,14 +2627,19 @@ CRITICAL RULES FOR ALL CHART AND GRAPH OUTPUT:
 1. When the user asks for a chart, graph, pie chart, bar chart, or any visual — you MUST output a real, complete SVG drawing with actual data-driven shapes, bars, text labels, and colors.
 2. NEVER output a chart that is blank, nearly blank, or has no visible shapes. Every chart must have actual bar/arc/path/text elements that clearly communicate the data.
 3. Always wrap your SVG in a code block tagged as \`\`\`xml so the client renders it directly as graphics (NOT as raw code text).
-4. SVG MUST always include: a viewBox attribute, a width of "100%" max 500, concrete pixel-positioned drawing elements, and text labels.
+4. SVG MUST always include: a viewBox attribute (e.g., viewBox="0 0 500 300"), a width of "100%", concrete pixel-positioned drawing elements, and text labels.
 5. Color palette (use these exact hex codes, not CSS variables):
-   - Bars/main: #c13d2e (red), #3d7a6a (teal), #c8a84b (amber), #5d4d7a (purple)
+   - Bars/slices: #c13d2e (red), #3d7a6a (teal), #c8a84b (amber), #5d4d7a (purple)
    - Background: #faf8f3
    - Text: #1a1a1a
-   - Grid lines: #d0cdc8
-6. Always include a chart title text element at top, axis labels on x-axis and y-axis, value labels on each bar/segment, and a legend if applicable.
-7. For pie charts: use SVG <path> elements with d="M cx cy L x1 y1 A r r 0 large-arc-flag sweep-flag x2 y2 Z" arcs. Include label text lines pointing to each slice.
+   - Grid/guidelines: #d0cdc8
+6. Always include a chart title text element at top, value labels on each segment, and a clear legend explaining colors.
+7. For pie charts (Foolproof Circle Stroke Trick):
+   - Draw slices using overlapping <circle cx="150" cy="150" r="50" stroke-width="100" fill="none" transform="rotate(-90 150 150)"/> elements.
+   - The circumference of radius 50 is 314.
+   - For each slice: set stroke to the slice color, stroke-dasharray to "SLICE_SIZE 314" (where SLICE_SIZE = percentage * 3.14), and stroke-dashoffset to "-START_OFFSET" (where START_OFFSET is the cumulative sum of previous slices' sizes).
+   - This builds perfect pie slices without polar coordinate math!
+   - Draw a color legend on the right (e.g. at x="300" y="80") with small rectangles and text labels.
 8. For bar charts: use <rect> elements, y-axis, x-axis line, grid lines, and value labels above each bar.
 9. DO NOT wrap the SVG in any other outer div or container. Output ONLY the SVG itself inside the \`\`\`xml block.
 
