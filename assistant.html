@@ -2905,24 +2905,28 @@ function getReaderUrls(url) {
 
 // Helper to parse markdown and format inline HTML style for email client compatibility
 function formatEmailBody(markdownText) {
-  // Convert markdown to HTML using existing parseMarkdown
-  let parsedHtml = parseMarkdown(markdownText);
+  let parsedHtml = markdownText.trim();
   
-  // Transform standard tags to styled inline versions for email clients (Gmail, Outlook, etc.)
-  parsedHtml = parsedHtml
-    .replace(/<table>/gi, '<table cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #dcd7ca; font-family: sans-serif; font-size: 13px; background: #faf8f3; color: #3d3a33;">')
-    .replace(/<thead>/gi, '<thead style="background: #f2eee5;">')
-    .replace(/<th>/gi, '<th style="border: 1px solid #dcd7ca; font-weight: bold; text-align: left; padding: 10px; color: #1a1814;">')
-    .replace(/<td>/gi, '<td style="border: 1px solid #dcd7ca; padding: 10px; color: #3d3a33; line-height: 1.5;">')
-    .replace(/<h1>/gi, '<h1 style="font-family: sans-serif; font-size: 20px; font-weight: bold; color: #1a1814; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #dcd7ca; padding-bottom: 8px;">')
-    .replace(/<h2>/gi, '<h2 style="font-family: sans-serif; font-size: 16px; font-weight: bold; color: #1a1814; margin-top: 20px; margin-bottom: 10px;">')
-    .replace(/<h3>/gi, '<h3 style="font-family: sans-serif; font-size: 14px; font-weight: bold; color: #1a1814; margin-top: 16px; margin-bottom: 8px;">')
-    .replace(/<p>/gi, '<p style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; margin: 12px 0;">')
-    .replace(/<ul>/gi, '<ul style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
-    .replace(/<ol>/gi, '<ol style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
-    .replace(/<li>/gi, '<li style="margin-bottom: 6px; line-height: 1.5;">')
-    .replace(/<blockquote>/gi, '<blockquote style="border-left: 4px solid #c13d2e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #706a5e; background: #fdfcf9; padding: 10px 16px;">')
-    .replace(/<hr>/gi, '<hr style="border: 0; border-top: 1px solid #dcd7ca; margin: 24px 0;">');
+  // If it does not start with HTML markup, parse it as markdown and apply inline style conversion
+  if (!parsedHtml.startsWith('<')) {
+    parsedHtml = parseMarkdown(markdownText);
+    
+    // Transform standard tags to styled inline versions for email clients (Gmail, Outlook, etc.)
+    parsedHtml = parsedHtml
+      .replace(/<table>/gi, '<table cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #dcd7ca; font-family: sans-serif; font-size: 13px; background: #faf8f3; color: #3d3a33;">')
+      .replace(/<thead>/gi, '<thead style="background: #f2eee5;">')
+      .replace(/<th>/gi, '<th style="border: 1px solid #dcd7ca; font-weight: bold; text-align: left; padding: 10px; color: #1a1814;">')
+      .replace(/<td>/gi, '<td style="border: 1px solid #dcd7ca; padding: 10px; color: #3d3a33; line-height: 1.5;">')
+      .replace(/<h1>/gi, '<h1 style="font-family: sans-serif; font-size: 20px; font-weight: bold; color: #1a1814; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #dcd7ca; padding-bottom: 8px;">')
+      .replace(/<h2>/gi, '<h2 style="font-family: sans-serif; font-size: 16px; font-weight: bold; color: #1a1814; margin-top: 20px; margin-bottom: 10px;">')
+      .replace(/<h3>/gi, '<h3 style="font-family: sans-serif; font-size: 14px; font-weight: bold; color: #1a1814; margin-top: 16px; margin-bottom: 8px;">')
+      .replace(/<p>/gi, '<p style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; margin: 12px 0;">')
+      .replace(/<ul>/gi, '<ul style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
+      .replace(/<ol>/gi, '<ol style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
+      .replace(/<li>/gi, '<li style="margin-bottom: 6px; line-height: 1.5;">')
+      .replace(/<blockquote>/gi, '<blockquote style="border-left: 4px solid #c13d2e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #706a5e; background: #fdfcf9; padding: 10px 16px;">')
+      .replace(/<hr>/gi, '<hr style="border: 0; border-top: 1px solid #dcd7ca; margin: 24px 0;">');
+  }
 
   // Wrap in our premium styled email card
   return `
