@@ -578,7 +578,6 @@ let semesterData = null;
 let activeProvider = 'gemini'; // 'gemini' | 'openai'
 let isInterviewMode = false;
 
-// Provider toggle
 function setProvider(p) {
   activeProvider = p;
   document.getElementById('btn-gemini').classList.toggle('active', p === 'gemini');
@@ -591,6 +590,7 @@ function setProvider(p) {
     statusDot.classList.remove('active');
     statusText.textContent = p === 'gemini' ? 'No Gemini Key' : 'No OpenAI Key';
   }
+  renderLoadedMessages();
 }
 
 // Initialize status indicators
@@ -668,11 +668,12 @@ async function loadUserData() {
     const docSnap = await db.collection('users').doc(currentUid).get();
     if (docSnap.exists) {
       semesterData = docSnap.data();
-      document.getElementById('welcome-message-box').innerHTML = `
-        Welcome back! Your database profile has been successfully loaded from Cloud Firestore. 
-        <br><br>
-        I have full context about your commitments and courses. Ask me to scan your Gmail or list your calendar events to get started!
-      `;
+      
+      // Load saved chat histories
+      conversationHistory = semesterData.gemini_chat_history || [];
+      openaiHistory = semesterData.openai_chat_history || [];
+      
+      renderLoadedMessages();
     } else {
       document.getElementById('welcome-message-box').innerHTML = `
         Hello! I couldn't find a plan database for you in Firestore. 
@@ -684,6 +685,80 @@ async function loadUserData() {
     document.getElementById('welcome-message-box').innerHTML = `
       Error connecting to Firestore: <code>${e.message}</code>. Check your settings and Firestore security rules.
     `;
+  }
+}
+
+// Render persistent chat history
+function renderLoadedMessages() {
+  const container = document.getElementById('chat-messages-container');
+  container.innerHTML = ''; // Clear container
+
+  const history = activeProvider === 'openai' ? openaiHistory : conversationHistory;
+  
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="message-row assistant">
+        <div class="message" id="welcome-message-box">
+          Welcome back! Your database profile has been successfully loaded from Cloud Firestore. 
+          <br><br>
+          I have full context about your commitments and courses. Ask me to scan your Gmail or list your calendar events to get started!
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Iterate over history and render in UI
+  if (activeProvider === 'openai') {
+    history.forEach(msg => {
+      if (msg.role === 'user') {
+        appendMessageUI('user', msg.content);
+      } else if (msg.role === 'assistant' && msg.content) {
+        appendMessageUI('assistant', msg.content);
+      }
+    });
+  } else {
+    history.forEach(msg => {
+      const text = msg.parts?.[0]?.text;
+      if (text) {
+        const role = msg.role === 'model' ? 'assistant' : 'user';
+        appendMessageUI(role, text);
+      }
+    });
+  }
+}
+
+// Append message UI helper
+function appendMessageUI(role, text) {
+  const container = document.getElementById('chat-messages-container');
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+
+  const msg = document.createElement('div');
+  msg.className = 'message';
+
+  if (role === 'assistant') {
+    renderAnimatedText(msg, text);
+  } else {
+    msg.textContent = text;
+  }
+
+  row.appendChild(msg);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+// Save chat logs to Firestore
+async function saveChatHistory() {
+  if (!db || !currentUid || !semesterData) return;
+  try {
+    semesterData.gemini_chat_history = conversationHistory;
+    semesterData.openai_chat_history = openaiHistory;
+    semesterData.last_updated = new Date().toISOString();
+    await db.collection('users').doc(currentUid).set(semesterData);
+    console.log("Chat history successfully synced to Firestore.");
+  } catch (e) {
+    console.error("Failed to save chat logs:", e);
   }
 }
 
@@ -1025,9 +1100,11 @@ async function submitCodeForReview() {
   
   if (activeProvider === 'openai') {
     openaiHistory.push({ role: 'user', content: promptText });
+    saveChatHistory();
     await callOpenAIApi();
   } else {
     conversationHistory.push({ role: 'user', parts: [{ text: promptText }] });
+    saveChatHistory();
     await callGeminiApi();
   }
 }
@@ -1052,6 +1129,7 @@ async function sendMessage() {
       return;
     }
     openaiHistory.push({ role: 'user', content: text });
+    saveChatHistory();
     await callOpenAIApi();
   } else {
     if (!geminiKey) {
@@ -1059,6 +1137,7 @@ async function sendMessage() {
       return;
     }
     conversationHistory.push({ role: 'user', parts: [{ text }] });
+    saveChatHistory();
     await callGeminiApi();
   }
 }
@@ -1067,7 +1146,7 @@ async function sendMessage() {
 async function callGeminiApi() {
   setThinking('Thinking...');
 
-  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " IST";
   const systemInstruction = buildSystemPrompt(now);
   const modelName = 'gemini-3.1-flash-lite';
 
@@ -1098,7 +1177,7 @@ const OPENAI_TOOLS = GEMINI_TOOLS[0].function_declarations.map(fn => ({
 
 async function callOpenAIApi() {
   setThinking('Thinking...');
-  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " IST";
   const systemPrompt = buildSystemPrompt(now);
 
   const messages = [
@@ -1140,6 +1219,7 @@ async function handleOpenAIResponse(data) {
 
   // Push assistant message into history
   openaiHistory.push(msg);
+  saveChatHistory();
 
   if (msg.tool_calls && msg.tool_calls.length > 0) {
     // Execute all tool calls sequentially
@@ -1164,6 +1244,7 @@ async function handleOpenAIResponse(data) {
         tool_call_id: tc.id,
         content: JSON.stringify(Array.isArray(result) ? { items: result } : result)
       });
+      saveChatHistory();
     }
     // Continue the agentic loop
     await callOpenAIApi();
@@ -1203,6 +1284,7 @@ The user's GitHub commits activity and LeetCode solved problems are periodically
 - Current week commits is in github_commits_this_week
 - Current week solved count is in leetcode_solved_this_week
 - Any active warnings about falling behind these targets are listed under prep_warnings.
+*Fallback Rules:* If github_commits_this_week is undefined or missing in the JSON plan, assume it is 0. If config.github_commit_goal is undefined or missing, assume the weekly goal is 5 commits. If config.leetcode_solved_goal is undefined or missing, assume the weekly goal is 3 solved problems.
 If the user asks "check if i reached my weekly commit goal for github?" or "how am I doing on coding target?", read these fields from the database and report the results immediately instead of saying you cannot access GitHub or trying to read calendar/Gmail.
 `;
 
@@ -1270,6 +1352,7 @@ async function handleGeminiResponse(data, systemInstruction) {
   }
 
   conversationHistory.push(message);
+  saveChatHistory();
 
   const part = message.parts?.[0];
   if (part && part.functionCall) {
@@ -1299,6 +1382,7 @@ async function handleGeminiResponse(data, systemInstruction) {
       role: 'function',
       parts: [{ functionResponse: { name, response: safeResult } }]
     });
+    saveChatHistory();
 
     // Chain immediately — agentic loop
     await callGeminiApi();
