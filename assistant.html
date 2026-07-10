@@ -90,6 +90,30 @@ body::after {
   background: var(--teal);
 }
 
+/* Model toggle pill */
+.model-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.model-toggle button {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--ink3);
+  transition: all 0.15s;
+}
+.model-toggle button.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -307,9 +331,16 @@ body::after {
   <!-- HEADER -->
   <div class="chat-header">
     <h1>SCOUT <span class="outline">AI ASSISTANT</span></h1>
-    <div class="status-indicator">
-      <div class="status-dot" id="agent-status-dot"></div>
-      <span id="agent-status-text">Disconnected</span>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <!-- Model toggle -->
+      <div class="model-toggle">
+        <button id="btn-gemini" class="active" onclick="setProvider('gemini')">Gemini</button>
+        <button id="btn-openai" onclick="setProvider('openai')">GPT</button>
+      </div>
+      <div class="status-indicator">
+        <div class="status-dot" id="agent-status-dot"></div>
+        <span id="agent-status-text">Disconnected</span>
+      </div>
     </div>
   </div>
 
@@ -358,22 +389,39 @@ document.addEventListener('mousemove', e => {
 });
 
 // State & Configs
-let geminiKey = localStorage.getItem('gemini_api_key') || '';
+let geminiKey  = localStorage.getItem('gemini_api_key')  || '';
+let openaiKey  = localStorage.getItem('openai_api_key')  || '';
 let googleToken = localStorage.getItem('google_access_token') || '';
 let db = null;
 let currentUid = null;
 let semesterData = null;
+let activeProvider = 'gemini'; // 'gemini' | 'openai'
+
+// Provider toggle
+function setProvider(p) {
+  activeProvider = p;
+  document.getElementById('btn-gemini').classList.toggle('active', p === 'gemini');
+  document.getElementById('btn-openai').classList.toggle('active', p === 'openai');
+  const key = p === 'gemini' ? geminiKey : openaiKey;
+  if (key) {
+    statusDot.classList.add('active');
+    statusText.textContent = p === 'gemini' ? 'Gemini Ready' : 'GPT Ready';
+  } else {
+    statusDot.classList.remove('active');
+    statusText.textContent = p === 'gemini' ? 'No Gemini Key' : 'No OpenAI Key';
+  }
+}
 
 // Initialize status indicators
-const statusDot = document.getElementById('agent-status-dot');
+const statusDot  = document.getElementById('agent-status-dot');
 const statusText = document.getElementById('agent-status-text');
 
 if (geminiKey) {
   statusDot.classList.add('active');
-  statusText.textContent = "Agent Ready";
+  statusText.textContent = "Gemini Ready";
 } else {
   statusDot.classList.remove('active');
-  statusText.textContent = "API Keys Missing";
+  statusText.textContent = "No Gemini Key";
 }
 
 const DEFAULT_FIREBASE_CONFIG = {
@@ -621,26 +669,30 @@ function quickAction(type) {
   else if (type === 'calendar') sendPrompt('What is on my calendar this week?');
 }
 
-// Main Send Message loop
+// Main send — routes to correct provider
 async function sendMessage() {
-  const input = document.message = document.getElementById('message-input');
+  const input = document.getElementById('message-input');
   const text = input.value.trim();
   if (!text) return;
-  
+
   input.value = '';
   appendMessage('user', text);
-  
-  if (!geminiKey) {
-    appendMessage('assistant', "I cannot answer because your Gemini API key is missing. Please go to the Setup page to enter your credentials.");
-    return;
+
+  if (activeProvider === 'openai') {
+    if (!openaiKey) {
+      appendMessage('assistant', 'No OpenAI API key set. Add it on the Setup page.');
+      return;
+    }
+    openaiHistory.push({ role: 'user', content: text });
+    await callOpenAIApi();
+  } else {
+    if (!geminiKey) {
+      appendMessage('assistant', 'No Gemini API key set. Add it on the Setup page.');
+      return;
+    }
+    conversationHistory.push({ role: 'user', parts: [{ text }] });
+    await callGeminiApi();
   }
-  
-  conversationHistory.push({
-    "role": "user",
-    "parts": [{ "text": text }]
-  });
-  
-  await callGeminiApi();
 }
 
 // Gemini API Invocation
@@ -648,38 +700,8 @@ async function callGeminiApi() {
   setThinking('Thinking...');
 
   const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-  const systemInstruction = `
-You are Scout — a sharp, agentic personal academic assistant for a single user.
-Current datetime (IST): ${now}
-
-Here is the user's complete semester plan database from Firestore:
-${JSON.stringify(semesterData, null, 2)}
-
-== AGENTIC BEHAVIOR RULES ==
-You operate in a plan-then-execute loop. Follow this strictly:
-
-1. PLAN FIRST: When a request requires multiple steps (e.g. scan Gmail AND add to calendar AND update Firestore), silently form a numbered plan in your head before acting.
-2. EXECUTE SEQUENTIALLY: Call tools one at a time, in order. Never bundle multiple tool calls into one response.
-3. CHAIN WITHOUT ASKING: After each tool result, immediately decide the next step and call the next tool — do not ask the user "should I proceed?". Just proceed.
-4. REPORT AT THE END: Only send a final text response after all tool steps are complete. Summarize what was done clearly.
-5. HANDLE ERRORS: If a tool fails, try an alternative approach or report the specific blocker — never give up silently.
-
-== RESPONSE STYLE ==
-- Direct, structured, no filler phrases
-- Use **bold** for key info, bullet points for lists
-- Italic for context/notes
-- Keep it dense — no unnecessary padding
-- Match the retro-minimalist aesthetic of the interface
-
-== TOOLS AVAILABLE ==
-- read_semester_schedule: Always call this first if you need fresh data
-- update_semester_schedule: Use to mark tasks done, add notes, update any field
-- list_calendar_events: Reads next 7 days of Google Calendar
-- create_calendar_event: Adds an event to Google Calendar
-- list_recent_emails: Searches Gmail for academic emails
-  `;
-
-  const modelName = 'gemini-2.5-flash';
+  const systemInstruction = buildSystemPrompt(now);
+  const modelName = 'gemini-3.1-flash-lite';
 
   try {
     const response = await sendGeminiRequest(modelName, systemInstruction);
@@ -687,11 +709,129 @@ You operate in a plan-then-execute loop. Follow this strictly:
   } catch (e) {
     console.error(e);
     clearThinking();
-    appendMessage('assistant', 'An error occurred while calling the Gemini API: ' + e.message);
+    appendMessage('assistant', 'Gemini error: ' + e.message);
   }
 }
 
-// Send HTTP Post to Gemini
+// ── OpenAI ───────────────────────────────────────────────────────────────────
+
+// OpenAI conversation history (different format from Gemini)
+let openaiHistory = [];
+
+// Convert Gemini tool declarations → OpenAI tools format
+const OPENAI_TOOLS = GEMINI_TOOLS[0].function_declarations.map(fn => ({
+  type: 'function',
+  function: {
+    name: fn.name,
+    description: fn.description,
+    parameters: fn.parameters
+  }
+}));
+
+async function callOpenAIApi() {
+  setThinking('Thinking...');
+  const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const systemPrompt = buildSystemPrompt(now);
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...openaiHistory
+  ];
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-5.4-nano',
+        messages,
+        tools: OPENAI_TOOLS,
+        tool_choice: 'auto'
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    await handleOpenAIResponse(data);
+  } catch (e) {
+    console.error(e);
+    clearThinking();
+    appendMessage('assistant', 'GPT error: ' + e.message);
+  }
+}
+
+async function handleOpenAIResponse(data) {
+  const choice = data.choices?.[0];
+  const msg = choice?.message;
+  if (!msg) { clearThinking(); return; }
+
+  // Push assistant message into history
+  openaiHistory.push(msg);
+
+  if (msg.tool_calls && msg.tool_calls.length > 0) {
+    // Execute all tool calls sequentially
+    for (const tc of msg.tool_calls) {
+      const name = tc.function.name;
+      const args = JSON.parse(tc.function.arguments || '{}');
+
+      setThinking(TOOL_LABELS[name] || `Running ${name}...`);
+
+      let result;
+      try {
+        result = await executeTool(name, args);
+        setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name} ✓`);
+      } catch(e) {
+        result = { error: e.message };
+        setThinking(`⚠ ${name} failed: ${e.message}`);
+      }
+
+      // OpenAI tool result format
+      openaiHistory.push({
+        role: 'tool',
+        tool_call_id: tc.id,
+        content: JSON.stringify(Array.isArray(result) ? { items: result } : result)
+      });
+    }
+    // Continue the agentic loop
+    await callOpenAIApi();
+  } else {
+    clearThinking();
+    appendMessage('assistant', msg.content || 'No response.');
+  }
+}
+
+// Shared system prompt builder
+function buildSystemPrompt(now) {
+  return `You are Scout — a sharp, agentic personal academic assistant for a single user.
+Current datetime (IST): ${now}
+
+Here is the user's complete semester plan database from Firestore:
+${JSON.stringify(semesterData, null, 2)}
+
+== AGENTIC BEHAVIOR RULES ==
+1. PLAN FIRST: Form a silent numbered plan before acting on multi-step requests.
+2. EXECUTE SEQUENTIALLY: Call tools one at a time in order.
+3. CHAIN WITHOUT ASKING: After each tool result, immediately proceed to the next step — never ask "should I continue?".
+4. REPORT AT THE END: Send one final text summary after all steps complete.
+5. HANDLE ERRORS: Never give up silently — try alternatives or report the specific blocker.
+
+== RESPONSE STYLE ==
+- Direct, dense, no filler
+- **Bold** for key info, bullets for lists
+- Match the retro-minimalist aesthetic of the interface
+
+== TOOLS ==
+- read_semester_schedule: Read fresh data from Firestore
+- update_semester_schedule: Write back to Firestore
+- list_calendar_events: Next 7 days of Google Calendar
+- create_calendar_event: Add an event to Google Calendar
+- list_recent_emails: Search Gmail for academic emails`;
+}
 async function sendGeminiRequest(model, systemInstruction) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
   const body = {

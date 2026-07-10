@@ -300,10 +300,14 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
           <h3>Local API Credentials</h3>
           <div class="form-group">
             <label for="gemini-key">Gemini API Key</label>
-            <input type="password" id="gemini-key" placeholder="AI functionality key">
+            <input type="password" id="gemini-key" placeholder="gemini-3.1-flash-lite key">
           </div>
           <div class="form-group">
-            <label for="brevo-key">Brevo API Key</label>
+            <label for="openai-key">OpenAI API Key</label>
+            <input type="password" id="openai-key" placeholder="gpt-5.4-nano key">
+          </div>
+          <div class="form-group">
+            <label for="brevo-key">Brevo SMTP Password</label>
             <input type="password" id="brevo-key" placeholder="SMTP/Email notifications key">
           </div>
           <div class="form-group">
@@ -447,6 +451,7 @@ document.getElementById('firebase-config-json').value = JSON.stringify(firebaseC
 
 // Load other local storage keys
 document.getElementById('gemini-key').value = localStorage.getItem('gemini_api_key') || '';
+document.getElementById('openai-key').value = localStorage.getItem('openai_api_key') || '';
 document.getElementById('brevo-key').value = localStorage.getItem('brevo_api_key') || '';
 document.getElementById('user-email-target').value = localStorage.getItem('user_email_target') || '';
 document.getElementById('oauth-client-id').value = localStorage.getItem('oauth_client_id') || '';
@@ -587,6 +592,7 @@ function saveFirebaseConfig() {
 
 function saveApiKeys() {
   localStorage.setItem('gemini_api_key', document.getElementById('gemini-key').value.trim());
+  localStorage.setItem('openai_api_key', document.getElementById('openai-key').value.trim());
   localStorage.setItem('brevo_api_key', document.getElementById('brevo-key').value.trim());
   localStorage.setItem('user_email_target', document.getElementById('user-email-target').value.trim());
   alert("API Keys saved locally!");
