@@ -1641,7 +1641,7 @@ function parseMarkdown(md) {
   // Restore Code Blocks
   codeBlocks.forEach((item, idx) => {
     if (item.isHtml) {
-      html = html.replace(`%%CODEBLOCK${idx}%%`, item.code);
+      html = html.replace(`%%CODEBLOCK${idx}%%`, () => item.code);
     } else {
       const wrapped = `
         <div class="code-block-wrapper" style="position:relative; margin: 12px 0;">
@@ -1649,13 +1649,13 @@ function parseMarkdown(md) {
           <pre style="margin:0;"><code style="font-family:'Syne Mono',monospace; font-size:12px; line-height:1.4;">${item.code}</code></pre>
         </div>
       `;
-      html = html.replace(`%%CODEBLOCK${idx}%%`, wrapped);
+      html = html.replace(`%%CODEBLOCK${idx}%%`, () => wrapped);
     }
   });
 
   // Restore Inline Code
   inlineCodes.forEach((code, idx) => {
-    html = html.replace(`%%INLINECODE${idx}%%`, `<code>${code}</code>`);
+    html = html.replace(`%%INLINECODE${idx}%%`, () => `<code>${code}</code>`);
   });
 
   // Replace double newlines with paragraphs
