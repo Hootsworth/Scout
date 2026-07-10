@@ -389,8 +389,10 @@ document.addEventListener('mousemove', e => {
 });
 
 // State & Configs
-let geminiKey  = localStorage.getItem('gemini_api_key')  || '';
-let openaiKey  = localStorage.getItem('openai_api_key')  || '';
+let geminiKey   = localStorage.getItem('gemini_api_key')  || '';
+let openaiKey   = localStorage.getItem('openai_api_key')  || '';
+let brevoKey    = localStorage.getItem('brevo_api_key')   || '';
+let userEmail   = localStorage.getItem('user_email_target') || '';
 let googleToken = localStorage.getItem('google_access_token') || '';
 let db = null;
 let currentUid = null;
@@ -562,6 +564,18 @@ const GEMINI_TOOLS = [
             }
           },
           "required": ["updates"]
+        }
+      },
+      {
+        "name": "send_email",
+        "description": "Sends an email to the user's own email address (and ONLY their email — no other recipient is allowed). Use this when the user asks to email, mail, or send any content to themselves via Brevo.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "subject": { "type": "STRING", "description": "Email subject line." },
+            "body": { "type": "STRING", "description": "Full HTML or plain-text body content of the email." }
+          },
+          "required": ["subject", "body"]
         }
       }
     ]
@@ -857,9 +871,10 @@ async function sendGeminiRequest(model, systemInstruction) {
 const TOOL_LABELS = {
   list_calendar_events:   'Reading Google Calendar...',
   create_calendar_event:  'Adding event to Calendar...',
-  list_recent_emails:     'Scanning Gmail...',
-  read_semester_schedule: 'Reading Firestore database...',
-  update_semester_schedule: 'Updating Firestore database...'
+  list_recent_emails:       'Scanning Gmail...',
+  read_semester_schedule:   'Reading Firestore database...',
+  update_semester_schedule: 'Updating Firestore database...',
+  send_email:               'Sending email via Brevo...'
 };
 
 // Handle response + tool loops
@@ -929,8 +944,44 @@ async function executeTool(name, args) {
       return semesterData || { error: "Local schedule data not loaded" };
     case 'update_semester_schedule':
       return await updateSemesterDataInFirestore(args.updates);
+    case 'send_email':
+      return await sendEmailViaBrevo(args.subject, args.body);
     default:
       throw new Error("Unknown tool: " + name);
+  }
+}
+
+// Send email via Brevo HTTP API — recipient locked to user's own email only
+async function sendEmailViaBrevo(subject, body) {
+  // Reload in case it was saved after page load
+  brevoKey  = localStorage.getItem('brevo_api_key')   || brevoKey;
+  userEmail = localStorage.getItem('user_email_target') || userEmail;
+
+  if (!brevoKey)  throw new Error('Brevo API key not set. Add it on the Setup page.');
+  if (!userEmail) throw new Error('Target email not set. Add it on the Setup page.');
+
+  // Wrap plain text in basic HTML if no tags detected
+  const htmlBody = body.includes('<') ? body : `<div style="font-family:sans-serif;line-height:1.6;color:#3d3a33;">${body.replace(/\n/g,'<br>')}</div>`;
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
+      to:          [{ email: userEmail }],   // ← ONLY ever sends to your own email
+      subject,
+      htmlContent: htmlBody
+    })
+  });
+
+  if (res.status === 201) {
+    return { status: 'sent', to: userEmail, subject };
+  } else {
+    const err = await res.json();
+    throw new Error(err.message || `Brevo error ${res.status}`);
   }
 }
 
