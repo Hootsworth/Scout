@@ -627,16 +627,29 @@ document.addEventListener('mousemove', e => {
   c.style.top = e.clientY + 'px';
 });
 
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDaltzwOuuOHJJ4tYtuagiJX1cEA1MvOOo",
+  authDomain: "scout-4b662.firebaseapp.com",
+  projectId: "scout-4b662",
+  storageBucket: "scout-4b662.firebasestorage.app",
+  messagingSenderId: "986280184102",
+  appId: "1:986280184102:web:213284c90e92449f45d9e7",
+  measurementId: "G-3TZCM8L7E5"
+};
+
 // Initialize Firebase & Firestore
 function initFirebaseApp() {
+  let config = DEFAULT_FIREBASE_CONFIG;
   const storedConfig = localStorage.getItem('firebase_config');
-  if (!storedConfig) {
-    showAuthWarning();
-    return;
+  if (storedConfig) {
+    try {
+      config = JSON.parse(storedConfig);
+    } catch(e) {
+      console.warn("Invalid stored firebase config, using default", e);
+    }
   }
   
   try {
-    const config = JSON.parse(storedConfig);
     if (!firebase.apps.length) {
       firebase.initializeApp(config);
     }

@@ -422,28 +422,28 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: 0.06 });
 document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-// Default Fallback Firebase configuration
+// Default Firebase configuration
 const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  appId: ""
+  apiKey: "AIzaSyDaltzwOuuOHJJ4tYtuagiJX1cEA1MvOOo",
+  authDomain: "scout-4b662.firebaseapp.com",
+  projectId: "scout-4b662",
+  storageBucket: "scout-4b662.firebasestorage.app",
+  messagingSenderId: "986280184102",
+  appId: "1:986280184102:web:213284c90e92449f45d9e7",
+  measurementId: "G-3TZCM8L7E5"
 };
 
 // Initial Config Load
-let firebaseConfig = null;
+let firebaseConfig = DEFAULT_FIREBASE_CONFIG;
 const storedConfig = localStorage.getItem('firebase_config');
 if (storedConfig) {
   try {
     firebaseConfig = JSON.parse(storedConfig);
-    document.getElementById('firebase-config-json').value = JSON.stringify(firebaseConfig, null, 2);
   } catch(e) {
     firebaseConfig = DEFAULT_FIREBASE_CONFIG;
   }
-} else {
-  firebaseConfig = DEFAULT_FIREBASE_CONFIG;
-  document.getElementById('firebase-config-json').value = '';
 }
+document.getElementById('firebase-config-json').value = JSON.stringify(firebaseConfig, null, 2);
 
 // Load other local storage keys
 document.getElementById('gemini-key').value = localStorage.getItem('gemini_api_key') || '';
