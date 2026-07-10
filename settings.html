@@ -515,10 +515,16 @@ function signInWithGoogle() {
   
   firebaseAuth.signInWithPopup(provider)
     .then(result => {
-      const credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
-      localStorage.setItem('google_access_token', token);
-      alert("Authenticated with Google successfully!");
+      // result.credential is the compat SDK's direct accessor — safer than credentialFromResult
+      const token = result.credential?.accessToken || null;
+      if (token) {
+        localStorage.setItem('google_access_token', token);
+        alert("Authenticated with Google successfully! Google Calendar & Gmail access granted.");
+      } else {
+        // Sign-in worked but no access token returned (domain may not be in Firebase authorized list yet)
+        // The user is still authenticated to Firestore — just no Google API token this time
+        alert("Signed in to Firebase successfully!\n\nNote: Google Calendar/Gmail token was not returned. Make sure 'hootsworth.github.io' is added under Firebase Console → Authentication → Settings → Authorized domains.");
+      }
     })
     .catch(error => {
       console.error(error);
