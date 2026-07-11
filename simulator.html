@@ -548,11 +548,126 @@ dialog#simulation-overlay::backdrop {
   border-radius: 8px;
 }
 
+/* Job Description (JD) Full-Screen View Overlay */
+dialog#jd-overlay {
+  border: none;
+  background: var(--canvas);
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0;
+  outline: none;
+  border-radius: 0 !important;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+}
+dialog#jd-overlay[open] {
+  display: flex;
+}
+dialog#jd-overlay::backdrop {
+  background: var(--canvas);
+}
+.jd-header {
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+}
+.jd-content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 24px;
+  background-color: var(--canvas);
+}
+.jd-content-layout {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  gap: 40px;
+  width: 100%;
+}
+.jd-main-pane {
+  flex: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.jd-side-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.recruiter-profile-card {
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-soft);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-shadow: 0 4px 12px rgba(30,27,24,0.02);
+}
+.recruiter-profile-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: white;
+  overflow: hidden;
+  padding: 2px;
+}
+.recruiter-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: contain;
+}
+.recruiter-profile-speech {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--charcoal);
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--hairline-strong);
+  position: relative;
+}
+
+/* Simulated days calendar widget */
+.sim-calendar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9999px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
 @media(max-width:900px){
   .grid-cols-2 { grid-template-columns: 1fr; }
   dialog#simulation-overlay { height: 95vh; width: 95%; }
   .sim-arena-layout { flex-direction: column; }
   .sim-arena-sidebar { width: 100%; height: 180px; border-top: 1px solid var(--hairline); }
+  .jd-content-layout { flex-direction: column; gap: 24px; }
 }
 </style>
 </head>
@@ -594,87 +709,121 @@ dialog#simulation-overlay::backdrop {
   <section id="simulator-controls">
     <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Simulator Mode</h2></div>
     
-    <!-- Reality Mode Toggle Switch Card -->
-    <div class="reality-banner">
-      <div>
-        <h3>
-          <svg style="width:18px; height:18px; color:#b52c24; vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          REALITY MODE ACTIVE
-        </h3>
-        <p>Enforces multi-day candidate processing delays (simulated) and triggers extremely harsh, realistic AI-generated rejection letters.</p>
+    <!-- Reality Mode & Calendar Control Banner -->
+    <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:20px; margin-bottom:32px;">
+      <!-- Reality Switch -->
+      <div class="reality-banner" style="margin-bottom:0; height:100%;">
+        <div>
+          <h3 style="margin-bottom:4px;">
+            <svg style="width:18px; height:18px; color:#b52c24; vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            REALITY MODE ACTIVE
+          </h3>
+          <p style="font-size:12.5px;">Enforces simulated recruitment delays and triggers extremely harsh, realistic AI rejection letters.</p>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="reality-mode-toggle" onchange="toggleRealityMode()">
+          <span class="slider"></span>
+        </label>
       </div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="reality-mode-toggle" onchange="toggleRealityMode()">
-        <span class="slider"></span>
-      </label>
+
+      <!-- Calendar Sync -->
+      <div class="setup-card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 24px;">
+        <div>
+          <h4 style="margin-bottom:4px; font-size:14px; text-transform:uppercase; color:var(--mute); letter-spacing:0.04em;">Placement Season Clock</h4>
+          <div class="sim-calendar-badge" id="sim-calendar-badge-display">
+            📅 Day 1
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="advanceSimulatedCalendar(1)" style="height:36px; font-size:12.5px;">
+          Simulate Next Day →
+        </button>
+      </div>
     </div>
   </section>
 
   <!-- SECTION 2: OPENINGS BOARD -->
   <section id="sim-openings">
     <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Active Openings</h2></div>
-    <p class="section-desc">Apply to custom mock openings. Eligibility status is computed based on CGPA and backlog counts configured in your setup profile.</p>
+    <p class="section-desc">Explore open corporate drives. Eligibility checks are computed from your Profile settings. Openings close and update as time progresses.</p>
     
-    <div class="sim-grid" id="sim-openings-grid">
+    <div class="sim-grid" id="sim-openings-grid" style="margin-top:20px;">
       <!-- Generated dynamically by JS -->
     </div>
   </section>
 
-  <!-- SECTION 3: GENERATE OPENING -->
-  <section id="custom-openings">
-    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Publisher Portal</h2></div>
-    
-    <div class="grid-cols-2">
-      <div class="setup-card" style="margin-bottom:0;">
-        <h3>Generate Custom Opening</h3>
-        <form id="custom-sim-form" onsubmit="generateCustomSimOpening(event)">
-          <div class="form-group">
-            <label for="sim-company-name">Company Name (Altered)</label>
-            <input type="text" id="sim-company-name" class="input-pill" required placeholder="e.g. Boogle, Pineapple, Microhard">
-          </div>
-          <div class="form-group">
-            <label for="sim-job-title">Job Title</label>
-            <input type="text" id="sim-job-title" class="input-pill" required placeholder="e.g. Software Development Engineer">
-          </div>
-          <div class="form-group">
-            <label for="sim-job-ctc">CTC (Lakhs Per Annum / LPA)</label>
-            <input type="number" id="sim-job-ctc" class="input-pill" required min="1" max="150" placeholder="e.g. 35">
-          </div>
-          <div class="form-group">
-            <label for="sim-cgpa-cutoff">Min CGPA Requirement</label>
-            <input type="number" id="sim-cgpa-cutoff" class="input-pill" step="0.1" min="0" max="10" required placeholder="e.g. 8.5">
-          </div>
-          <div class="form-group">
-            <label for="sim-backlog-cutoff">Max Backlogs Allowed</label>
-            <input type="number" id="sim-backlog-cutoff" class="input-pill" min="0" max="10" required placeholder="e.g. 0">
-          </div>
-          <div class="form-group">
-            <label for="sim-pool-size">Initial Applicant Pool Size</label>
-            <input type="number" id="sim-pool-size" class="input-pill" min="10" max="2500" required placeholder="e.g. 500">
-          </div>
-          <button type="submit" class="btn btn-primary">Create &amp; Publish Opening</button>
-        </form>
+  <!-- JOB DESCRIPTION OVERLAY DIALOG -->
+  <dialog id="jd-overlay">
+    <div class="jd-header">
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <h3 id="jd-company-title" style="margin:0; font-size:20px;">Company Name</h3>
+        <span id="jd-job-designation" style="font-size:12.5px; opacity:0.8;">Software Development Engineer</span>
       </div>
-      
-      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <h3>Simulation Information</h3>
-          <p style="font-size:16px; line-height:1.5; color:var(--body); margin-bottom:12px;">
-            The placement process contains 5 core rounds: Group Discussion, Coding OA, System Design / Hackathon, Technical Interview, and HR Interview.
-          </p>
-          <ul style="font-size:14px; padding-left:20px; line-height:1.6; color:var(--body);">
-            <li>Rounds dynamically evaluate your GPA, backlogs, and responses.</li>
-            <li>Your placement settings (CGPA, active backlogs) are loaded from your Plan settings. Ensure they are correct!</li>
-            <li>Upon completion (Offer/Rejection), a detailed AI proctored outcome letter is mailed to your registered inbox via Brevo SMTP.</li>
-          </ul>
+      <button class="close-btn" onclick="closeJdOverlay()" style="font-size:28px; border:none; background:transparent; color:var(--canvas); cursor:pointer; line-height:1;">&times;</button>
+    </div>
+    <div class="jd-content-wrapper">
+      <div class="jd-content-layout">
+        <!-- Left Pane: Detailed JD -->
+        <div class="jd-main-pane">
+          <div class="card-flat">
+            <h3 style="margin-bottom:16px; border-bottom:1px solid var(--hairline); padding-bottom:8px;">Job Profile &amp; Responsibilities</h3>
+            <p id="jd-full-description" style="color:var(--body); line-height:1.6; font-size:15px; margin-bottom:20px; white-space:pre-wrap;">Detailed job roles...</p>
+            
+            <h4 style="margin-top:10px; margin-bottom:12px;">What We Look For</h4>
+            <ul style="color:var(--body); padding-left:20px; line-height:1.7; font-size:14.5px; display:flex; flex-direction:column; gap:8px;">
+              <li>Solid understanding of algorithms, data structures, and spatial complexity rules.</li>
+              <li>Pragmatic system logic: concurrency, multithreading, database design, and caching mechanisms.</li>
+              <li>Strong communication skills: articulating design choices clearly during Group Discussions and Technical Rounds.</li>
+              <li>Willingness to learn, collaborate, and thrive in fast-paced software environments.</li>
+            </ul>
+          </div>
         </div>
-        <div style="border-top:1px solid var(--hairline); padding-top:16px; margin-top:20px;">
-          <div style="font-family:ui-monospace; font-size:10px; text-transform:uppercase; color:var(--mute);">Simulation Proctor status:</div>
-          <div style="font-weight:700; font-size:14px; color:#1e7e2c; margin-top:4px;">Gemini Cognitive Evaluator Online ✓</div>
+        
+        <!-- Right Pane: Recruiter card and cutoffs -->
+        <div class="jd-side-pane">
+          <!-- Recruiter card -->
+          <div class="recruiter-profile-card">
+            <div class="recruiter-profile-avatar" id="jd-recruiter-avatar-container">
+              <!-- Renders dynamically -->
+            </div>
+            <div>
+              <h4 id="jd-recruiter-name" style="margin:0; font-size:16px;">Sophia Patel</h4>
+              <span style="font-size:11px; text-transform:uppercase; color:var(--mute); font-weight:700;">Recruitment Head</span>
+            </div>
+            <div class="recruiter-profile-speech" id="jd-recruiter-quote">
+              "We look for candidates who can code clean, think fast, and resolve scaling bottlenecks. Good luck!"
+            </div>
+          </div>
+          
+          <!-- Drive Details Card -->
+          <div class="card-flat">
+            <h3 style="margin-bottom:16px; border-bottom:1px solid var(--hairline); padding-bottom:8px;">Drive Criteria</h3>
+            <div style="display:flex; flex-direction:column; gap:14px; font-size:14.5px;">
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--mute);">CTC Compensation:</span>
+                <strong id="jd-ctc-display" style="color:#1e7e2c;">35 LPA</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--mute);">CGPA Cutoff:</span>
+                <strong id="jd-cgpa-display">8.50</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--mute);">Max Backlogs Allowed:</span>
+                <strong id="jd-backlog-display">0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--mute);">Applicant Pool:</span>
+                <strong id="jd-pool-display">500 Candidates</strong>
+              </div>
+            </div>
+            
+            <div style="margin-top:28px;" id="jd-action-container">
+              <!-- Apply button renders here dynamically -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </dialog>
 
   <!-- ACTIVE SIMULATION OVERLAY DIALOG -->
   <dialog id="simulation-overlay">
@@ -830,32 +979,51 @@ let activeSim = null;
 let isRealityMode = localStorage.getItem('reality_mode_active') === 'true';
 let isCodeMode = false;
 let simMessages = [];
+let elapsedDays = parseInt(localStorage.getItem('sim_elapsed_days') || '1');
 
 const defaultMockCompanies = [
-  { id: 'mock_boogle', name: 'Boogle', title: 'Software Engineer', ctc: 55, cgpa: 8.5, backlogs: 0, poolSize: 1200, vacancies: 1, desc: 'Advanced search, systems infrastructure, scale problems, algorithms.' },
-  { id: 'mock_microhard', name: 'Microhard', title: 'Software Engineer Intern', ctc: 44, cgpa: 8.0, backlogs: 0, poolSize: 950, vacancies: 2, desc: 'Cloud infrastructure, operating system kernels, application frameworks.' },
-  { id: 'mock_nile', name: 'Nile', title: 'Backend SDE', ctc: 38, cgpa: 7.5, backlogs: 1, poolSize: 800, vacancies: 3, desc: 'High throughput e-commerce transactions, microservices, databases.' },
-  { id: 'mock_pineapple', name: 'Pineapple', title: 'UI/UX Frontend Engineer', ctc: 40, cgpa: 8.0, backlogs: 0, poolSize: 600, vacancies: 1, desc: 'State-of-the-art interactive displays, motion animations, web frameworks.' },
-  { id: 'mock_swipe', name: 'Swipe', title: 'Systems Infrastructure SDE', ctc: 48, cgpa: 8.2, backlogs: 0, poolSize: 750, vacancies: 1, desc: 'Secure payment pipelines, transaction consistency, ledger databases.' }
+  { id: 'mock_boogle', name: 'Boogle', title: 'Software Engineer', ctc: 55, cgpa: 8.5, backlogs: 0, poolSize: 1200, vacancies: 1, desc: 'Advanced search, systems infrastructure, scale problems, algorithms.', recruiter: { name: "Sophia Patel", seed: "sophia", quote: "We want SDEs who can articulate system choices and code cleanly." } },
+  { id: 'mock_microhard', name: 'Microhard', title: 'Software Engineer Intern', ctc: 44, cgpa: 8.0, backlogs: 0, poolSize: 950, vacancies: 2, desc: 'Cloud infrastructure, operating system kernels, application frameworks.', recruiter: { name: "Marcus Vance", seed: "marcus", quote: "A sound foundation in operating systems and cloud metrics makes a huge difference here." } },
+  { id: 'mock_nile', name: 'Nile', title: 'Backend SDE', ctc: 38, cgpa: 7.5, backlogs: 1, poolSize: 800, vacancies: 3, desc: 'High throughput e-commerce transactions, microservices, databases.', recruiter: { name: "Elena Rostova", seed: "elena", quote: "We are building the future of microservices. Show us your backend logic!" } },
+  { id: 'mock_pineapple', name: 'Pineapple', title: 'UI/UX Frontend Engineer', ctc: 40, cgpa: 8.0, backlogs: 0, poolSize: 600, vacancies: 1, desc: 'State-of-the-art interactive displays, motion animations, web frameworks.', recruiter: { name: "Rajiv Nair", seed: "rajiv", quote: "Clean UX is clean engineering. Demonstrate your attention to interactive flows!" } },
+  { id: 'mock_swipe', name: 'Swipe', title: 'Systems Infrastructure SDE', ctc: 48, cgpa: 8.2, backlogs: 0, poolSize: 750, vacancies: 1, desc: 'Secure payment pipelines, transaction consistency, ledger databases.', recruiter: { name: "Yuki Tanaka", seed: "yuki", quote: "Reliability under pressure is our key indicator. Good luck with the OA!" } }
 ];
 
 const mockNames = ["Aarav", "Ananya", "Rohan", "Priya", "Vikram", "Kabir", "Meera", "Neha", "Aditya", "Siddharth", "Karan", "Rahul", "Ishaan", "Riya", "Sneha", "Tanvi", "Arjun", "Diya", "Reyansh", "Vihaan"];
+
+const extraCompanyNames = ["Floppy", "Macrosoft", "Blueface", "Netflux", "Oracolo", "Adobo", "Ciscole", "Salesforcea", "Samsong", "FruitCorp", "Tarsla", "Amazeon", "Spacetrack", "Metabook"];
+const extraJobTitles = ["SDE Intern", "Backend Engineer", "Systems Architect", "Frontend SDE", "Full Stack Developer", "Machine Learning SDE", "Security SRE"];
+const extraRecruiters = [
+  { name: "Sophia Patel", seed: "sophia", quote: "Let's build systems that don't bend under scale. Good luck!" },
+  { name: "Marcus Vance", seed: "marcus", quote: "Show us you understand system kernels and concurrency principles." },
+  { name: "Elena Rostova", seed: "elena", quote: "High throughput databases and clean indexing are what we value most." },
+  { name: "Rajiv Nair", seed: "rajiv", quote: "Articulate your choices clearly. Articulation is as important as syntax!" },
+  { name: "Yuki Tanaka", seed: "yuki", quote: "If you have solid problem solving skills, you will pass our OA." },
+  { name: "Daniel Craig", seed: "daniel", quote: "We look for builders who enjoy breaking and fixing complex microservices." },
+  { name: "Sara Jenkins", seed: "sara", quote: "Welcome! Let's see if you can resolve our caching benchmarks." },
+  { name: "Yash Mehta", seed: "yash", quote: "A passionate coder is always better than a rote memorizer. Surprise us!" }
+];
 
 // Initialize Simulator Settings
 function initSimulator() {
   const savedCustoms = localStorage.getItem('custom_mock_companies');
   if (savedCustoms) {
     try {
-      mockCompanies = [...defaultMockCompanies, ...JSON.parse(savedCustoms)];
+      mockCompanies = JSON.parse(savedCustoms);
     } catch(e) {
       mockCompanies = [...defaultMockCompanies];
     }
   } else {
     mockCompanies = [...defaultMockCompanies];
+    localStorage.setItem('custom_mock_companies', JSON.stringify(mockCompanies));
   }
   
   // Set Reality Mode Switch visual state
   document.getElementById('reality-mode-toggle').checked = isRealityMode;
+  
+  // Set calendar clock visual state
+  document.getElementById('sim-calendar-badge-display').textContent = '📅 Day ' + elapsedDays;
+  
   renderSimOpenings();
 }
 
@@ -869,7 +1037,6 @@ function renderSimOpenings() {
   if (!grid) return;
   grid.innerHTML = '';
   
-  // Read user stats
   const cgpa = parseFloat(localStorage.getItem('user_cgpa') || '8.5');
   const backlogs = parseInt(localStorage.getItem('user_backlogs') || '0');
   
@@ -891,23 +1058,32 @@ function renderSimOpenings() {
       eligibilityHtml = `<span class="eligibility-badge ineligible" title="${reasons.join(', ')}">Ineligible</span>`;
     }
     
+    // Ensure recruiter info is present
+    if (!company.recruiter) {
+      const rec = extraRecruiters[Math.floor(Math.random() * extraRecruiters.length)];
+      company.recruiter = {
+        name: rec.name,
+        seed: rec.seed + '_' + company.id,
+        quote: rec.quote
+      };
+    }
+    
     card.innerHTML = `
       <div>
         <h4>${company.title}</h4>
         <div class="company">${company.name}</div>
         <div class="ctc">${company.ctc} LPA</div>
-        <div class="criteria">Cutoffs: CGPA ${company.cgpa} | Backlogs ${company.backlogs}<br>${company.desc}</div>
-        ${eligibilityHtml}
+        <div class="criteria" style="font-size:12.5px; opacity:0.8; margin-top:8px;">Cutoffs: CGPA ${company.cgpa} | Backlogs ${company.backlogs}</div>
+        <div style="margin-top:10px;">${eligibilityHtml}</div>
       </div>
-      <div class="pool-size">
+      <div class="pool-size" style="margin-top:12px; font-size:12px; border-top:1px solid var(--hairline); padding-top:8px;">
         <span>Pool: ${company.poolSize} candidates</span>
         <span>Vacancies: ${company.vacancies}</span>
       </div>
       <div style="margin-top: 14px;">
-        <button class="btn btn-outline" style="width: 100%; font-size: 11px; padding: 6px;" 
-          ${isEligible ? '' : 'disabled'} 
-          onclick="applyToSimOpening('${company.id}')">
-          ${isEligible ? 'Apply &amp; Start Simulation' : 'Locked (Cutoffs Not Met)'}
+        <button class="btn btn-outline" style="width: 100%; font-size: 12px; padding: 8px 12px;" 
+          onclick="openJdOverlay('${company.id}')">
+          View Details
         </button>
       </div>
     `;
@@ -915,41 +1091,147 @@ function renderSimOpenings() {
   });
 }
 
-function generateCustomSimOpening(event) {
-  event.preventDefault();
-  const name = document.getElementById('sim-company-name').value.trim();
-  const title = document.getElementById('sim-job-title').value.trim();
-  const ctc = parseInt(document.getElementById('sim-job-ctc').value, 10);
-  const cgpa = parseFloat(document.getElementById('sim-cgpa-cutoff').value);
-  const backlogs = parseInt(document.getElementById('sim-backlog-cutoff').value, 10);
-  const poolSize = parseInt(document.getElementById('sim-pool-size').value, 10);
+function openJdOverlay(companyId) {
+  const company = mockCompanies.find(c => c.id === companyId);
+  if (!company) return;
   
-  if (!name || !title || isNaN(ctc) || isNaN(cgpa) || isNaN(backlogs) || isNaN(poolSize)) return;
+  // Set elements inside jd-overlay
+  document.getElementById('jd-company-title').textContent = company.name;
+  document.getElementById('jd-job-designation').textContent = company.title;
+  document.getElementById('jd-full-description').textContent = company.desc;
+  
+  document.getElementById('jd-ctc-display').textContent = company.ctc + ' LPA';
+  document.getElementById('jd-cgpa-display').textContent = company.cgpa.toFixed(2);
+  document.getElementById('jd-backlog-display').textContent = company.backlogs;
+  document.getElementById('jd-pool-display').textContent = company.poolSize + ' candidates';
+  
+  // Set recruiter
+  if (!company.recruiter) {
+    const rec = extraRecruiters[Math.floor(Math.random() * extraRecruiters.length)];
+    company.recruiter = {
+      name: rec.name,
+      seed: rec.seed + '_' + company.id,
+      quote: rec.quote
+    };
+  }
+  
+  document.getElementById('jd-recruiter-name').textContent = company.recruiter.name;
+  document.getElementById('jd-recruiter-quote').textContent = `"${company.recruiter.quote}"`;
+  
+  const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${company.recruiter.seed}`;
+  document.getElementById('jd-recruiter-avatar-container').innerHTML = `<img src="${avatarUrl}" alt="HR Recruiter">`;
+  
+  // Check eligibility for action container
+  const cgpa = parseFloat(localStorage.getItem('user_cgpa') || '8.5');
+  const backlogs = parseInt(localStorage.getItem('user_backlogs') || '0');
+  const isCgpaOk = cgpa >= company.cgpa;
+  const isBacklogOk = backlogs <= company.backlogs;
+  const isEligible = isCgpaOk && isBacklogOk;
+  
+  const actionContainer = document.getElementById('jd-action-container');
+  if (isEligible) {
+    actionContainer.innerHTML = `
+      <button class="btn btn-primary" style="width: 100%; height: 44px; font-size:14px;" onclick="applyToSimOpeningFromJd('${company.id}')">
+        Apply &amp; Start Simulation
+      </button>
+    `;
+  } else {
+    let reasons = [];
+    if (!isCgpaOk) reasons.push(`CGPA of ${cgpa} is below ${company.cgpa}`);
+    if (!isBacklogOk) reasons.push(`Active backlogs (${backlogs}) exceeds limit of ${company.backlogs}`);
+    actionContainer.innerHTML = `
+      <button class="btn btn-outline" style="width: 100%; height: 44px;" disabled>
+        Locked (Cutoffs Not Met)
+      </button>
+      <div style="font-size:12px; color:#b52c24; margin-top:8px; text-align:center;">
+        Ineligible: ${reasons.join(', ')}
+      </div>
+    `;
+  }
+  
+  const dialog = document.getElementById('jd-overlay');
+  dialog.showModal();
+}
+
+function closeJdOverlay() {
+  const dialog = document.getElementById('jd-overlay');
+  dialog.close();
+}
+
+function applyToSimOpeningFromJd(companyId) {
+  closeJdOverlay();
+  applyToSimOpening(companyId);
+}
+
+function incrementDaysSilently(daysCount) {
+  elapsedDays += daysCount;
+  localStorage.setItem('sim_elapsed_days', elapsedDays);
+  
+  const badge = document.getElementById('sim-calendar-badge-display');
+  if (badge) {
+    badge.textContent = '📅 Day ' + elapsedDays;
+  }
+  
+  if (elapsedDays % 2 === 0) {
+    aiRotatesOpenings();
+  }
+}
+
+function advanceSimulatedCalendar(daysCount) {
+  incrementDaysSilently(daysCount);
+  if (elapsedDays % 2 === 0) {
+    alert("📢 Recruitment Season Update:\nNew placement openings have been posted! Old drives have expired.");
+  }
+}
+
+function aiRotatesOpenings() {
+  // Read current list
+  const savedCustoms = localStorage.getItem('custom_mock_companies');
+  let currentList = [];
+  if (savedCustoms) {
+    try { currentList = JSON.parse(savedCustoms); } catch(e) { currentList = [...defaultMockCompanies]; }
+  } else {
+    currentList = [...defaultMockCompanies];
+  }
+  
+  if (currentList.length > 3) {
+    // Remove one random company
+    const removeIdx = Math.floor(Math.random() * currentList.length);
+    const removed = currentList.splice(removeIdx, 1)[0];
+    console.log("AI closed opening drive at:", removed.name);
+  }
+  
+  // Add a new random company
+  const randomName = extraCompanyNames[Math.floor(Math.random() * extraCompanyNames.length)] + " " + String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  const randomTitle = extraJobTitles[Math.floor(Math.random() * extraJobTitles.length)];
+  const randomCtc = Math.floor(Math.random() * 45) + 15; // 15 to 60 LPA
+  const randomCgpa = parseFloat((Math.random() * 2 + 7.2).toFixed(1)); // 7.2 to 9.2
+  const randomBacklogs = Math.random() > 0.7 ? 1 : 0;
+  const randomPool = Math.floor(Math.random() * 1000) + 150;
+  const randomVacancies = Math.floor(Math.random() * 3) + 1;
+  const randomRecruiter = extraRecruiters[Math.floor(Math.random() * extraRecruiters.length)];
   
   const newCompany = {
-    id: 'mock_custom_' + Date.now(),
-    name,
-    title,
-    ctc,
-    cgpa,
-    backlogs,
-    poolSize,
-    vacancies: Math.max(1, Math.floor(Math.random() * 3) + 1),
-    desc: `AI-Generated custom recruitment drive for ${title} role.`
+    id: 'mock_ai_' + Date.now(),
+    name: randomName,
+    title: randomTitle,
+    ctc: randomCtc,
+    cgpa: randomCgpa,
+    backlogs: randomBacklogs,
+    poolSize: randomPool,
+    vacancies: randomVacancies,
+    desc: `Dynamic placement opening for ${randomTitle} at ${randomName}. Requires good communication, deep technical fundamentals, and problem-solving.`,
+    recruiter: {
+      name: randomRecruiter.name,
+      seed: randomRecruiter.seed + '_' + Date.now(),
+      quote: randomRecruiter.quote
+    }
   };
   
-  const savedCustoms = localStorage.getItem('custom_mock_companies');
-  let customsList = [];
-  if (savedCustoms) {
-    try { customsList = JSON.parse(savedCustoms); } catch(e){}
-  }
-  customsList.push(newCompany);
-  localStorage.setItem('custom_mock_companies', JSON.stringify(customsList));
-  
-  mockCompanies.push(newCompany);
+  currentList.push(newCompany);
+  mockCompanies = currentList;
+  localStorage.setItem('custom_mock_companies', JSON.stringify(mockCompanies));
   renderSimOpenings();
-  
-  document.getElementById('custom-sim-form').reset();
 }
 
 function applyToSimOpening(companyId) {
@@ -1273,6 +1555,7 @@ You MUST respond strictly using the following XML format:
         for (let d = 1; d <= delayDays; d++) {
           await sleep(1000);
           appendSimChat("SYSTEM", `Simulated Day ${d} of waiting...`, false, true);
+          incrementDaysSilently(1);
         }
         appendSimChat("SYSTEM", `Recruitment cell released results: You passed! Proceeding to next round.`, false, true);
       }
