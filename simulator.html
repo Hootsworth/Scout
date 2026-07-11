@@ -747,51 +747,14 @@ dialog#jd-overlay::backdrop {
     <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Behavioral STAR Playground</h2></div>
     <p class="section-desc">Practice leadership, teamwork, and behavioral interview questions. The AI proctor will critique your answers strictly using the STAR format (Situation, Task, Action, Result).</p>
     
-    <div class="grid-cols-2" style="margin-top:20px;">
-      <!-- Sandbox Config -->
-      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between; min-height:280px;">
-        <div>
-          <h3>Choose Practice Theme</h3>
-          <p style="font-size:13.5px; color:var(--mute); margin-bottom:16px;">Select a core behavioral competency to practice with the proctor.</p>
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <label class="btn-outline" style="display:flex; align-items:center; gap:10px; padding:12px; border-radius:8px; cursor:pointer;">
-              <input type="radio" name="star-theme" value="teamwork" checked style="accent-color:var(--primary);">
-              <div>
-                <strong style="display:block; font-size:14px;">Teamwork &amp; Collaboration</strong>
-                <span style="font-size:12px; color:var(--mute);">Conflict resolution, peer support, group dynamics.</span>
-              </div>
-            </label>
-            <label class="btn-outline" style="display:flex; align-items:center; gap:10px; padding:12px; border-radius:8px; cursor:pointer;">
-              <input type="radio" name="star-theme" value="failure" style="accent-color:var(--primary);">
-              <div>
-                <strong style="display:block; font-size:14px;">Handling Failure &amp; Resilience</strong>
-                <span style="font-size:12px; color:var(--mute);">Overcoming setbacks, learning from mistakes, pivot logic.</span>
-              </div>
-            </label>
-            <label class="btn-outline" style="display:flex; align-items:center; gap:10px; padding:12px; border-radius:8px; cursor:pointer;">
-              <input type="radio" name="star-theme" value="leadership" style="accent-color:var(--primary);">
-              <div>
-                <strong style="display:block; font-size:14px;">Leadership &amp; Initiative</strong>
-                <span style="font-size:12px; color:var(--mute);">Taking ownership, mentoring, driving technical decisions.</span>
-              </div>
-            </label>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="startStarPlayground()" style="width:100%; height:44px; margin-top:20px;">
-          Start Practice Interview
-        </button>
+    <div class="setup-card" style="display:flex; justify-content:space-between; align-items:center; padding:24px 32px; margin-bottom:0;">
+      <div>
+        <h3 style="margin-bottom:6px; border:none; padding:0;">Behavioral Interview Training</h3>
+        <p style="font-size:14px; color:var(--mute); margin:0;">Launch a turn-based proctored session to practice Situation-Task-Action-Result format compliance.</p>
       </div>
-      
-      <!-- Sandbox Info/Rules -->
-      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:32px;">
-        <svg style="width:48px; height:48px; color:var(--primary); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        <h3>Proctor STAR Metrics</h3>
-        <p style="font-size:14px; color:var(--body); max-width:320px; line-height:1.5; margin:8px auto 0 auto;">
-          The proctor expects your response to clearly cover:<br>
-          <strong>S</strong>ituation &bull; <strong>T</strong>ask &bull; <strong>A</strong>ction &bull; <strong>R</strong>esult.<br><br>
-          Quantifiable results (e.g. "improved speed by 25%") will score extra compliance points!
-        </p>
-      </div>
+      <button class="btn btn-primary" onclick="startStarPlayground()" style="height:44px; padding:0 24px; flex-shrink:0;">
+        Launch STAR Playground
+      </button>
     </div>
   </section>
 
@@ -939,7 +902,10 @@ dialog#jd-overlay::backdrop {
             <button id="sim-toggle-code-mode" class="btn-outline" style="font-size:11px; padding:2px 8px; cursor:pointer;" onclick="toggleEditorCodeMode()">Code Mode</button>
           </div>
           <textarea id="sim-user-input" placeholder="Type your contribution, answer, or code block here..."></textarea>
-          <div style="display:flex; justify-content:flex-end;">
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button id="sim-mic-btn" class="btn btn-outline" style="display:none; padding:10px; border-radius:50%; width:38px; height:38px; align-items:center; justify-content:center;" onclick="toggleVoiceInput()" title="Record Audio Answer">
+              <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+            </button>
             <button class="btn btn-primary" id="sim-submit-btn" onclick="submitSimulationAnswer()">Submit Response</button>
           </div>
         </div>
@@ -1203,6 +1169,10 @@ function openJdOverlay(companyId) {
       <button class="btn btn-primary" style="width: 100%; height: 44px; font-size:14px;" onclick="applyToSimOpeningFromJd('${company.id}')">
         Apply &amp; Start Simulation
       </button>
+      <button class="btn btn-red" style="width: 100%; height: 44px; font-size:14px; margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #b52c24 0%, #d32f2f 100%); border: none; color: #fff;" onclick="applyToSimOpeningFromJd('${company.id}', true)">
+        <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+        Launch Hyper Mode (Voice Round)
+      </button>
     `;
   } else {
     let reasons = [];
@@ -1227,9 +1197,9 @@ function closeJdOverlay() {
   dialog.close();
 }
 
-function applyToSimOpeningFromJd(companyId) {
+function applyToSimOpeningFromJd(companyId, isHyperMode = false) {
   closeJdOverlay();
-  applyToSimOpening(companyId);
+  applyToSimOpening(companyId, isHyperMode);
 }
 
 function incrementDaysSilently(daysCount) {
@@ -1308,7 +1278,7 @@ function aiRotatesOpenings() {
   renderSimOpenings();
 }
 
-function applyToSimOpening(companyId) {
+function applyToSimOpening(companyId, isHyperMode = false) {
   const company = mockCompanies.find(c => c.id === companyId);
   if (!company) return;
   
@@ -1330,7 +1300,8 @@ function applyToSimOpening(companyId) {
     messageHistory: [],
     gdTurnIndex: 0,
     maxGdTurns: Math.floor(Math.random() * 3) + 3, // 3 to 5 rounds
-    gdTopic: ""
+    gdTopic: "",
+    isHyperMode: isHyperMode
   };
   
   const overlay = document.getElementById('simulation-overlay');
@@ -1566,6 +1537,12 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
     
     if (!isUser) {
       animateWords(bodySpan, 25);
+      
+      // Speak text out loud in voice rounds in Hyper Mode
+      const sim = activeSim;
+      if (sim && sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) && !isThought) {
+        speakTextElevenLabs(stripXml(text));
+      }
     }
   }
   
@@ -1582,8 +1559,45 @@ async function initiateRound() {
   if (!sim) return;
   
   updateSidebarStats();
+  checkVoiceModeState();
   
   if (sim.isStarPlayground) {
+    if (sim.isThemeSelectionState) {
+      appendSimChat("STAR Evaluator", "Welcome to the Behavioral STAR Playground! Please select a core competency theme you would like to practice today:", false);
+      
+      const btnContainer = document.createElement('div');
+      btnContainer.className = 'theme-btn-container';
+      btnContainer.style.display = 'flex';
+      btnContainer.style.gap = '10px';
+      btnContainer.style.marginTop = '12px';
+      
+      const themes = [
+        { id: 'teamwork', label: 'Teamwork' },
+        { id: 'failure', label: 'Failure & Resilience' },
+        { id: 'leadership', label: 'Leadership' }
+      ];
+      
+      themes.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline theme-btn';
+        btn.style.fontSize = '12px';
+        btn.style.padding = '8px 12px';
+        btn.textContent = t.label;
+        btn.onclick = () => selectStarTheme(t.id);
+        btnContainer.appendChild(btn);
+      });
+      
+      const chat = document.getElementById('sim-chat-container');
+      const thinkingIndicator = document.getElementById('sim-thinking-indicator');
+      if (thinkingIndicator) {
+        chat.insertBefore(btnContainer, thinkingIndicator);
+      } else {
+        chat.appendChild(btnContainer);
+      }
+      chat.scrollTop = chat.scrollHeight;
+      return;
+    }
+    
     appendSimChat("SYSTEM", `Initiating STAR Practice Round ${sim.roundIndex + 1}...`, false, true);
     
     const proctorPrompt = `You are a professional behavioral interviewer and STAR method evaluator.
@@ -1635,7 +1649,8 @@ Start the round by presenting a realistic prompt or challenge.
 - Tech Interview: Ask a deep technical question on concurrency, databases, operating systems, or CV/NLP.
 - HR Interview: Ask a behavioral question regarding culture fit, work ethic, or CTC expectations.
 
-Keep your response professional, firm, and fully in character. Speak directly.`;
+Keep your response professional, firm, and fully in character. Speak directly.
+${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('elevenlabs_personality') || 'A strict, professional HR director'}. You are in a voice interview round, so keep your questions clear, direct, conversational, and voice-friendly. Do not include coding formatting or markdown tables.` : ''}`;
 
   appendSimChat("SYSTEM", "Proctor is generating challenge...", false, true);
   let challengerSpeech = await callGeminiSimApi(proctorPrompt);
@@ -1812,7 +1827,8 @@ You MUST respond strictly using the following XML format:
   <outcome>PASS or FAIL</outcome>
   <eliminated>number</eliminated>
   <message>interviewer response speech</message>
-</evaluation>`;
+</evaluation>
+${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('elevenlabs_personality') || 'A strict, professional HR director'}. Since this is a voice-speaking round, keep the proctor message voice-friendly, clear, and conversational.` : ''}`;
 
   appendSimChat("SYSTEM", "AI Proctor is evaluating your performance...", false, true);
   
@@ -2140,6 +2156,7 @@ function terminateSimulation() {
     overlay.close();
     activeSim = null;
     exitFullscreenProctor();
+    checkVoiceModeState();
   }
 }
 
@@ -2197,19 +2214,9 @@ window.addEventListener('blur', () => {
 
 // STAR Playground and Automated Deadlines Sync
 function startStarPlayground() {
-  const chosenThemeRadio = document.querySelector('input[name="star-theme"]:checked');
-  const chosenTheme = chosenThemeRadio ? chosenThemeRadio.value : 'teamwork';
-  
-  const themeTitles = {
-    'teamwork': 'Teamwork & Collaboration',
-    'failure': 'Handling Failure & Resilience',
-    'leadership': 'Leadership & Initiative'
-  };
-  
   activeSim = {
     isStarPlayground: true,
-    theme: chosenTheme,
-    themeTitle: themeTitles[chosenTheme],
+    isThemeSelectionState: true,
     roundIndex: 0,
     company: { name: "STAR Sandbox", title: "Practice Mode", ctc: "0" },
     messageHistory: []
@@ -2220,8 +2227,8 @@ function startStarPlayground() {
   document.getElementById('disco-ai-helper-bubble').classList.remove('active');
   
   document.getElementById('sim-modal-title').textContent = `Behavioral STAR Playground`;
-  document.getElementById('sim-sidebar-title').textContent = activeSim.themeTitle;
-  document.getElementById('sim-sidebar-ctc').textContent = `Theme: ${chosenTheme.toUpperCase()}`;
+  document.getElementById('sim-sidebar-title').textContent = `STAR Practice Sandbox`;
+  document.getElementById('sim-sidebar-ctc').textContent = `Select Theme`;
   
   const chatContainer = document.getElementById('sim-chat-container');
   chatContainer.innerHTML = '';
@@ -2251,7 +2258,189 @@ function startStarPlayground() {
   chatContainer.appendChild(thinkingRow);
   
   simMessages = [];
+  checkVoiceModeState();
   initiateRound();
+}
+
+function selectStarTheme(theme) {
+  const sim = activeSim;
+  if (!sim) return;
+  
+  const themeTitles = {
+    'teamwork': 'Teamwork & Collaboration',
+    'failure': 'Handling Failure & Resilience',
+    'leadership': 'Leadership & Initiative'
+  };
+  
+  sim.theme = theme;
+  sim.themeTitle = themeTitles[theme];
+  sim.isThemeSelectionState = false;
+  
+  document.getElementById('sim-sidebar-title').textContent = sim.themeTitle;
+  document.getElementById('sim-sidebar-ctc').textContent = `Theme: ${theme.toUpperCase()}`;
+  updateSidebarStats();
+  
+  document.querySelectorAll('.theme-btn').forEach(btn => btn.remove());
+  initiateRound();
+}
+
+function checkVoiceModeState() {
+  const sim = activeSim;
+  const micBtn = document.getElementById('sim-mic-btn');
+  if (!micBtn) return;
+  
+  if (sim && sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4)) {
+    micBtn.style.display = 'inline-flex';
+    document.getElementById('sim-user-input').placeholder = "Click microphone or speak verbally...";
+  } else {
+    micBtn.style.display = 'none';
+    stopListening();
+    document.getElementById('sim-user-input').placeholder = "Type your response here...";
+  }
+}
+
+async function speakTextElevenLabs(text) {
+  const apiKey = localStorage.getItem('elevenlabs_api_key');
+  const voiceId = localStorage.getItem('elevenlabs_voice_id') || '21m00Tcm4TlvDq8ikWAM';
+  
+  if (!apiKey) {
+    console.warn("ElevenLabs API key missing in config. Using fallback browser synthesizer.");
+    speakTextBrowserFallback(text);
+    return;
+  }
+  
+  try {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+      })
+    });
+    
+    if (!response.ok) throw new Error(`ElevenLabs returned HTTP ${response.status}`);
+    const blob = await response.blob();
+    const audioUrl = URL.createObjectURL(blob);
+    const audio = new Audio(audioUrl);
+    audio.play();
+  } catch (err) {
+    console.error("ElevenLabs speak error:", err);
+    speakTextBrowserFallback(text);
+  }
+}
+
+function speakTextBrowserFallback(text) {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  synth.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  synth.speak(utterance);
+}
+
+function stripXml(html) {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
+
+// Voice Speech Recognition API
+let recognition = null;
+let isListening = false;
+
+function initVoiceRecognition() {
+  if (recognition) return;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return;
+  
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  
+  recognition.onresult = (event) => {
+    let interimTranscript = '';
+    let finalTranscript = '';
+    
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript;
+      } else {
+        interimTranscript += event.results[i][0].transcript;
+      }
+    }
+    document.getElementById('sim-user-input').value = finalTranscript || interimTranscript;
+  };
+  
+  recognition.onerror = (event) => {
+    console.error("Speech Recognition Error:", event.error);
+    stopListening();
+  };
+  
+  recognition.onend = () => {
+    isListening = false;
+    updateMicButtonUI();
+  };
+}
+
+function toggleVoiceInput() {
+  initVoiceRecognition();
+  if (!recognition) {
+    alert("Speech recognition is not supported in this browser. Please type response.");
+    return;
+  }
+  
+  if (isListening) {
+    stopListening();
+  } else {
+    startListening();
+  }
+}
+
+function startListening() {
+  if (!recognition) return;
+  try {
+    recognition.start();
+    isListening = true;
+    updateMicButtonUI();
+    document.getElementById('sim-user-input').placeholder = "Listening... Speak verbally now.";
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function stopListening() {
+  if (!recognition) return;
+  try {
+    recognition.stop();
+    isListening = false;
+    updateMicButtonUI();
+    document.getElementById('sim-user-input').placeholder = "Click microphone or speak verbally...";
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function updateMicButtonUI() {
+  const btn = document.getElementById('sim-mic-btn');
+  if (!btn) return;
+  if (isListening) {
+    btn.style.background = '#b52c24';
+    btn.style.color = '#fff';
+    btn.innerHTML = `
+      <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="6" height="6"></rect></svg>
+    `;
+  } else {
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--ink)';
+    btn.innerHTML = `
+      <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+    `;
+  }
 }
 
 async function syncOaDeadlineToCalendar(companyName, jobTitle) {
@@ -2467,10 +2656,10 @@ window.addEventListener('DOMContentLoaded', () => {
   initSimulator();
 });
 
-// Hook fullscreen triggers to regular recruitment entry
+// Hook fullscreen triggers to recruitment entries
 const originalApplyToSimOpening = applyToSimOpening;
-applyToSimOpening = function(companyId) {
-  originalApplyToSimOpening(companyId);
+applyToSimOpening = function(companyId, isHyperMode = false) {
+  originalApplyToSimOpening(companyId, isHyperMode);
   setTimeout(requestFullscreenProctor, 100);
 };
 </script>

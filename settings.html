@@ -309,6 +309,20 @@ code.block {
                 <label for="discord-channel-id">Discord Channel ID</label>
                 <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
               </div>
+              <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
+              <h3>ElevenLabs Voice Settings (Hyper Mode)</h3>
+              <div class="form-group">
+                <label for="elevenlabs-key">ElevenLabs API Key</label>
+                <input type="password" id="elevenlabs-key" placeholder="xi-api-key">
+              </div>
+              <div class="form-group">
+                <label for="elevenlabs-voice-id">ElevenLabs Voice ID</label>
+                <input type="text" id="elevenlabs-voice-id" placeholder="e.g. 21m00Tcm4TlvDq8ikWAM">
+              </div>
+              <div class="form-group">
+                <label for="elevenlabs-personality">Voice Interviewer Personality</label>
+                <textarea id="elevenlabs-personality" placeholder="e.g. A strict, no-nonsense senior HR executive from Google who asks tough technical questions." style="width:100%; height:80px; padding:8px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
               <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials</button>
             </div>
           </div>
@@ -487,6 +501,9 @@ document.getElementById('user-cgpa').value = localStorage.getItem('user_cgpa') |
 document.getElementById('user-backlogs').value = localStorage.getItem('user_backlogs') || '0';
 document.getElementById('discord-bot-token').value = localStorage.getItem('discord_bot_token') || '';
 document.getElementById('discord-channel-id').value = localStorage.getItem('discord_channel_id') || '';
+document.getElementById('elevenlabs-key').value = localStorage.getItem('elevenlabs_api_key') || '';
+document.getElementById('elevenlabs-voice-id').value = localStorage.getItem('elevenlabs_voice_id') || '';
+document.getElementById('elevenlabs-personality').value = localStorage.getItem('elevenlabs_personality') || '';
 
 // Initialize Firebase if config exists
 let firebaseAuth = null;
@@ -655,6 +672,9 @@ function saveApiKeys() {
   localStorage.setItem('user_backlogs', document.getElementById('user-backlogs').value.trim());
   localStorage.setItem('discord_bot_token', document.getElementById('discord-bot-token').value.trim());
   localStorage.setItem('discord_channel_id', document.getElementById('discord-channel-id').value.trim());
+  localStorage.setItem('elevenlabs_api_key', document.getElementById('elevenlabs-key').value.trim());
+  localStorage.setItem('elevenlabs_voice_id', document.getElementById('elevenlabs-voice-id').value.trim());
+  localStorage.setItem('elevenlabs_personality', document.getElementById('elevenlabs-personality').value.trim());
   alert("Credentials and placement configuration saved locally!");
 }
 
