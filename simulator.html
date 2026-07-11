@@ -336,6 +336,10 @@ dialog#simulation-overlay::backdrop {
   from { opacity: 0; transform: translateY(12px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
 .sim-overlay-header {
   background: var(--ink);
   color: var(--canvas);
@@ -436,6 +440,7 @@ dialog#simulation-overlay::backdrop {
   gap: 12px;
   align-items: flex-start;
   max-width: 85%;
+  margin-bottom: 24px;
 }
 .bubble-row.candidate {
   align-self: flex-end;
@@ -459,22 +464,24 @@ dialog#simulation-overlay::backdrop {
   object-fit: contain;
 }
 .bubble-content {
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
   padding: 12px 16px;
   border-radius: 12px;
   position: relative;
   line-height: 1.5;
   font-size: 14.5px;
+  width: fit-content;
+  max-width: 100%;
 }
 .bubble-row.interviewer .bubble-content {
-  background: var(--canvas);
-  border-top-left-radius: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
 }
 .bubble-row.candidate .bubble-content {
   background: var(--ink);
   color: var(--canvas);
-  border-color: var(--ink);
+  border: 1px solid var(--ink);
   border-top-right-radius: 0;
 }
 .bubble-speaker {
@@ -1273,7 +1280,34 @@ function applyToSimOpening(companyId) {
   document.getElementById('sim-sidebar-title').textContent = company.title;
   document.getElementById('sim-sidebar-ctc').textContent = `${company.ctc} LPA`;
   
-  document.getElementById('sim-chat-container').innerHTML = '';
+  const chatContainer = document.getElementById('sim-chat-container');
+  chatContainer.innerHTML = '';
+  
+  // Create dynamic thinking indicator element
+  const thinkingRow = document.createElement('div');
+  thinkingRow.id = 'sim-thinking-indicator';
+  thinkingRow.className = 'bubble-row interviewer';
+  thinkingRow.style.display = 'none';
+  thinkingRow.style.marginBottom = '12px';
+  thinkingRow.style.gap = '12px';
+  thinkingRow.innerHTML = `
+    <div class="bubble-avatar">
+      <img id="sim-thinking-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Recruitment%20Proctor" alt="Proctor">
+    </div>
+    <div class="bubble-content" style="background: transparent; border: none; padding: 0;">
+      <span class="bubble-speaker" id="sim-thinking-speaker">Recruitment Proctor</span>
+      <span style="font-style: italic; color: var(--mute); font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px;">
+        <span id="sim-thinking-text">Proctor is thinking...</span>
+        <span class="thinking-dots" style="display: inline-flex; gap: 3px;">
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0s;"></span>
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0.2s;"></span>
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0.4s;"></span>
+        </span>
+      </span>
+    </div>
+  `;
+  chatContainer.appendChild(thinkingRow);
+  
   simMessages = [];
   
   initiateRound();
@@ -1398,18 +1432,32 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
   const chat = document.getElementById('sim-chat-container');
   if (!chat) return;
   
-  const bubble = document.createElement('div');
+  const thinkingIndicator = document.getElementById('sim-thinking-indicator');
   
   if (isThought) {
-    bubble.className = "bubble-row thought";
-    bubble.innerHTML = `
-      <div class="bubble-content">
-        ${text}
-      </div>
-    `;
-    chat.appendChild(bubble);
+    if (thinkingIndicator) {
+      const avatarUrl = speaker === "SYSTEM" 
+        ? `https://api.dicebear.com/7.x/avataaars/svg?seed=Recruitment%20Proctor`
+        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(speaker)}`;
+        
+      document.getElementById('sim-thinking-avatar').src = avatarUrl;
+      document.getElementById('sim-thinking-speaker').textContent = speaker === "SYSTEM" ? "Recruitment Proctor" : speaker;
+      document.getElementById('sim-thinking-text').textContent = text;
+      
+      thinkingIndicator.style.animation = 'none';
+      thinkingIndicator.offsetHeight; /* trigger reflow */
+      thinkingIndicator.style.animation = 'wordSwoosh 0.25s ease forwards';
+      thinkingIndicator.style.display = 'flex';
+    }
   } else {
+    if (thinkingIndicator) {
+      thinkingIndicator.style.display = 'none';
+    }
+    
+    const bubble = document.createElement('div');
     bubble.className = `bubble-row ${isUser ? 'candidate' : 'interviewer'}`;
+    bubble.style.animation = 'bubbleSwoop 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+    
     const avatarUrl = isUser 
       ? `https://api.dicebear.com/7.x/bottts/svg?seed=aditya`
       : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(speaker)}`;
@@ -1437,7 +1485,12 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
     
     bubble.appendChild(avatarDiv);
     bubble.appendChild(contentDiv);
-    chat.appendChild(bubble);
+    
+    if (thinkingIndicator) {
+      chat.insertBefore(bubble, thinkingIndicator);
+    } else {
+      chat.appendChild(bubble);
+    }
     
     if (!isUser) {
       animateWords(bodySpan, 25);
@@ -1610,8 +1663,14 @@ You MUST respond strictly using the following XML format:
         continueBtn.remove();
         initiateRound();
       };
-      document.getElementById('sim-chat-container').appendChild(continueBtn);
-      document.getElementById('sim-chat-container').scrollTop = document.getElementById('sim-chat-container').scrollHeight;
+      const chat = document.getElementById('sim-chat-container');
+      const thinkingIndicator = document.getElementById('sim-thinking-indicator');
+      if (thinkingIndicator) {
+        chat.insertBefore(continueBtn, thinkingIndicator);
+      } else {
+        chat.appendChild(continueBtn);
+      }
+      chat.scrollTop = chat.scrollHeight;
     }
   }
 }
