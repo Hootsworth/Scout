@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
-<title>SEM 05 // PLACEMENT SIMULATOR</title>
+<title>Scout Placement Simulator</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Nunito:wght@400;600;700&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
 <style>
@@ -190,21 +190,158 @@
 
 /* Simulation Dialogue Container */
 dialog#simulation-overlay {
-  border: 1px solid var(--ink);
+  border: none;
   background: var(--canvas);
-  max-width: 840px;
-  width: 95%;
-  height: 85vh;
-  margin: auto;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  margin: 0 !important;
   padding: 0;
   outline: none;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-  border-radius: 16px;
+  border-radius: 0 !important;
   overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
 }
 dialog#simulation-overlay::backdrop {
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(4px);
+  background: var(--canvas);
+}
+
+/* Path indicators / Stepper */
+.sim-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 18px;
+  border-radius: 9999px;
+  margin: 0 16px;
+}
+.sim-step {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+.sim-step.active {
+  color: #00f0ff;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+}
+.sim-step.completed {
+  color: #00ff66;
+}
+.sim-step-arrow {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+}
+
+/* Disco AI Helper Button */
+.disco-ai-btn {
+  background: linear-gradient(45deg, #ff007f, #7f00ff, #00f0ff, #ff007f);
+  background-size: 300% 300%;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(127, 0, 255, 0.3);
+  animation: discoAnimation 4s ease infinite, discoPulse 2s infinite;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.disco-ai-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgba(127, 0, 255, 0.5);
+}
+.disco-ai-btn:active {
+  transform: scale(0.97);
+}
+@keyframes discoAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes discoPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 127, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(127, 0, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+}
+
+/* Disco AI Speech Helper Bubble Overlay */
+.disco-ai-bubble {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 320px;
+  max-height: calc(100% - 120px);
+  background: rgba(250, 248, 245, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--hairline-strong);
+  box-shadow: 0 10px 30px rgba(127, 0, 255, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 1001;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideInRight 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  font-size: 13.5px;
+  color: var(--charcoal);
+  border-left: 4px solid #7f00ff;
+}
+.disco-ai-bubble.active {
+  display: flex;
+}
+.disco-ai-bubble h5 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7f00ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.disco-ai-bubble-close {
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--mute);
+  background: transparent;
+  border: none;
+  line-height: 1;
+}
+.disco-ai-bubble-content {
+  overflow-y: auto;
+  line-height: 1.5;
+}
+@keyframes slideInRight {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Dialogue bubble swoop-in animation */
+@keyframes bubbleSwoop {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .sim-overlay-header {
   background: var(--ink);
@@ -435,7 +572,7 @@ dialog#simulation-overlay::backdrop {
     <a href="assistant.html">Chat</a>
     <a href="placements.html">Placements</a>
     <a href="simulator.html" class="active">Simulator</a>
-    <a href="settings.html">Setup</a>
+    <a href="settings.html">Settings</a>
   </div>
 </nav>
 
@@ -444,7 +581,7 @@ dialog#simulation-overlay::backdrop {
   <section style="padding: 24px 0 0 0; border-bottom: none;">
     <div id="auth-warning-box" class="auth-warning" style="display:inline-flex; align-items:center; gap:8px;">
       <svg style="width:14px; height:14px; flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-      Please authenticate on the <a href="settings.html">Setup Page</a> to connect with Cloud Firestore and log your simulated placement runs.
+      Please authenticate on the <a href="settings.html">Settings Page</a> to connect with Cloud Firestore and log your simulated placement runs.
     </div>
   </section>
 
@@ -541,11 +678,43 @@ dialog#simulation-overlay::backdrop {
 
   <!-- ACTIVE SIMULATION OVERLAY DIALOG -->
   <dialog id="simulation-overlay">
-    <div class="sim-overlay-header">
-      <h3 id="sim-modal-title">Mock Placement Simulation</h3>
-      <button class="close-btn" onclick="terminateSimulation()">×</button>
+    <div class="sim-overlay-header" style="height:64px;">
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <h3 id="sim-modal-title" style="font-size:16px;">Mock Placement Simulation</h3>
+        <span id="sim-header-details" style="font-size:11px; opacity:0.75;">Eligibility Evaluated ✓</span>
+      </div>
+
+      <!-- Path progress indicators -->
+      <div class="sim-stepper" id="sim-stepper-container">
+        <div class="sim-step" id="step-0">GD</div>
+        <div class="sim-step-arrow">➔</div>
+        <div class="sim-step" id="step-1">OA</div>
+        <div class="sim-step-arrow">➔</div>
+        <div class="sim-step" id="step-2">SysDesign</div>
+        <div class="sim-step-arrow">➔</div>
+        <div class="sim-step" id="step-3">Technical</div>
+        <div class="sim-step-arrow">➔</div>
+        <div class="sim-step" id="step-4">HR</div>
+      </div>
+
+      <!-- Control group -->
+      <div style="display:flex; align-items:center; gap:16px;">
+        <button class="disco-ai-btn" id="disco-ai-btn" onclick="getDiscoAiHelp()">🪩 Disco AI</button>
+        <button class="close-btn" onclick="terminateSimulation()" style="font-size:24px; border:none; background:transparent; color:var(--canvas); cursor:pointer; line-height:1;">&times;</button>
+      </div>
     </div>
-    <div class="sim-arena-layout">
+    <div class="sim-arena-layout" style="position:relative;">
+      <!-- Disco AI Helper Speech Bubble -->
+      <div class="disco-ai-bubble" id="disco-ai-helper-bubble">
+        <h5>
+          <span>🪩 Disco AI Helper</span>
+          <button class="disco-ai-bubble-close" onclick="document.getElementById('disco-ai-helper-bubble').classList.remove('active')">&times;</button>
+        </h5>
+        <div class="disco-ai-bubble-content" id="disco-ai-bubble-content">
+          AI suggestions appear here...
+        </div>
+      </div>
+
       <div class="sim-arena-main">
         <div class="sim-arena-chat" id="sim-chat-container">
           <!-- Populated dynamically by JS -->
@@ -807,6 +976,7 @@ function applyToSimOpening(companyId) {
   
   const overlay = document.getElementById('simulation-overlay');
   overlay.showModal();
+  document.getElementById('disco-ai-helper-bubble').classList.remove('active');
   
   document.getElementById('sim-modal-title').textContent = `${company.name} Recruitment Drive`;
   document.getElementById('sim-sidebar-title').textContent = company.title;
@@ -845,6 +1015,68 @@ function updateSidebarStats() {
     `;
     container.appendChild(item);
   });
+
+  updateStepper();
+}
+
+function updateStepper() {
+  const sim = activeSim;
+  const roundIdx = sim ? sim.roundIndex : 0;
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById(`step-${i}`);
+    if (!el) continue;
+    el.className = 'sim-step';
+    if (i < roundIdx) {
+      el.classList.add('completed');
+    } else if (i === roundIdx) {
+      el.classList.add('active');
+    }
+  }
+}
+
+async function getDiscoAiHelp() {
+  const bubble = document.getElementById('disco-ai-helper-bubble');
+  const bubbleContent = document.getElementById('disco-ai-bubble-content');
+  if (!activeSim) {
+    alert("Please start a placement simulation drive first!");
+    return;
+  }
+  
+  if (bubble.classList.contains('active')) {
+    bubble.classList.remove('active');
+    return;
+  }
+  
+  bubble.classList.add('active');
+  bubbleContent.innerHTML = `<span style="color: var(--mute);">Calling Disco AI helper... 🪩✨</span>`;
+  
+  const roundNames = [
+    "Group Discussion (GD)",
+    "Coding Assessment (OA)",
+    "System Design & Hackathon",
+    "Technical Interview",
+    "HR Interview"
+  ];
+  const roundName = roundNames[activeSim.roundIndex];
+  const historyLog = simMessages.map(m => `${m.speaker}: ${m.text}`).join("\n\n");
+  
+  const systemPrompt = `You are the Disco AI Helper inside a mock placement interview simulator. 
+The user is applying for ${activeSim.company.title} at ${activeSim.company.name} with CTC ${activeSim.company.ctc} LPA.
+They are currently in the middle of: ${roundName}.
+
+Here is the current round dialogue logs so far:
+${historyLog}
+
+Your task is to generate a helpful, encouraging, and colorful hint (under 3 paragraphs) that guides the applicant on how to formulate the perfect response to the last interviewer statement or question.
+Keep the tone friendly, positive, soft, and bright! Highlight key technical or soft skills they should mention. Avoid writing the exact response, but provide solid guidance/suggestions!
+Also add some fun disco emojis like 🪩, ✨, 🌈.`;
+
+  try {
+    const hint = await callGeminiSimApi(systemPrompt);
+    bubbleContent.innerHTML = hint.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  } catch (e) {
+    bubbleContent.innerHTML = `<span style="color: var(--red);">Error getting hints: ${e.message}</span>`;
+  }
 }
 
 function toggleEditorCodeMode() {

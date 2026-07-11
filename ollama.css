@@ -455,6 +455,53 @@ input:checked + .slider:before {
   background-color: var(--canvas);
 }
 
+/* Settings Tab Layout */
+.settings-layout {
+  display: flex;
+  gap: 32px;
+  margin-top: 24px;
+}
+.settings-tabs {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.settings-tab-btn {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--body);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.settings-tab-btn:hover {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+.settings-tab-btn.active {
+  background: var(--surface-soft-hover);
+  color: var(--primary);
+  border-color: var(--hairline-strong);
+}
+.settings-panels {
+  flex: 1;
+  min-width: 0; /* Prevents overflow in flex children */
+}
+.settings-panel {
+  display: none;
+}
+.settings-panel.active {
+  display: block;
+}
+
 /* Hero Section */
 .hero {
   text-align: center;
@@ -477,6 +524,19 @@ input:checked + .slider:before {
 /* SVG graphs text fonts fixes */
 svg text {
   font-family: 'Outfit', sans-serif !important;
+}
+
+/* Swooshing text word-by-word animation styles */
+@keyframes wordSwoop {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.95); filter: blur(4px); }
+  60%  { opacity: 1; transform: translateY(-1px) scale(1.01); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.word-token {
+  display: inline-block;
+  opacity: 0;
+  animation: wordSwoop 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Responsive Overrides */

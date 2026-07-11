@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
-<title>SEM 05 // SCOUT SETUP</title>
+<title>Scout Settings</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
 <style>
@@ -156,7 +156,7 @@ footer {
     <a href="assistant.html">Chat</a>
     <a href="placements.html">Placements</a>
     <a href="simulator.html">Simulator</a>
-    <a href="settings.html" class="active">Setup</a>
+    <a href="settings.html" class="active">Settings</a>
   </div>
 </nav>
 
@@ -167,196 +167,208 @@ footer {
     <p>Configure your database credentials, API access tokens, and sync rules.</p>
   </div>
 
-  <!-- SECTION: FIREBASE AUTHENTICATION -->
-  <section id="firebase-auth" class="fade-in">
-    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Firebase Auth &amp; Firestore</h2></div>
-    <p class="section-desc">Connect your account. Firebase is used to authenticate you and manage links to your Google Calendar and Gmail. Only Google Log In and Email/Password are allowed.</p>
-    
-    <div class="grid-cols-2">
-      <div>
-        <div class="setup-card">
-          <h3>Connection Status</h3>
-          <div id="auth-status-box" class="auth-status disconnected">Disconnected</div>
-          <div id="auth-info" style="font-size: 13.5px; line-height: 1.5; color: var(--ink3);">
-            Please sign in. Signing in retrieves your personalized operations checklist and allows Scout to read/write your data securely.
-          </div>
-          <div id="uid-display-container" style="display:none; margin-top:12px; font-family: 'Syne Mono', monospace; font-size:12px; color: var(--teal);">
-            Your UID: <code id="user-uid-code">--</code>
-          </div>
-          <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="btn btn-red" onclick="signInWithGoogle()">Sign in with Google</button>
-            <button class="btn btn-outline" id="logout-btn" style="display: none;" onclick="signOutUser()">Log Out</button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="setup-card">
-          <h3>Email Log In / Sign Up</h3>
-          <form id="email-auth-form" onsubmit="handleEmailAuth(event)">
-            <div class="form-group">
-              <label for="email-input">Email Address</label>
-              <input type="email" id="email-input" required>
-            </div>
-            <div class="form-group">
-              <label for="password-input">Password</label>
-              <input type="password" id="password-input" required>
-            </div>
-            <div style="display: flex; gap: 12px;">
-              <button type="submit" class="btn btn-primary" name="action" value="login">Log In</button>
-              <button type="submit" class="btn btn-outline" name="action" value="signup">Sign Up</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECTION: KEYS AND SYSTEM CONFIGURATION -->
-  <section id="keys-config" class="fade-in">
-    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">API Keys &amp; Backend config</h2></div>
-    <p class="section-desc">These keys are saved locally in your browser's <code>localStorage</code>. They are used client-side by Scout to edit the schedule and process queries.</p>
-    
-    <div class="grid-cols-2">
-      <div>
-        <div class="setup-card">
-          <h3>Local API & Placement Credentials</h3>
-          <div class="form-group">
-            <label for="gemini-key">Gemini API Key</label>
-            <input type="password" id="gemini-key" placeholder="gemini-3.1-flash-lite key">
-          </div>
-          <div class="form-group">
-            <label for="openai-key">OpenAI API Key</label>
-            <input type="password" id="openai-key" placeholder="gpt-5.4-nano key">
-          </div>
-          <div class="form-group">
-            <label for="brevo-key">Brevo API Key (for Scout email tool)</label>
-            <input type="password" id="brevo-key" placeholder="Get from Brevo → SMTP & API → API Keys">
-          </div>
-          <div class="form-group">
-            <label for="user-email-target">Target Email (Weekly Updates)</label>
-            <input type="email" id="user-email-target" placeholder="Where notifications are sent">
-          </div>
-          <hr style="border:0; border-top:1px solid var(--line); margin: 20px 0;">
-          <div class="form-group">
-            <label for="github-username">GitHub Username</label>
-            <input type="text" id="github-username" placeholder="e.g. Hootsworth">
-          </div>
-          <div class="form-group">
-            <label for="leetcode-username">LeetCode Username</label>
-            <input type="text" id="leetcode-username" placeholder="e.g. adityadixit">
-          </div>
-          <div class="form-group">
-            <label for="github-commit-goal">GitHub Weekly Commit Goal</label>
-            <input type="number" id="github-commit-goal" placeholder="e.g. 5" value="5">
-          </div>
-          <div class="form-group">
-            <label for="leetcode-solved-goal">LeetCode Weekly Solve Goal</label>
-            <input type="number" id="leetcode-solved-goal" placeholder="e.g. 3" value="3">
-          </div>
-          <div class="form-group">
-            <label for="user-cgpa">Your Current CGPA</label>
-            <input type="number" id="user-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.75" value="8.5">
-          </div>
-          <div class="form-group">
-            <label for="user-backlogs">Active Backlogs Count</label>
-            <input type="number" id="user-backlogs" min="0" max="10" placeholder="e.g. 0" value="0">
-          </div>
-          <hr style="border:0; border-top:1px solid var(--line); margin: 20px 0;">
-          <div class="form-group">
-            <label for="discord-bot-token">Discord Bot Token</label>
-            <input type="password" id="discord-bot-token" placeholder="Bot token from Discord Portal">
-          </div>
-          <div class="form-group">
-            <label for="discord-channel-id">Discord Channel ID</label>
-            <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
-          </div>
-          <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials & Goals</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="setup-card">
-          <h3>GitHub Actions Cron Secrets</h3>
-          <div class="instruction-box">
-            To run the background sync scanner in GitHub, configure these secrets in your repository (**Settings &gt; Secrets and variables &gt; Actions**):
-          </div>
-          <ul style="font-family:'Instrument Serif', serif; font-size:16px; font-style:italic; line-height:1.5; padding-left:20px; color:var(--ink2);">
-            <li><code>GEMINI_API_KEY</code>: Your Gemini Key</li>
-            <li><code>BREVO_API_KEY</code>: Your Brevo key (noreply@singulr.tech)</li>
-            <li><code>USER_EMAIL</code>: Target Email for updates</li>
-            <li><code>USER_UID</code>: Your Firebase UID (displayed in Connection Status above)</li>
-            <li><code>FIREBASE_SERVICE_ACCOUNT</code>: Content of downloaded Firebase Service Account Private Key (JSON)</li>
-          </ul>
-        </div>
-      </div>
+  <div class="settings-layout">
+    <!-- Tabs Sidebar Selector -->
+    <div class="settings-tabs">
+      <button class="settings-tab-btn active" onclick="switchSettingsTab('firebase-auth', this)">Firebase Auth &amp; Database</button>
+      <button class="settings-tab-btn" onclick="switchSettingsTab('keys-config', this)">API Credentials &amp; Goals</button>
+      <button class="settings-tab-btn" onclick="switchSettingsTab('token-generator', this)">OAuth Refresh Token</button>
     </div>
 
-    <!-- Firebase Config Setup Card -->
-    <div class="setup-card" style="margin-top: 32px;">
-      <h3>Firebase Web Client Configuration</h3>
-      <p style="font-size: 13.5px; color: var(--ink3); margin-bottom: 20px;">
-        Provide your Firebase Project Client SDK config snippet (JSON format) so this page can connect to your authentication backend.
-      </p>
-      <div class="form-group">
-        <textarea id="firebase-config-json" rows="6" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px;" placeholder='{
-  "apiKey": "...",
-  "authDomain": "...",
-  "projectId": "...",
-  "appId": "..."
-}'></textarea>
-      </div>
-      <button class="btn btn-primary" onclick="saveFirebaseConfig()">Save Firebase Configuration</button>
-    </div>
-  </section>
-
-  <!-- SECTION: BACKGROUND GOOGLE TOKEN GENERATOR -->
-  <section id="token-generator" class="fade-in">
-    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">OAuth Refresh Token Generator</h2></div>
-    <p class="section-desc">Generate a Google Refresh Token so your GitHub Actions background job can read your emails and update your Google Calendar offline. Setup your Client ID and Client Secret from Google Cloud Console first.</p>
-    
-    <div class="setup-card">
-      <div class="instruction-box">
-        <h4>How to set up in Google Cloud Console:</h4>
-        1. Go to the <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a>.<br>
-        2. Create a project and enable the <b>Google Calendar API</b> and <b>Gmail API</b>.<br>
-        3. Go to <b>APIs &amp; Services &gt; OAuth consent screen</b>. Set User Type to <b>External</b>, and add your email as a Test User.<br>
-        4. Go to <b>Credentials &gt; Create Credentials &gt; OAuth client ID</b>. Choose <b>Web application</b>.<br>
-        5. Add <code><span id="redirect-uri-display">https://your-pages-url/settings.html</span></code> as an <b>Authorized redirect URI</b>.<br>
-        6. Save and copy the Client ID and Client Secret below.
-      </div>
-
-      <div class="grid-cols-2">
-        <div>
-          <div class="form-group">
-            <label for="oauth-client-id">OAuth Client ID</label>
-            <input type="text" id="oauth-client-id" placeholder="12345-abcde.apps.googleusercontent.com">
+    <!-- Panels Contents -->
+    <div class="settings-panels">
+      <!-- SECTION: FIREBASE AUTHENTICATION -->
+      <section id="firebase-auth" class="settings-panel active" style="padding:0; border-bottom:none;">
+        <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Firebase Auth &amp; Firestore</h2></div>
+        <p class="section-desc">Connect your account. Firebase is used to authenticate you and manage links to your Google Calendar and Gmail.</p>
+        
+        <div class="grid-cols-2">
+          <div>
+            <div class="setup-card">
+              <h3>Connection Status</h3>
+              <div id="auth-status-box" class="auth-status disconnected">Disconnected</div>
+              <div id="auth-info" style="font-size: 13.5px; line-height: 1.5; color: var(--mute);">
+                Please sign in. Signing in retrieves your personalized operations checklist and allows Scout to read/write your data securely.
+              </div>
+              <div id="uid-display-container" style="display:none; margin-top:12px; font-family: ui-monospace, monospace; font-size:12px; color: var(--primary);">
+                Your UID: <code id="user-uid-code">--</code>
+              </div>
+              <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="btn btn-red" onclick="signInWithGoogle()">Sign in with Google</button>
+                <button class="btn btn-outline" id="logout-btn" style="display: none;" onclick="signOutUser()">Log Out</button>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="oauth-client-secret">OAuth Client Secret</label>
-            <input type="password" id="oauth-client-secret" placeholder="Your secret key">
+
+          <div>
+            <div class="setup-card">
+              <h3>Email Log In / Sign Up</h3>
+              <form id="email-auth-form" onsubmit="handleEmailAuth(event)">
+                <div class="form-group">
+                  <label for="email-input">Email Address</label>
+                  <input type="email" id="email-input" required>
+                </div>
+                <div class="form-group">
+                  <label for="password-input">Password</label>
+                  <input type="password" id="password-input" required>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                  <button type="submit" class="btn btn-primary" name="action" value="login">Log In</button>
+                  <button type="submit" class="btn btn-outline" name="action" value="signup">Sign Up</button>
+                </div>
+              </form>
+            </div>
           </div>
-          <button class="btn btn-red" onclick="startGoogleAuthFlow()">1. Authorize Google APIs</button>
+        </div>
+      </section>
+
+      <!-- SECTION: KEYS AND SYSTEM CONFIGURATION -->
+      <section id="keys-config" class="settings-panel" style="padding:0; border-bottom:none;">
+        <div class="section-label"><span class="section-num">02</span><h2 class="section-title">API Keys &amp; Goals</h2></div>
+        <p class="section-desc">These keys are saved locally in your browser's <code>localStorage</code>. They are used client-side by Scout to edit the schedule and process queries.</p>
+        
+        <div class="grid-cols-2">
+          <div>
+            <div class="setup-card">
+              <h3>Local API &amp; Placement Credentials</h3>
+              <div class="form-group">
+                <label for="gemini-key">Gemini API Key</label>
+                <input type="password" id="gemini-key" placeholder="gemini-3.1-flash-lite key">
+              </div>
+              <div class="form-group">
+                <label for="openai-key">OpenAI API Key</label>
+                <input type="password" id="openai-key" placeholder="gpt-5.4-nano key">
+              </div>
+              <div class="form-group">
+                <label for="brevo-key">Brevo API Key (for Scout email tool)</label>
+                <input type="password" id="brevo-key" placeholder="Get from Brevo → SMTP &amp; API → API Keys">
+              </div>
+              <div class="form-group">
+                <label for="user-email-target">Target Email (Weekly Updates)</label>
+                <input type="email" id="user-email-target" placeholder="Where notifications are sent">
+              </div>
+              <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
+              <div class="form-group">
+                <label for="github-username">GitHub Username</label>
+                <input type="text" id="github-username" placeholder="e.g. Hootsworth">
+              </div>
+              <div class="form-group">
+                <label for="leetcode-username">LeetCode Username</label>
+                <input type="text" id="leetcode-username" placeholder="e.g. adityadixit">
+              </div>
+              <div class="form-group">
+                <label for="github-commit-goal">GitHub Weekly Commit Goal</label>
+                <input type="number" id="github-commit-goal" placeholder="e.g. 5" value="5">
+              </div>
+              <div class="form-group">
+                <label for="leetcode-solved-goal">LeetCode Weekly Solve Goal</label>
+                <input type="number" id="leetcode-solved-goal" placeholder="e.g. 3" value="3">
+              </div>
+              <div class="form-group">
+                <label for="user-cgpa">Your Current CGPA</label>
+                <input type="number" id="user-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.75" value="8.5">
+              </div>
+              <div class="form-group">
+                <label for="user-backlogs">Active Backlogs Count</label>
+                <input type="number" id="user-backlogs" min="0" max="10" placeholder="e.g. 0" value="0">
+              </div>
+              <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
+              <div class="form-group">
+                <label for="discord-bot-token">Discord Bot Token</label>
+                <input type="password" id="discord-bot-token" placeholder="Bot token from Discord Portal">
+              </div>
+              <div class="form-group">
+                <label for="discord-channel-id">Discord Channel ID</label>
+                <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
+              </div>
+              <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials &amp; Goals</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="setup-card">
+              <h3>GitHub Actions Cron Secrets</h3>
+              <div class="instruction-box">
+                To run the background sync scanner in GitHub, configure these secrets in your repository (**Settings &gt; Secrets and variables &gt; Actions**):
+              </div>
+              <ul style="font-family:'Outfit', sans-serif; font-size:14.5px; line-height:1.6; padding-left:20px; color:var(--body); margin-top: 12px;">
+                <li><code>GEMINI_API_KEY</code>: Your Gemini Key</li>
+                <li><code>BREVO_API_KEY</code>: Your Brevo key (noreply@singulr.tech)</li>
+                <li><code>USER_EMAIL</code>: Target Email for updates</li>
+                <li><code>USER_UID</code>: Your Firebase UID (displayed in Connection Status)</li>
+                <li><code>FIREBASE_SERVICE_ACCOUNT</code>: Content of downloaded Firebase Service Account Private Key (JSON)</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <div class="form-group">
-            <label>Generated Google Refresh Token</label>
-            <code class="block" id="generated-refresh-token">Click Authorize on the left first...</code>
-          </div>
-          <p style="font-size: 13px; line-height: 1.5; color: var(--ink3); margin-bottom: 12px;">
-            Copy this token and add it to your GitHub Repository Secrets as <code>GOOGLE_REFRESH_TOKEN</code>.
-            Also add <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> to your secrets!
+        <!-- Firebase Config Setup Card -->
+        <div class="setup-card" style="margin-top: 32px;">
+          <h3>Firebase Web Client Configuration</h3>
+          <p style="font-size: 13.5px; color: var(--body); margin-bottom: 20px;">
+            Provide your Firebase Project Client SDK config snippet (JSON format) so this page can connect to your authentication backend.
           </p>
-          <button class="btn btn-outline" onclick="copyRefreshToken()">Copy Token</button>
+          <div class="form-group">
+            <textarea id="firebase-config-json" rows="6" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px;" placeholder='{
+      "apiKey": "...",
+      "authDomain": "...",
+      "projectId": "...",
+      "appId": "..."
+    }'></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="saveFirebaseConfig()">Save Firebase Configuration</button>
         </div>
-      </div>
+      </section>
+
+      <!-- SECTION: BACKGROUND GOOGLE TOKEN GENERATOR -->
+      <section id="token-generator" class="settings-panel" style="padding:0; border-bottom:none;">
+        <div class="section-label"><span class="section-num">03</span><h2 class="section-title">OAuth Refresh Token Generator</h2></div>
+        <p class="section-desc">Generate a Google Refresh Token so your GitHub Actions background job can read your emails and update your Google Calendar offline.</p>
+        
+        <div class="setup-card">
+          <div class="instruction-box">
+            <h4>How to set up in Google Cloud Console:</h4>
+            1. Go to the <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a>.<br>
+            2. Create a project and enable the <b>Google Calendar API</b> and <b>Gmail API</b>.<br>
+            3. Go to <b>APIs &amp; Services &gt; OAuth consent screen</b>. Set User Type to <b>External</b>, and add your email as a Test User.<br>
+            4. Go to <b>Credentials &gt; Create Credentials &gt; OAuth client ID</b>. Choose <b>Web application</b>.<br>
+            5. Add <code><span id="redirect-uri-display">https://your-pages-url/settings.html</span></code> as an <b>Authorized redirect URI</b>.<br>
+            6. Save and copy the Client ID and Client Secret below.
+          </div>
+
+          <div class="grid-cols-2" style="margin-top: 24px;">
+            <div>
+              <div class="form-group">
+                <label for="oauth-client-id">OAuth Client ID</label>
+                <input type="text" id="oauth-client-id" placeholder="12345-abcde.apps.googleusercontent.com">
+              </div>
+              <div class="form-group">
+                <label for="oauth-client-secret">OAuth Client Secret</label>
+                <input type="password" id="oauth-client-secret" placeholder="Your secret key">
+              </div>
+              <button class="btn btn-red" onclick="startGoogleAuthFlow()">1. Authorize Google APIs</button>
+            </div>
+
+            <div>
+              <div class="form-group">
+                <label>Generated Google Refresh Token</label>
+                <code class="block" id="generated-refresh-token" style="display:block; padding: 12px; background:var(--surface-soft); border-radius:6px; font-family:ui-monospace,monospace; font-size:12px; word-break:break-all;">Click Authorize on the left first...</code>
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.5; color: var(--body); margin-bottom: 12px;">
+                Copy this token and add it to your GitHub Repository Secrets as <code>GOOGLE_REFRESH_TOKEN</code>.
+                Also add <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> to your secrets!
+              </p>
+              <button class="btn btn-outline" onclick="copyRefreshToken()">Copy Token</button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
+  </div>
 
   <footer>
     <span>Semester 5 Operations Plan</span>
-    <span>Built Jul 10, 2026 — Configuration Setup</span>
+    <span>Built Jul 10, 2026 — Configuration Settings</span>
   </footer>
 </div>
 
@@ -552,6 +564,23 @@ function saveFirebaseConfig() {
   } catch(e) {
     alert("Invalid JSON format: " + e.message);
   }
+}
+
+function switchSettingsTab(panelId, btnElement) {
+  // Hide all panels
+  const panels = document.querySelectorAll('.settings-panel');
+  panels.forEach(p => p.classList.remove('active'));
+  
+  // Show active panel
+  const activePanel = document.getElementById(panelId);
+  if (activePanel) activePanel.classList.add('active');
+  
+  // Remove active state from all buttons
+  const buttons = document.querySelectorAll('.settings-tab-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+  
+  // Set current button active
+  btnElement.classList.add('active');
 }
 
 function saveApiKeys() {
