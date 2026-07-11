@@ -774,7 +774,7 @@ function appendMessageUI(role, text) {
   msg.className = 'message';
 
   if (role === 'assistant') {
-    renderAnimatedText(msg, text);
+    renderAnimatedText(msg, text, false);
   } else {
     msg.textContent = text;
   }
@@ -1970,7 +1970,7 @@ function buildCommitmentStatusChart(rawText) {
 }
 
 // Render formatted markdown inside the message
-function renderAnimatedText(container, rawText) {
+function renderAnimatedText(container, rawText, animate = true) {
   // Format markdown using the robust parser
   let html = parseMarkdown(rawText);
   const hasVisual = /<svg[\s>]/i.test(html);
@@ -1979,7 +1979,9 @@ function renderAnimatedText(container, rawText) {
   }
   container.innerHTML = html;
   decorateAssistantMessage(container, rawText);
-  animateWords(container, 25);
+  if (animate) {
+    animateWords(container, 25);
+  }
 }
 
 function animateWords(container, wordDelayMs = 25) {
