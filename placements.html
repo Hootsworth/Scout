@@ -6,246 +6,270 @@
 <link rel="icon" type="image/png" href="logo.png">
 <title>SEM 05 // PLACEMENTS TRACKER</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ollama.css">
 <style>
-:root {
-  --bg:     #f5f2eb;
-  --paper:  #faf8f3;
-  --paper2: #ede9e0;
-  --paper3: #e5e0d4;
-  --ink:    #1a1814;
-  --ink2:   #3d3a33;
-  --ink3:   #7a7670;
-  --red:    #c13d2e;
-  --amber:  #c47d1a;
-  --teal:   #2a6b5e;
-  --blue:   #2c4f8a;
-  --line:   rgba(26,24,20,0.10);
-  --line2:  rgba(26,24,20,0.06);
+/* Page specific placements overrides */
+.hero {
+  text-align: center;
+  padding: 60px 0;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 40px;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background:var(--bg); color:var(--ink2); font-family:'Syne',sans-serif;
-  cursor:crosshair; position:relative; overflow-x:hidden;
+.hero h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--ink);
 }
-body::after {
-  content:''; position:fixed; inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events:none; z-index:9998; mix-blend-mode:multiply;
+.hero p {
+  color: var(--body);
+  font-size: 16px;
+  max-width: 600px;
+  margin: 12px auto 0 auto;
 }
-#cursor { width:6px;height:6px;background:var(--red);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply; }
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--ink3);}
 
-.sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
-.sidenav .logo-container {
+.section-label {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1.5px solid var(--red);
-  background: white;
-  transition: transform 0.2s ease;
-  margin-bottom: 12px;
-  flex-shrink: 0;
+  gap: 12px;
+  margin-bottom: 16px;
 }
-.sidenav .logo-container:hover {
-  transform: scale(1.1);
+.section-num {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  color: var(--body);
 }
-.sidenav .logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  flex-shrink: 0;
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
 }
-.sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
-.sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
-.sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
-.sidenav .links a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink3);font-family:'Syne Mono';font-size:10px;letter-spacing:0.2em;text-transform:uppercase;transition:color .15s;}
-.sidenav .links a:hover{color:var(--red);}
-.sidenav .links a.active{color:var(--red);font-weight:700;}
-.sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
-
-.main{margin-left:60px;}
-section{padding:80px;border-bottom:1px solid var(--line);position:relative;}
-
-.section-label{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
-.section-num{font-family:'Syne Mono',monospace;font-size:12px;color:var(--red);border:1px solid var(--red);padding:2px 6px;border-radius:2px;}
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.04em;color:var(--ink);text-transform:uppercase;}
-.section-desc{font-family:'Instrument Serif',serif;font-style:italic;font-size:22px;color:var(--ink3);margin-bottom:48px;max-width:700px;line-height:1.4;}
-
-/* Cards & Layouts */
-.grid-cols-2{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
-.grid-cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:40px;}
-.setup-card{background:var(--paper);border:1px solid var(--line);padding:32px;position:relative;margin-bottom:24px;}
-.setup-card h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.03em;color:var(--ink);margin-bottom:20px;border-bottom:1px solid var(--line2);padding-bottom:10px;}
-
-.form-group{margin-bottom:20px;}
-.form-group label{display:block;font-family:'Syne Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;letter-spacing:0.05em;}
-.form-group input, .form-group textarea, .form-group select{
-  width:100%;background:var(--paper2);border:1px solid var(--line);padding:12px;
-  font-family:'Syne',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color .15s;
+.section-desc {
+  font-size: 15px;
+  color: var(--body);
+  margin-bottom: 32px;
 }
-.form-group input:focus, .form-group textarea:focus, .form-group select:focus{border-color:var(--red);}
 
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--bg);
-  border:1px solid var(--ink);padding:12px 24px;font-family:'Bebas Neue',sans-serif;font-size:15px;
-  letter-spacing:0.05em;cursor:pointer;transition:all .15s;text-transform:uppercase;text-decoration:none;
+.grid-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 20px;
 }
-.btn:hover{background:var(--red);border-color:var(--red);color:white;}
-.btn-red{background:var(--red);border-color:var(--red);color:white;}
-.btn-red:hover{background:var(--ink);border-color:var(--ink);color:var(--bg);}
-.btn-outline{background:transparent;color:var(--ink);border-color:var(--line);}
-.btn-outline:hover{background:var(--paper2);border-color:var(--ink);}
 
-/* Placements Specific UI */
-.stat-box{background:var(--paper);border:1px solid var(--line);padding:24px;text-align:center;}
-.stat-val{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--red);line-height:1;}
-.stat-lbl{font-family:'Syne Mono',monospace;font-size:9px;color:var(--ink3);text-transform:uppercase;margin-top:6px;}
+.grid-cols-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
 
-.board-container{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
-.board-column{background:rgba(26,24,20,0.02);border:1px solid var(--line);padding:24px;min-height:500px;}
-.board-column h3{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--ink);margin-bottom:16px;display:flex;justify-content:between;border-bottom:2px solid var(--ink);padding-bottom:8px;}
+.setup-card {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 28px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.setup-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 10px;
+}
 
-.job-card{background:var(--paper);border:1px solid var(--line);padding:20px;margin-bottom:16px;position:relative;transition:transform 0.15s, border-color 0.15s;}
-.job-card:hover{transform:translateY(-2px);border-color:var(--ink2);}
-.job-card h4{font-family:'Syne';font-weight:700;font-size:16px;color:var(--ink);margin-bottom:4px;}
-.job-card .company{font-family:'Syne Mono',monospace;font-size:11px;color:var(--ink3);margin-bottom:10px;text-transform:uppercase;}
-.job-card .ctc{display:inline-block;background:var(--paper2);color:var(--teal);font-size:11px;font-family:'Syne Mono',monospace;padding:4px 8px;border-radius:2px;font-weight:700;margin-bottom:12px;}
-.job-card .status-badge{display:inline-block;float:right;font-size:10px;font-family:'Syne Mono',monospace;padding:4px 8px;border-radius:2px;text-transform:uppercase;font-weight:700;}
+.stat-box {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+.stat-val {
+  font-family: 'Nunito', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.stat-lbl {
+  font-size: 11px;
+  color: var(--mute);
+  text-transform: uppercase;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.board-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.board-column {
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  padding: 20px;
+  border-radius: 12px;
+  min-height: 500px;
+}
+.board-column h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hairline-strong);
+  padding-bottom: 8px;
+}
+
+.job-card {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.job-card:hover {
+  border-color: var(--ink);
+}
+.job-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.job-card .company {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--mute);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.job-card .ctc {
+  display: inline-block;
+  background: var(--surface-soft);
+  color: #1e7e2c;
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.job-card .status-badge {
+  display: inline-block;
+  float: right;
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
 
 /* Status badge styles */
-.badge-dreaming { background: rgba(44,79,138,0.1); color: var(--blue); }
-.badge-applied { background: rgba(122,118,112,0.1); color: var(--ink3); }
-.badge-test { background: rgba(196,125,26,0.1); color: var(--amber); }
-.badge-technical { background: rgba(196,125,26,0.15); color: var(--amber); }
-.badge-hr { background: rgba(196,125,26,0.2); color: var(--amber); }
-.badge-offer { background: rgba(42,107,94,0.15); color: var(--teal); border: 1px solid var(--teal); }
-.badge-rejected { background: rgba(193,61,46,0.1); color: var(--red); }
+.badge-dreaming { background: rgba(59, 130, 246, 0.1); color: #2c4f8a; }
+.badge-applied { background: var(--surface-soft); color: var(--body); border: 1px solid var(--hairline); }
+.badge-test { background: rgba(255, 189, 46, 0.15); color: #a37603; }
+.badge-technical { background: rgba(255, 189, 46, 0.25); color: #a37603; }
+.badge-hr { background: rgba(255, 189, 46, 0.35); color: #a37603; }
+.badge-offer { background: rgba(39, 201, 63, 0.15); color: #1e7e2c; border: 1px solid rgba(39, 201, 63, 0.3); }
+.badge-rejected { background: rgba(255, 95, 86, 0.1); color: #b52c24; }
 
-.job-card .jd-summary{font-family:'Instrument Serif',serif;font-style:italic;font-size:14.5px;color:var(--ink2);margin-bottom:12px;line-height:1.3;white-space:pre-line;}
-.job-card .prep-notes{font-family:'Syne';font-size:11.5px;color:var(--ink3);background:var(--paper2);padding:10px;border-left:2px solid var(--red);margin-top:10px;}
-
-.job-card-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:16px;border-top:1px solid var(--line2);padding-top:12px;}
-.job-card-actions button{background:transparent;border:none;font-family:'Syne Mono',monospace;font-size:9.5px;text-transform:uppercase;cursor:pointer;color:var(--ink3);transition:color .15s;}
-.job-card-actions button:hover{color:var(--red);}
-
-.auth-warning{background:rgba(193,61,46,0.05);border:1px solid rgba(193,61,46,0.2);padding:24px;color:var(--red);font-family:'Syne',sans-serif;font-size:14px;margin-bottom:24px;display:none;}
-
-/* Pre-Placements Simulator Custom Styles */
-.sim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px; }
-.sim-card { background: var(--paper); border: 1px solid var(--line); padding: 24px; position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px; transition: transform 0.15s, border-color 0.15s; }
-.sim-card:hover { transform: translateY(-2px); border-color: var(--ink); }
-.sim-card h4 { font-family: 'Syne'; font-weight: 700; font-size: 18px; color: var(--ink); margin-bottom: 4px; }
-.sim-card .company { font-family: 'Syne Mono', monospace; font-size: 11px; color: var(--ink3); text-transform: uppercase; margin-bottom: 12px; }
-.sim-card .ctc { font-family: 'Syne Mono', monospace; font-size: 11px; font-weight: 700; background: var(--paper2); color: var(--teal); padding: 4px 8px; border-radius: 2px; align-self: flex-start; margin-bottom: 12px; }
-.sim-card .criteria { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 14.5px; color: var(--ink2); margin-bottom: 16px; line-height: 1.4; border-top: 1px dashed var(--line2); padding-top: 12px; }
-.sim-card .eligibility-badge { font-size: 9px; font-family: 'Syne Mono', monospace; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; font-weight: 700; display: inline-block; margin-bottom: 12px; }
-.eligible { background: rgba(42, 107, 94, 0.1); color: var(--teal); }
-.ineligible { background: rgba(193, 61, 46, 0.1); color: var(--red); }
-.sim-card .pool-size { font-size: 10px; font-family: 'Syne Mono', monospace; color: var(--ink3); margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line2); display: flex; justify-content: space-between; }
-
-/* Reality Mode Widget */
-.reality-banner { background: var(--paper2); border: 1px solid var(--line); padding: 20px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.reality-banner h3 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
-.reality-banner p { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 16px; color: var(--ink3); }
-.toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--paper3); transition: .2s; border: 1px solid var(--line); }
-.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--ink); transition: .2s; }
-input:checked + .slider { background-color: var(--red); }
-input:checked + .slider:before { transform: translateX(20px); background-color: white; }
-
-/* Simulation dialog modal */
-dialog#simulation-overlay {
-  border: 1px solid var(--ink); background: var(--paper); max-width: 760px; width: 90%; height: 85vh; margin: auto; padding: 0; outline: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+.job-card .jd-summary {
+  font-size: 13.5px;
+  color: var(--charcoal);
+  margin-bottom: 10px;
+  line-height: 1.4;
+  white-space: pre-line;
 }
-dialog#simulation-overlay::backdrop { background: rgba(26,24,20,0.6); backdrop-filter: blur(4px); }
-.sim-overlay-header { background: var(--ink); color: var(--bg); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
-.sim-overlay-header h3 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.04em; }
-.sim-overlay-header .close-btn { background: transparent; border: none; color: var(--bg); cursor: pointer; font-size: 18px; font-weight: bold; }
-.sim-arena-layout { display: flex; height: calc(100% - 60px); overflow: hidden; }
-.sim-arena-main { flex: 1; display: flex; flex-direction: column; height: 100%; border-right: 1px solid var(--line); }
-.sim-arena-chat { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; background-image: linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px); background-size: 32px 32px; }
-.sim-arena-input { padding: 20px; border-top: 1px solid var(--line); background: var(--paper); display: flex; flex-direction: column; gap: 12px; }
-.sim-arena-input textarea { width: 100%; background: var(--paper2); border: 1px solid var(--line); padding: 12px; font-family: 'Syne', sans-serif; font-size: 14.5px; color: var(--ink); outline: none; resize: none; min-height: 80px; }
-.sim-arena-input textarea:focus { border-color: var(--red); }
-.sim-arena-input textarea.code-mode { font-family: 'Syne Mono', monospace; font-size: 13px; font-style: normal; min-height: 180px; background: #faf8f3; }
-.sim-arena-sidebar { width: 220px; background: var(--paper2); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-.sim-arena-sidebar h4 { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--ink); border-bottom: 1.5px solid var(--ink); padding-bottom: 6px; }
+.job-card .prep-notes {
+  font-size: 12px;
+  color: var(--body);
+  background: var(--surface-soft);
+  padding: 10px;
+  border-left: 2px solid var(--primary);
+  margin-top: 10px;
+  border-radius: 0 4px 4px 0;
+}
 
-/* Chat bubble aesthetics */
-.bubble-row { display: flex; gap: 14px; align-items: flex-start; max-width: 85%; }
-.bubble-row.candidate { align-self: flex-end; flex-direction: row-reverse; }
-.bubble-avatar { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: white; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.bubble-avatar img { width: 100%; height: 100%; object-fit: contain; }
-.bubble-content { background: var(--paper); border: 1px solid var(--line); padding: 14px 18px; position: relative; line-height: 1.5; font-size: 14.5px; }
-.bubble-row.interviewer .bubble-content { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 16.5px; background: white; border-radius: 0 8px 8px 8px; }
-.bubble-row.candidate .bubble-content { font-family: 'Syne', sans-serif; background: var(--ink); color: var(--bg); border-color: var(--ink); border-radius: 8px 0 8px 8px; }
-.bubble-speaker { font-family: 'Syne Mono', monospace; font-size: 9px; text-transform: uppercase; color: var(--ink3); margin-bottom: 4px; display: block; }
-.bubble-row.candidate .bubble-speaker { text-align: right; color: rgba(245,242,235,0.7); }
+.job-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  border-top: 1px dashed var(--hairline);
+  padding-top: 10px;
+}
+.job-card-actions button {
+  background: transparent;
+  border: none;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--mute);
+}
+.job-card-actions button:hover {
+  color: var(--ink);
+}
 
-/* Thought bubbles */
-.bubble-row.thought { align-self: center; max-width: 90%; }
-.bubble-row.thought .bubble-content { background: rgba(196, 125, 26, 0.04); border-color: rgba(196, 125, 26, 0.2); color: var(--amber); font-family: 'Syne Mono', monospace; font-size: 11px; border-radius: 4px; padding: 10px 14px; text-align: center; }
+.auth-warning {
+  background: rgba(255, 95, 86, 0.1);
+  border: 1px solid rgba(255, 95, 86, 0.2);
+  padding: 16px 20px;
+  color: #b52c24;
+  font-size: 14px;
+  margin-bottom: 24px;
+  display: none;
+  border-radius: 8px;
+}
 
-/* Candidate lists */
-.candidate-item { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 15px; }
-.candidate-item.eliminated { text-decoration: line-through; opacity: 0.4; }
-.candidate-item .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
-.candidate-item.eliminated .status-dot { background: var(--red); }
+footer {
+  padding: 32px 0 0 0;
+  border-top: 1px solid var(--hairline);
+  margin-top: 88px;
+  font-size: 13px;
+  color: var(--body);
+  display: flex;
+  justify-content: space-between;
+}
 
 @media(max-width:900px){
-  .sidenav{display:none;}
-  .main{margin-left:0;}
-  section{padding:40px 24px;}
-  .grid-cols-2{grid-template-columns:1fr;}
-  .board-container{grid-template-columns:1fr;}
-  dialog#simulation-overlay { height: 95vh; width: 95%; }
-  .sim-arena-layout { flex-direction: column; }
-  .sim-arena-sidebar { width: 100%; height: 180px; border-top: 1px solid var(--line); }
+  .board-container{grid-template-columns:1fr; gap:16px;}
 }
 </style>
 </head>
 <body>
-<div id="cursor"></div>
-
-<!-- NAVIGATION SIDEBAR -->
-<nav class="sidenav">
-  <a href="index.html" class="logo-container">
-    <img src="logo.png" alt="Scout Logo" class="logo-img">
-  </a>
-  
-  <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
-    <span class="nav-group-title">Menu</span>
-    <div class="links">
-      <a href="index.html">Plan</a>
-      <a href="assistant.html">Chat</a>
-      <a href="placements.html" class="active">Placements</a>
-      <a href="settings.html">Setup</a>
-    </div>
+<!-- NAVIGATION BAR -->
+<nav class="primary-nav">
+  <div class="logo-area">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+      <path d="M10 20v-6h4v6M18 10a4 4 0 0 0-8 0v4H6a2 2 0 0 0-2 2v2M20 20v-4a4 4 0 0 0-4-4h-2V6a2 2 0 0 0-4 0v4H9"></path>
+      <circle cx="14" cy="5" r="0.5"></circle>
+    </svg>
+    <span>Scout</span>
   </div>
-
-  <div class="nav-group" style="flex-grow: 1; justify-content: flex-start; overflow-y: auto; padding-top: 10px;">
-    <span class="nav-group-title">Sections</span>
-    <div class="links" style="gap: 18px;">
-      <a href="#stats">Overview</a>
-      <a href="#applications">Applications</a>
-      <a href="#sim-arena">Mock Sim</a>
-      <a href="#add-drive">Add Opportunity</a>
-    </div>
+  <div class="nav-links">
+    <a href="index.html">Plan</a>
+    <a href="assistant.html">Chat</a>
+    <a href="placements.html" class="active">Placements</a>
+    <a href="simulator.html">Simulator</a>
+    <a href="settings.html">Setup</a>
   </div>
-  
-  <div class="tag">JUL 2026 → JAN 2027</div>
 </nav>
 
-<div class="main">
+<div class="container page-offset">
   <!-- AUTH ALERT -->
-  <section style="padding: 24px 80px 0; border-bottom: none;">
+  <section style="padding: 24px 0 0 0; border-bottom: none;">
     <div id="auth-warning-box" class="auth-warning" style="display:inline-flex; align-items:center; gap:8px;">
       <svg style="width:14px; height:14px; flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       Please authenticate on the <a href="settings.html">Setup Page</a> to connect with Cloud Firestore and load your placements data.
@@ -274,13 +298,13 @@ dialog#simulation-overlay::backdrop { background: rgba(26,24,20,0.6); backdrop-f
   </section>
 
   <!-- SECTION: APPLICATIONS BOARD -->
-  <section id="applications" style="background:var(--paper);">
+  <section id="applications">
     <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Application Board</h2></div>
     
     <div class="board-container">
       <!-- COLUMN 1: ON-CAMPUS RECRUITMENT -->
       <div class="board-column">
-        <h3>On-Campus Opportunities <span id="on-campus-badge" style="font-size:13px; color:var(--ink3); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
+        <h3>On-Campus Opportunities <span id="on-campus-badge" style="font-size:13px; color:var(--mute); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
         <div id="on-campus-list" style="margin-top:20px;">
           <!-- Managed via JS -->
         </div>
@@ -288,7 +312,7 @@ dialog#simulation-overlay::backdrop { background: rgba(26,24,20,0.6); backdrop-f
 
       <!-- COLUMN 2: OFF-CAMPUS DRIVES -->
       <div class="board-column">
-        <h3>Off-Campus &amp; Referrals <span id="off-campus-badge" style="font-size:13px; color:var(--ink3); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
+        <h3>Off-Campus &amp; Referrals <span id="off-campus-badge" style="font-size:13px; color:var(--mute); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
         <div id="off-campus-list" style="margin-top:20px;">
           <!-- Managed via JS -->
         </div>
@@ -296,165 +320,35 @@ dialog#simulation-overlay::backdrop { background: rgba(26,24,20,0.6); backdrop-f
     </div>
   </section>
 
-  <!-- SECTION: MOCK PLACEMENT SIMULATOR -->
-  <section id="sim-arena" style="background: var(--paper);">
-    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Pre Placements (Mock Sim)</h2></div>
-    <p class="section-desc">Experience a highly competitive placement simulation. Create custom openings or apply to pre-generated openings. Reality mode adds delays and ruthless AI evaluation rounds.</p>
-    
-    <!-- Reality Mode Toggle -->
-    <div class="reality-banner">
-      <div>
-        <h3>
-          <svg style="width:18px; height:18px; color:var(--red); vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          REALITY MODE ACTIVE
-        </h3>
-        <p>Enforces multi-day candidate processing delays (simulated) and triggers extremely harsh, realistic AI-generated rejection letters.</p>
-      </div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="reality-mode-toggle" onchange="toggleRealityMode()">
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <!-- Active Openings -->
-    <div style="margin-bottom: 40px;">
-      <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; margin-bottom:16px; border-bottom: 2px solid var(--ink); padding-bottom: 8px;">Active Openings</h3>
-      <div class="sim-grid" id="sim-openings-grid">
-        <!-- Managed dynamically by JS -->
-      </div>
-    </div>
-
-    <!-- Custom openings generator -->
-    <div class="grid-cols-2">
-      <div class="setup-card" style="margin-bottom:0;">
-        <h3>Generate Custom Opening</h3>
-        <form id="custom-sim-form" onsubmit="generateCustomSimOpening(event)">
-          <div class="form-group">
-            <label for="sim-company-name">Company Name</label>
-            <input type="text" id="sim-company-name" required placeholder="e.g. Boogle, Pineapple">
-          </div>
-          <div class="form-group">
-            <label for="sim-job-title">Job Title</label>
-            <input type="text" id="sim-job-title" required placeholder="e.g. Software Development Engineer">
-          </div>
-          <div class="form-group">
-            <label for="sim-job-ctc">CTC (Lakhs Per Annum / LPA)</label>
-            <input type="number" id="sim-job-ctc" required min="1" max="150" placeholder="e.g. 35">
-          </div>
-          <div class="form-group">
-            <label for="sim-cgpa-cutoff">Min CGPA Requirement</label>
-            <input type="number" id="sim-cgpa-cutoff" step="0.1" min="0" max="10" required placeholder="e.g. 8.5">
-          </div>
-          <div class="form-group">
-            <label for="sim-backlog-cutoff">Max Backlogs Allowed</label>
-            <input type="number" id="sim-backlog-cutoff" min="0" max="10" required placeholder="e.g. 0">
-          </div>
-          <div class="form-group">
-            <label for="sim-pool-size">Initial Applicant Pool Size</label>
-            <input type="number" id="sim-pool-size" min="10" max="2500" required placeholder="e.g. 500">
-          </div>
-          <button type="submit" class="btn btn-red">Create &amp; Publish Opening</button>
-        </form>
-      </div>
-      
-      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <h3>Simulation Information</h3>
-          <p style="font-family:'Instrument Serif',serif; font-style:italic; font-size:18px; line-height:1.4; color:var(--ink3); margin-bottom:12px;">
-            The placement process contains 5 core rounds: Group Discussion, Coding OA, System Design / Hackathon, Technical Interview, and HR Interview.
-          </p>
-          <ul style="font-family:'Instrument Serif',serif; font-size:16px; font-style:italic; padding-left:20px; line-height:1.5; color:var(--ink3);">
-            <li>Rounds dynamically evaluate your GPA, backlogs, and responses.</li>
-            <li>Your placement settings (CGPA, active backlogs) are loaded from your Plan settings. Ensure they are correct!</li>
-            <li>Upon completion (Offer/Rejection), a detailed AI proctored outcome letter is mailed to your registered inbox via Brevo SMTP.</li>
-          </ul>
-        </div>
-        <div style="border-top:1px solid var(--line2); padding-top:16px; margin-top:20px;">
-          <div style="font-family:'Syne Mono'; font-size:9px; text-transform:uppercase; color:var(--ink3);">Simulation Proctor status:</div>
-          <div style="font-family:'Syne'; font-weight:700; font-size:14px; color:var(--teal); margin-top:4px;">Gemini Cognitive Evaluator Online ✓</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ACTIVE SIMULATION OVERLAY DIALOG -->
-  <dialog id="simulation-overlay">
-    <div class="sim-overlay-header">
-      <h3 id="sim-modal-title">Mock Placement Simulation</h3>
-      <button class="close-btn" onclick="terminateSimulation()">×</button>
-    </div>
-    <div class="sim-arena-layout">
-      <div class="sim-arena-main">
-        <div class="sim-arena-chat" id="sim-chat-container">
-          <!-- Populated dynamically by JS -->
-        </div>
-        <div class="sim-arena-input">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span id="sim-input-label" style="font-family:'Syne Mono',monospace; font-size:10px; color:var(--ink3); text-transform:uppercase;">Your Response</span>
-            <button id="sim-toggle-code-mode" class="btn-outline" style="font-size:9px; padding:2px 8px; cursor:pointer;" onclick="toggleEditorCodeMode()">Code Mode</button>
-          </div>
-          <textarea id="sim-user-input" placeholder="Type your contribution, answer, or code block here..."></textarea>
-          <div style="display:flex; justify-content:flex-end;">
-            <button class="btn btn-red" id="sim-submit-btn" onclick="submitSimulationAnswer()">Submit Response</button>
-          </div>
-        </div>
-      </div>
-      <div class="sim-arena-sidebar">
-        <h4>Simulation Status</h4>
-        <div style="margin-bottom:12px;">
-          <div style="font-size:11px; color:var(--ink3);">Current Stage:</div>
-          <div id="sim-sidebar-round" style="font-weight:700; color:var(--red);">Round 1: Group Discussion</div>
-        </div>
-        <div style="margin-bottom:12px;">
-          <div style="font-size:11px; color:var(--ink3);">Role Offered:</div>
-          <div id="sim-sidebar-title" style="font-weight:700; color:var(--ink);">SDE Intern</div>
-        </div>
-        <div style="margin-bottom:12px;">
-          <div style="font-size:11px; color:var(--ink3);">Compensation:</div>
-          <div id="sim-sidebar-ctc" style="font-weight:700; color:var(--teal);">35 LPA</div>
-        </div>
-        <div style="margin-bottom:12px;">
-          <div style="font-size:11px; color:var(--ink3);">Candidates Remaining:</div>
-          <div id="sim-sidebar-pool" style="font-weight:700; color:var(--ink);">500 / 500</div>
-        </div>
-        
-        <h4 style="margin-top:16px;">Applicants Roster</h4>
-        <div id="sim-sidebar-applicants">
-          <!-- Candidate elements rendered here -->
-        </div>
-      </div>
-    </div>
-  </dialog>
-
   <!-- SECTION: ADD OPPORTUNITY -->
   <section id="add-drive">
-    <div class="section-label"><span class="section-num">04</span><h2 class="section-title">Add Opportunity</h2></div>
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Add Opportunity</h2></div>
     
     <div class="setup-card" style="max-width: 600px; margin: 0;">
       <h3>New Company Entry</h3>
       <form id="job-entry-form" onsubmit="addCompanyEntry(event)">
         <div class="form-group">
           <label for="company-name">Company Name</label>
-          <input type="text" id="company-name" required placeholder="e.g. Google">
+          <input type="text" id="company-name" class="input-pill" required placeholder="e.g. Google">
         </div>
         <div class="form-group">
           <label for="job-title">Job Title / Designation</label>
-          <input type="text" id="job-title" required placeholder="e.g. Software Engineer Intern">
+          <input type="text" id="job-title" class="input-pill" required placeholder="e.g. Software Engineer Intern">
         </div>
         <div class="form-group">
           <label for="job-type">Type</label>
-          <select id="job-type">
+          <select id="job-type" class="select-pill">
             <option value="on-campus">On-Campus Drive</option>
             <option value="off-campus">Off-Campus Application</option>
           </select>
         </div>
         <div class="form-group">
           <label for="job-ctc">CTC / Compensation Package</label>
-          <input type="text" id="job-ctc" required placeholder="e.g. 40 LPA or ₹100,000/month">
+          <input type="text" id="job-ctc" class="input-pill" required placeholder="e.g. 40 LPA or ₹100,000/month">
         </div>
         <div class="form-group">
           <label for="job-status">Application Status</label>
-          <select id="job-status">
+          <select id="job-status" class="select-pill">
             <option value="dreaming">Dreaming / Target</option>
             <option value="applied">Applied / Pending OA</option>
             <option value="test">Online Assessment (OA)</option>
@@ -466,13 +360,13 @@ dialog#simulation-overlay::backdrop { background: rgba(26,24,20,0.6); backdrop-f
         </div>
         <div class="form-group">
           <label for="job-jd">Job Description (JD)</label>
-          <textarea id="job-jd" rows="5" placeholder="Paste JD highlights, requirements, or tech stack here..."></textarea>
+          <textarea id="job-jd" class="textarea-flat" rows="5" placeholder="Paste JD highlights, requirements, or tech stack here..."></textarea>
         </div>
         <div class="form-group">
           <label for="job-notes">Preparation &amp; Interview Notes</label>
-          <textarea id="job-notes" rows="4" placeholder="Important topics, Leetcode links, or interview questions asked..."></textarea>
+          <textarea id="job-notes" class="textarea-flat" rows="4" placeholder="Important topics, Leetcode links, or interview questions asked..."></textarea>
         </div>
-        <button type="submit" class="btn btn-red">Save Company Entry</button>
+        <button type="submit" class="btn btn-primary">Save Company Entry</button>
       </form>
     </div>
   </section>
@@ -530,7 +424,6 @@ async function loadPlacements() {
       const data = docSnap.data();
       placements = data.placements || [];
       renderBoard();
-      initSimulator();
     }
   } catch (e) {
     console.error("Error loading placements:", e);
@@ -653,714 +546,7 @@ function renderBoard() {
   document.getElementById('off-campus-badge').textContent = `${offCampusCount} Job(s)`;
 }
 
-// Global variables for Pre-Placements Simulator
-let mockCompanies = [];
-let activeSim = null;
-let isRealityMode = localStorage.getItem('reality_mode_active') === 'true';
-let isCodeMode = false;
-let simMessages = [];
-
-const defaultMockCompanies = [
-  { id: 'mock_boogle', name: 'Boogle', title: 'Software Engineer', ctc: 55, cgpa: 8.5, backlogs: 0, poolSize: 1200, vacancies: 1, desc: 'Advanced search, systems infrastructure, scale problems, algorithms.' },
-  { id: 'mock_microhard', name: 'Microhard', title: 'Software Engineer Intern', ctc: 44, cgpa: 8.0, backlogs: 0, poolSize: 950, vacancies: 2, desc: 'Cloud infrastructure, operating system kernels, application frameworks.' },
-  { id: 'mock_nile', name: 'Nile', title: 'Backend SDE', ctc: 38, cgpa: 7.5, backlogs: 1, poolSize: 800, vacancies: 3, desc: 'High throughput e-commerce transactions, microservices, databases.' },
-  { id: 'mock_pineapple', name: 'Pineapple', title: 'UI/UX Frontend Engineer', ctc: 40, cgpa: 8.0, backlogs: 0, poolSize: 600, vacancies: 1, desc: 'State-of-the-art interactive displays, motion animations, web frameworks.' },
-  { id: 'mock_swipe', name: 'Swipe', title: 'Systems Infrastructure SDE', ctc: 48, cgpa: 8.2, backlogs: 0, poolSize: 750, vacancies: 1, desc: 'Secure payment pipelines, transaction consistency, ledger databases.' }
-];
-
-const mockNames = ["Aarav", "Ananya", "Rohan", "Priya", "Vikram", "Kabir", "Meera", "Neha", "Aditya", "Siddharth", "Karan", "Rahul", "Ishaan", "Riya", "Sneha", "Tanvi", "Arjun", "Diya", "Reyansh", "Vihaan"];
-
-// Initialize Simulator Settings
-function initSimulator() {
-  // Load custom openings from localStorage
-  const savedCustoms = localStorage.getItem('custom_mock_companies');
-  if (savedCustoms) {
-    try {
-      mockCompanies = [...defaultMockCompanies, ...JSON.parse(savedCustoms)];
-    } catch(e) {
-      mockCompanies = [...defaultMockCompanies];
-    }
-  } else {
-    mockCompanies = [...defaultMockCompanies];
-  }
-  
-  // Set Reality Mode Switch visual state
-  document.getElementById('reality-mode-toggle').checked = isRealityMode;
-  
-  renderSimOpenings();
-}
-
-function toggleRealityMode() {
-  isRealityMode = document.getElementById('reality-mode-toggle').checked;
-  localStorage.setItem('reality_mode_active', isRealityMode ? 'true' : 'false');
-}
-
-function renderSimOpenings() {
-  const grid = document.getElementById('sim-openings-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  
-  // Read user stats
-  const cgpa = parseFloat(localStorage.getItem('user_cgpa') || '8.5');
-  const backlogs = parseInt(localStorage.getItem('user_backlogs') || '0');
-  
-  mockCompanies.forEach(company => {
-    const isCgpaEligible = cgpa >= company.cgpa;
-    const isBacklogEligible = backlogs <= company.backlogs;
-    const eligible = isCgpaEligible && isBacklogEligible;
-    
-    const card = document.createElement('div');
-    card.className = 'sim-card';
-    card.innerHTML = `
-      <div>
-        <span class="eligibility-badge ${eligible ? 'eligible' : 'ineligible'}">
-          ${eligible ? 'Eligible' : 'Ineligible'}
-        </span>
-        <h4>${company.name}</h4>
-        <div class="company">${company.title}</div>
-        <div class="ctc">${company.ctc} LPA</div>
-        <div class="criteria">
-          <b>Cutoffs:</b> CGPA ≥ ${company.cgpa} | Backlogs ≤ ${company.backlogs}<br>
-          <b>Role Info:</b> ${company.desc}
-        </div>
-      </div>
-      <div>
-        <div class="pool-size">
-          <span>Pool: ${company.poolSize} applicants</span>
-          <span>Vacancies: ${company.vacancies}</span>
-        </div>
-        <button class="btn btn-red" style="width:100%; margin-top:12px; font-size:12px; padding:8px;" 
-          ${eligible ? '' : 'disabled style="opacity:0.5; cursor:not-allowed;"'} 
-          onclick="applyToSimOpening('${company.id}')">
-          Apply &amp; Start Simulator
-        </button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-function generateCustomSimOpening(e) {
-  e.preventDefault();
-  const name = document.getElementById('sim-company-name').value.trim();
-  const title = document.getElementById('sim-job-title').value.trim();
-  const ctc = parseInt(document.getElementById('sim-job-ctc').value);
-  const cgpa = parseFloat(document.getElementById('sim-cgpa-cutoff').value);
-  const backlogs = parseInt(document.getElementById('sim-backlog-cutoff').value);
-  const poolSize = parseInt(document.getElementById('sim-pool-size').value);
-  const desc = "Custom SDE placement assessment opening.";
-  
-  const id = 'custom_mock_' + Date.now();
-  const newCompany = { id, name, title, ctc, cgpa, backlogs, poolSize, vacancies: 1, desc };
-  
-  // Save custom companies list to localStorage
-  const savedCustoms = localStorage.getItem('custom_mock_companies');
-  let customs = [];
-  if (savedCustoms) {
-    try { customs = JSON.parse(savedCustoms); } catch(e) {}
-  }
-  customs.push(newCompany);
-  localStorage.setItem('custom_mock_companies', JSON.stringify(customs));
-  
-  mockCompanies.push(newCompany);
-  renderSimOpenings();
-  
-  document.getElementById('custom-sim-form').reset();
-  alert(`Published custom drive for ${name}!`);
-}
-
-// Start simulation overlay
-function applyToSimOpening(companyId) {
-  const geminiKey = localStorage.getItem('gemini_api_key');
-  if (!geminiKey) {
-    alert("Gemini API key is required to run the AI simulation. Please configure it on the Setup page first.");
-    return;
-  }
-
-  const company = mockCompanies.find(c => c.id === companyId);
-  if (!company) return;
-  
-  // Initialize simulation state
-  const pool = company.poolSize;
-  const otherCandidates = [];
-  for (let i = 0; i < 15; i++) {
-    const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
-    otherCandidates.push({ name: randomName, active: true });
-  }
-  
-  activeSim = {
-    company,
-    roundIndex: 0,
-    pool,
-    otherCandidates,
-    messages: [],
-    editorCodeMode: false,
-    delayDays: 0
-  };
-  
-  // Setup overlay UI
-  document.getElementById('sim-modal-title').textContent = `${company.name.toUpperCase()} RECRUITMENT CELL`;
-  document.getElementById('sim-sidebar-title').textContent = company.title;
-  document.getElementById('sim-sidebar-ctc').textContent = `${company.ctc} LPA`;
-  
-  updateSidebarStats();
-  
-  // Clear chat
-  document.getElementById('sim-chat-container').innerHTML = '';
-  
-  // Open dialog
-  const overlay = document.getElementById('simulation-overlay');
-  overlay.showModal();
-  
-  // Start Round 1
-  initiateRound();
-}
-
-function updateSidebarStats() {
-  document.getElementById('sim-sidebar-pool').textContent = `${activeSim.pool} Candidates`;
-  
-  // Update round labels
-  const roundNames = [
-    "Round 1: Group Discussion",
-    "Round 2: Coding Assessment (OA)",
-    "Round 3: System Design & Hackathon",
-    "Round 4: Technical Interview",
-    "Round 5: HR Interview"
-  ];
-  document.getElementById('sim-sidebar-round').textContent = roundNames[activeSim.roundIndex] || "Simulation Complete";
-  
-  // Render roster list
-  const roster = document.getElementById('sim-sidebar-applicants');
-  roster.innerHTML = '';
-  
-  // Render user first
-  const userItem = document.createElement('div');
-  userItem.className = 'candidate-item';
-  userItem.innerHTML = `<span class="status-dot"></span><b>You (Candidate #1)</b>`;
-  roster.appendChild(userItem);
-  
-  // Render other candidates
-  activeSim.otherCandidates.forEach(c => {
-    const item = document.createElement('div');
-    item.className = `candidate-item ${c.active ? '' : 'eliminated'}`;
-    item.innerHTML = `<span class="status-dot"></span>${c.name}`;
-    roster.appendChild(item);
-  });
-}
-
-function toggleEditorCodeMode() {
-  const textarea = document.getElementById('sim-user-input');
-  const btn = document.getElementById('sim-toggle-code-mode');
-  isCodeMode = !isCodeMode;
-  
-  if (isCodeMode) {
-    textarea.classList.add('code-mode');
-    textarea.placeholder = "// Write your solution/code here...\nfunction solve() {\n  // Code\n}";
-    btn.textContent = "Text Mode";
-  } else {
-    textarea.classList.remove('code-mode');
-    textarea.placeholder = "Type your contribution, answer, or code block here...";
-    btn.textContent = "Code Mode";
-  }
-}
-
-function appendSimChat(speaker, text, isCandidate = false, isThought = false) {
-  const chat = document.getElementById('sim-chat-container');
-  const row = document.createElement('div');
-  
-  if (isThought) {
-    row.className = 'bubble-row thought';
-    row.innerHTML = `<div class="bubble-content">${text}</div>`;
-  } else {
-    row.className = `bubble-row ${isCandidate ? 'candidate' : 'interviewer'}`;
-    const avatarSeed = isCandidate ? 'Aditya' : speaker.replace(/\s+/g, '_');
-    const avatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${avatarSeed}`;
-    
-    row.innerHTML = `
-      <div class="bubble-avatar"><img src="${avatarUrl}" alt="${speaker}"></div>
-      <div class="bubble-content">
-        <span class="bubble-speaker">${speaker}</span>
-        ${text.replace(/\n/g, '<br>')}
-      </div>
-    `;
-  }
-  
-  chat.appendChild(row);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-async function initiateRound() {
-  const sim = activeSim;
-  if (!sim) return;
-  
-  // Disable user inputs during load
-  document.getElementById('sim-user-input').disabled = true;
-  document.getElementById('sim-submit-btn').disabled = true;
-  
-  const roundTitles = [
-    "Round 1: Group Discussion",
-    "Round 2: Online Coding Assessment (OA)",
-    "Round 3: System Design & Hackathon",
-    "Round 4: Technical Interview",
-    "Round 5: HR Interview"
-  ];
-  
-  appendSimChat("SYSTEM", `${roundTitles[sim.roundIndex]} is starting...`, false, true);
-  
-  // Setup editor mode
-  const codeToggle = document.getElementById('sim-toggle-code-mode');
-  if (sim.roundIndex === 1) {
-    // Coding round defaults to code mode
-    if (!isCodeMode) toggleEditorCodeMode();
-    codeToggle.style.display = 'inline-block';
-  } else {
-    if (isCodeMode) toggleEditorCodeMode();
-    codeToggle.style.display = 'none';
-  }
-  
-  let systemPrompt = "";
-  if (sim.roundIndex === 0) {
-    systemPrompt = `You are the proctor and moderator for a Group Discussion round at ${sim.company.name} for the role of ${sim.company.title}.
-    Topic: "Is AI coding assistance going to eliminate junior developer jobs in the next 3 years?"
-    Provide a brief opening welcome from the proctor, generate 2 short statements (1 sentence each) from other candidates (e.g., Rohan, Ananya) voicing different views, and then invite the user to share their thoughts.
-    Keep the tone realistic, professional, and relatively brief.`;
-  } else if (sim.roundIndex === 1) {
-    systemPrompt = `You are the coding proctor for ${sim.company.name}.
-    Present the user with a single Coding Online Assessment question (like a Leetcode Medium/Hard on arrays, graphs, or DP).
-    Specify:
-    1. Problem Title & Description
-    2. Input/Output examples
-    3. Constraints
-    Ask them to write a working function. Keep your response concise and formatted.`;
-  } else if (sim.roundIndex === 2) {
-    systemPrompt = `You are the systems architecture lead at ${sim.company.name}.
-    Ask the user to outline a system design for a core service (e.g. a rate limiter, a high-throughput metrics collector, or a secure payment ledger).
-    Keep it professional and brief.`;
-  } else if (sim.roundIndex === 3) {
-    systemPrompt = `You are the principal interviewer at ${sim.company.name} for the Technical Interview round.
-    Ask the user a tough algorithmic conceptual question or system optimization question based on their stack or general backend architecture (e.g. cache consistency, database replication, index optimization).
-    Greet them briefly and ask the question.`;
-  } else if (sim.roundIndex === 4) {
-    systemPrompt = `You are the HR recruiter/manager at ${sim.company.name}.
-    Conduct the final HR round by asking the user a behavioral or culture fit question (e.g. dealing with conflict, failures, or alignment with company values).
-    Keep it conversational and warm.`;
-  }
-  
-  appendSimChat("SYSTEM", "AI proctor is preparing the round...", false, true);
-  
-  try {
-    const text = await callGeminiSimApi(systemPrompt, "Please start the round.");
-    // Clear proctor preparing thought bubble
-    const container = document.getElementById('sim-chat-container');
-    if (container.lastChild && container.lastChild.classList.contains('thought')) {
-      container.removeChild(container.lastChild);
-    }
-    
-    // Add proctor opening speech
-    const speakerNames = ["Moderator", "Coding Proctor", "Design Lead", "Technical Architect", "HR Recruiter"];
-    appendSimChat(speakerNames[sim.roundIndex], text);
-    
-    // Save to activeSim message history
-    sim.messages.push({ role: 'model', content: text });
-    
-    // Enable inputs
-    document.getElementById('sim-user-input').disabled = false;
-    document.getElementById('sim-user-input').value = '';
-    document.getElementById('sim-submit-btn').disabled = false;
-  } catch(e) {
-    console.error(e);
-    appendSimChat("SYSTEM", `Failed to initiate round: ${e.message}`, false, true);
-  }
-}
-
-async function submitSimulationAnswer() {
-  const sim = activeSim;
-  if (!sim) return;
-  
-  const userInputVal = document.getElementById('sim-user-input').value.trim();
-  if (!userInputVal) return;
-  
-  // Disable UI
-  document.getElementById('sim-user-input').disabled = true;
-  document.getElementById('sim-submit-btn').disabled = true;
-  
-  // Append user message
-  appendSimChat("You (Candidate)", userInputVal, true);
-  sim.messages.push({ role: 'user', content: userInputVal });
-  
-  appendSimChat("SYSTEM", "Interviewer is evaluating your response...", false, true);
-  
-  // Compile evaluation prompt
-  const roundNames = [
-    "Group Discussion",
-    "Coding Assessment",
-    "System Design & Hackathon",
-    "Technical Interview",
-    "HR Recruiter"
-  ];
-  
-  const prompt = `You are evaluating Round ${sim.roundIndex + 1} (${roundNames[sim.roundIndex]}) for the role of ${sim.company.title} at ${sim.company.name}.
-  The active candidate pool size is ${sim.pool}.
-  Reality Mode is ${isRealityMode ? 'ACTIVE' : 'INACTIVE'}. If Reality Mode is active, hold the user to extremely competitive FAANG/top-tier standards. If they make coding syntax errors, poor complexity choices, or weak explanations, mark them as FAIL.
-  Evaluate the user's latest response: "${userInputVal}".
-  
-  Determine:
-  1. Outcome: PASS or FAIL.
-  2. Number of OTHER candidates eliminated (choose an integer that reduces the remaining pool logically, e.g., if there are 500 candidates, eliminate 400). Ensure the remaining pool size does not go below 1 + ${sim.company.vacancies}.
-  3. Spoken feedback: What the interviewer says to them next. If they failed, provide a realistic rejection message explaining why.
-  
-  You MUST return your output strictly inside XML tags:
-  <evaluation>
-    <outcome>PASS or FAIL</outcome>
-    <eliminated>Number of other candidates eliminated</eliminated>
-    <message>The conversational response from the interviewer (in character)</message>
-  </evaluation>
-  
-  Do not output any markdown or explanation outside of this XML structure.`;
-  
-  try {
-    const rawResult = await callGeminiSimApi(prompt, JSON.stringify(sim.messages));
-    
-    // Clear evaluating thought bubble
-    const container = document.getElementById('sim-chat-container');
-    if (container.lastChild && container.lastChild.classList.contains('thought')) {
-      container.removeChild(container.lastChild);
-    }
-    
-    // Parse XML
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(rawResult.trim(), "text/xml");
-    const outcomeNode = xmlDoc.querySelector('outcome');
-    const eliminatedNode = xmlDoc.querySelector('eliminated');
-    const messageNode = xmlDoc.querySelector('message');
-    
-    let outcome = "FAIL";
-    let eliminated = 0;
-    let feedbackMsg = "Evaluation failed. Please try again.";
-    
-    if (outcomeNode) outcome = outcomeNode.textContent.trim().toUpperCase();
-    if (eliminatedNode) eliminated = parseInt(eliminatedNode.textContent.trim()) || 0;
-    if (messageNode) feedbackMsg = messageNode.textContent.trim();
-    else {
-      // Fallback regex parsing in case XML parsing is strict
-      const outcomeMatch = rawResult.match(/<outcome>([\s\S]*?)<\/outcome>/i);
-      const elimMatch = rawResult.match(/<eliminated>([\s\S]*?)<\/eliminated>/i);
-      const msgMatch = rawResult.match(/<message>([\s\S]*?)<\/message>/i);
-      if (outcomeMatch) outcome = outcomeMatch[1].trim().toUpperCase();
-      if (elimMatch) eliminated = parseInt(elimMatch[1].trim()) || 0;
-      if (msgMatch) feedbackMsg = msgMatch[1].trim();
-    }
-    
-    const speakerNames = ["Moderator", "Coding Proctor", "Design Lead", "Technical Architect", "HR Recruiter"];
-    appendSimChat(speakerNames[sim.roundIndex], feedbackMsg);
-    
-    if (outcome === 'PASS') {
-      // User passed!
-      sim.pool = Math.max(1 + sim.company.vacancies, sim.pool - eliminated);
-      
-      // Cross out some other candidates in the roster
-      let elimCount = 0;
-      sim.otherCandidates.forEach(c => {
-        if (c.active && elimCount < eliminated / 3) {
-          c.active = false;
-          elimCount++;
-        }
-      });
-      
-      updateSidebarStats();
-      
-      sim.roundIndex++;
-      
-      if (sim.roundIndex === 5) {
-        // Passed all rounds! Offer Extended
-        appendSimChat("SYSTEM", "Congratulations! You have successfully cleared all recruitment rounds!", false, true);
-        appendSimChat("Recruitment Cell", `We are thrilled to extend an official SDE offer of ${sim.company.ctc} LPA at ${sim.company.name}! Check your email target for your official offer letter.`, false);
-        
-        // Add to placements board
-        addSimPlacementToBoard(sim.company, 'offer');
-        
-        // Send email
-        await sendSimEmail(true, feedbackMsg);
-        activeSim = null;
-      } else {
-        // Advance to next round, check Reality Mode delay
-        if (isRealityMode) {
-          await sendSimIntermediateEmail(sim, feedbackMsg);
-          appendSimChat("SYSTEM", "Reality Mode: Results are under review by the placement committee. Invitation to next round has been emailed to you.", false, true);
-          let delayDays = Math.floor(Math.random() * 3) + 1;
-          for (let d = 1; d <= delayDays; d++) {
-            await sleep(1000);
-            appendSimChat("SYSTEM", `Simulated Day ${d} of waiting...`, false, true);
-          }
-          appendSimChat("SYSTEM", `Recruitment cell released results: You passed! Proceeding to next round.`, false, true);
-        }
-        
-        // Add button to start next round
-        const continueBtn = document.createElement('button');
-        continueBtn.className = 'btn btn-red';
-        continueBtn.style.margin = '20px auto';
-        continueBtn.style.display = 'block';
-        continueBtn.textContent = `Start Round ${sim.roundIndex + 1}`;
-        continueBtn.onclick = () => {
-          continueBtn.remove();
-          initiateRound();
-        };
-        document.getElementById('sim-chat-container').appendChild(continueBtn);
-        document.getElementById('sim-chat-container').scrollTop = document.getElementById('sim-chat-container').scrollHeight;
-      }
-    } else {
-      // User failed! Rejection
-      appendSimChat("SYSTEM", "Recruitment Cell Status Update: REJECTED", false, true);
-      
-      // Cross out user from roster
-      updateSidebarStats();
-      
-      // Add to placements board as rejected
-      addSimPlacementToBoard(sim.company, 'rejected');
-      
-      // Send ruthless rejection email
-      await sendSimEmail(false, feedbackMsg);
-      activeSim = null;
-    }
-  } catch(e) {
-    console.error(e);
-    appendSimChat("SYSTEM", `Evaluation failed: ${e.message}`, false, true);
-    document.getElementById('sim-user-input').disabled = false;
-    document.getElementById('sim-submit-btn').disabled = false;
-  }
-}
-
-// Helpers
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-async function callGeminiSimApi(systemInstruction, userMsg) {
-  const key = localStorage.getItem('gemini_api_key');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${key}`;
-  
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        { role: 'user', parts: [{ text: systemInstruction + "\n\n" + userMsg }] }
-      ]
-    })
-  });
-  
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error?.message || "Gemini API failed");
-  }
-  
-  const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
-}
-
-// Add drive to Placements board
-async function addSimPlacementToBoard(company, status) {
-  const type = 'on-campus';
-  const notes = `Simulated drive completed. Status: ${status.toUpperCase()}.`;
-  const jd = `Designation: ${company.title}\nCTC: ${company.ctc} LPA\nCutoff: CGPA ${company.cgpa}`;
-  
-  // Deduplicate
-  placements = placements.filter(p => p.name !== company.name);
-  
-  const id = 'company_' + Date.now();
-  placements.push({ id, name: company.name, title: company.title, type, ctc: `${company.ctc} LPA`, status, jd, notes });
-  await savePlacements();
-}
-
-async function sendSimIntermediateEmail(sim, feedback) {
-  const brevoKey = localStorage.getItem('brevo_api_key');
-  const userEmail = localStorage.getItem('user_email_target');
-  
-  if (!brevoKey || !userEmail) {
-    console.warn("Brevo API key or Target email target missing. Intermediate invite skipped.");
-    return;
-  }
-  
-  const roundNames = [
-    "Group Discussion",
-    "Coding Assessment (OA)",
-    "System Design & Hackathon",
-    "Technical Interview",
-    "HR Interview"
-  ];
-  const nextRoundName = roundNames[sim.roundIndex];
-  const company = sim.company;
-  const subject = `Scout: Invitation to Next Round - ${company.name}`;
-  
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + 1);
-  const dateString = nextDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const timeString = "10:30 AM IST";
-  
-  const portalLink = window.location.origin + window.location.pathname + "#sim-arena";
-  
-  const emailBody = `
-    <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
-      <div style="margin-bottom: 24px; border-bottom: 2px solid #2a6b5e; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; color: #2a6b5e;">${company.name.toUpperCase()} RECRUITMENT CELL</span>
-        <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px;">QUALIFIED</span>
-      </div>
-      
-      <p>Dear Candidate,</p>
-      <p>Congratulations! Based on your performance in the previous round, you have qualified for the next stage of our recruitment process.</p>
-      
-      <div style="background: #f2eee5; padding: 20px; border-radius: 2px; margin: 20px 0; border: 1px solid #dcd7ca;">
-        <h4 style="margin-top: 0; color: #2a6b5e; font-family: sans-serif;">Upcoming Round Details:</h4>
-        <ul style="margin: 0; padding-left: 20px; font-size: 13px; list-style-type: square; line-height: 1.8;">
-          <li><strong>Next Round Assessment:</strong> ${nextRoundName}</li>
-          <li><strong>Scheduled Date:</strong> ${dateString}</li>
-          <li><strong>Scheduled Time:</strong> ${timeString}</li>
-        </ul>
-      </div>
-      
-      <p>Please click the button below to enter the assessment portal and start the next round:</p>
-      <div style="text-align: center; margin: 24px 0;">
-        <a href="${portalLink}" style="background: #2a6b5e; color: #fff; text-decoration: none; padding: 12px 24px; font-family: monospace; font-size: 12px; font-weight: bold; border-radius: 2px; display: inline-block;">ENTER ASSESSMENT PORTAL</a>
-      </div>
-      
-      <blockquote style="border-left: 4px solid #2a6b5e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #555; background: #fdfcf9; padding: 10px 16px;">
-        <strong>Evaluator Feedback:</strong><br>
-        "${feedback.replace(/\n/g, '<br>')}"
-      </blockquote>
-      
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
-        <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
-          SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
-        </p>
-        <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
-          POWERED BY SINGULR.TECH • CONNECTION SECURE
-        </p>
-      </div>
-    </div>
-  `;
-  
-  await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'api-key': brevoKey,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
-      to:          [{ email: userEmail }],
-      subject,
-      htmlContent: emailBody
-    })
-  });
-}
-
-async function sendSimEmail(isSuccess, feedback) {
-  const brevoKey = localStorage.getItem('brevo_api_key');
-  const userEmail = localStorage.getItem('user_email_target');
-  
-  if (!brevoKey || !userEmail) {
-    console.warn("Brevo API key or Target email target missing. Email dispatch skipped.");
-    return;
-  }
-  
-  const company = activeSim.company;
-  const subject = isSuccess 
-    ? `Scout: Official Offer Extended - ${company.name}` 
-    : `Scout: Recruitment Process Feedback - ${company.name}`;
-    
-  let emailBody = "";
-  if (isSuccess) {
-    emailBody = `
-      <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
-        <div style="margin-bottom: 24px; border-bottom: 2px solid #2a6b5e; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; color: #2a6b5e;">${company.name.toUpperCase()} RECRUITMENT CELL</span>
-          <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px;">OFFER EXTENDED</span>
-        </div>
-        
-        <p>Dear Candidate,</p>
-        <p>Following your performance in the multiple recruitment assessments, group debates, coding evaluations, and behavioral rounds, we are pleased to offer you the role of <strong>${company.title}</strong> at <strong>${company.name}</strong>.</p>
-        
-        <table cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #dcd7ca; font-size: 13px; background: #faf8f3;">
-          <tr style="background: #f2eee5;">
-            <th style="border: 1px solid #dcd7ca; font-weight: bold; text-align: left; padding: 10px;">Parameter</th>
-            <th style="border: 1px solid #dcd7ca; font-weight: bold; text-align: left; padding: 10px;">Details</th>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #dcd7ca; padding: 10px;">Role Designation</td>
-            <td style="border: 1px solid #dcd7ca; padding: 10px;">${company.title}</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #dcd7ca; padding: 10px;">Compensation Package (CTC)</td>
-            <td style="border: 1px solid #dcd7ca; padding: 10px;"><strong>${company.ctc} LPA</strong></td>
-          </tr>
-        </table>
-        
-        <blockquote style="border-left: 4px solid #2a6b5e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #555; background: #fdfcf9; padding: 10px 16px;">
-          "The selection panel noted your strong analytical skills and modular code design during the Online Assessment round."
-        </blockquote>
-        
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
-          <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
-            SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
-          </p>
-          <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
-            POWERED BY SINGULR.TECH • CONNECTION SECURE
-          </p>
-        </div>
-      </div>
-    `;
-  } else {
-    // Ruthless Rejection Email
-    emailBody = `
-      <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
-        <div style="margin-bottom: 24px; border-bottom: 2px solid #c13d2e; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; color: #c13d2e;">${company.name.toUpperCase()} RECRUITMENT CELL</span>
-          <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px;">REJECTION NOTICE</span>
-        </div>
-        
-        <p>Dear Candidate,</p>
-        <p>Thank you for participating in our recruitment drive for the position of <strong>${company.title}</strong> at <strong>${company.name}</strong>.</p>
-        <p>We received an overwhelming response of over 14,000 applicants for this drive. Unfortunately, we are unable to advance your candidacy. During our evaluations, our technical recruiters noted specific shortfalls in your submissions.</p>
-        
-        <blockquote style="border-left: 4px solid #c13d2e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #c13d2e; background: #fff8f8; padding: 10px 16px;">
-          <strong>Feedback from Panel:</strong><br>
-          "${feedback.replace(/\n/g, '<br>')}"
-        </blockquote>
-        
-        <p style="font-size:12px; color: #7a7670;">Please note that we cannot offer further detailed responses due to the volume of applicants. We encourage you to focus on fundamental algorithm design and complex systems optimization before reapplying.</p>
-        
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
-          <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
-            SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
-          </p>
-          <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
-            POWERED BY SINGULR.TECH • CONNECTION SECURE
-          </p>
-        </div>
-      </div>
-    `;
-  }
-  
-  await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'api-key': brevoKey,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
-      to:          [{ email: userEmail }],
-      subject,
-      htmlContent: emailBody
-    })
-  });
-}
-
-function terminateSimulation() {
-  if (confirm("Are you sure you want to exit the current placement simulation? Progress will be lost.")) {
-    const overlay = document.getElementById('simulation-overlay');
-    overlay.close();
-    activeSim = null;
-  }
-}
+// End of placement tracking board script
 </script>
 </body>
 </html>

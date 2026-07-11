@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="logo.png">
+<title>SEM 05 // PLACEMENT SIMULATOR</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Nunito:wght@400;600;700&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ollama.css">
+<style>
+/* Page Specific Simulator Styling */
+.hero {
+  text-align: center;
+  padding: 60px 0;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 40px;
+}
+.hero h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.hero p {
+  color: var(--body);
+  font-size: 16px;
+  max-width: 600px;
+  margin: 12px auto 0 auto;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.section-num {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  color: var(--body);
+}
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+}
+.section-desc {
+  font-size: 15px;
+  color: var(--body);
+  margin-bottom: 32px;
+}
+
+/* Reality Banner */
+.reality-banner {
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.reality-banner h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.reality-banner p {
+  font-size: 14.5px;
+  color: var(--body);
+  margin: 0;
+}
+
+/* Grid Layouts */
+.sim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.grid-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+/* Simulator Openings Card */
+.sim-card {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 24px;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 270px;
+  transition: border-color 0.15s;
+}
+.sim-card:hover {
+  border-color: var(--ink);
+}
+.sim-card h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.sim-card .company {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--mute);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.sim-card .ctc {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-soft);
+  color: #1e7e2c;
+  padding: 4px 8px;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-bottom: 12px;
+}
+.sim-card .criteria {
+  font-size: 13.5px;
+  color: var(--charcoal);
+  margin-bottom: 16px;
+  line-height: 1.4;
+  border-top: 1px dashed var(--hairline);
+  padding-top: 12px;
+}
+.sim-card .eligibility-badge {
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 12px;
+  align-self: flex-start;
+}
+.eligible {
+  background: rgba(39, 201, 63, 0.1);
+  color: #1e7e2c;
+}
+.ineligible {
+  background: rgba(255, 95, 86, 0.1);
+  color: #b52c24;
+}
+.sim-card .pool-size {
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  color: var(--mute);
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  justify-content: space-between;
+}
+
+.setup-card {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 28px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.setup-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 10px;
+}
+
+/* Simulation Dialogue Container */
+dialog#simulation-overlay {
+  border: 1px solid var(--ink);
+  background: var(--canvas);
+  max-width: 840px;
+  width: 95%;
+  height: 85vh;
+  margin: auto;
+  padding: 0;
+  outline: none;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  border-radius: 16px;
+  overflow: hidden;
+}
+dialog#simulation-overlay::backdrop {
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+}
+.sim-overlay-header {
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sim-overlay-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+.sim-overlay-header .close-btn {
+  background: transparent;
+  border: none;
+  color: var(--canvas);
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: bold;
+}
+.sim-arena-layout {
+  display: flex;
+  height: calc(100% - 56px);
+  overflow: hidden;
+}
+.sim-arena-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid var(--hairline);
+}
+.sim-arena-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: var(--surface-soft);
+  background-image: radial-gradient(var(--hairline) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.sim-arena-input {
+  padding: 20px;
+  border-top: 1px solid var(--hairline);
+  background: var(--canvas);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sim-arena-input textarea {
+  width: 100%;
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  padding: 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+  outline: none;
+  resize: none;
+  min-height: 80px;
+}
+.sim-arena-input textarea:focus {
+  border-color: var(--primary);
+}
+.sim-arena-input textarea.code-mode {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  min-height: 160px;
+  background: #2b2b2b;
+  color: #a9b7c6;
+  border-color: #4b4b4b;
+}
+.sim-arena-sidebar {
+  width: 250px;
+  background: var(--canvas);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+.sim-arena-sidebar h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 6px;
+  margin-top: 0;
+}
+
+/* Chat bubble aesthetics */
+.bubble-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: 85%;
+}
+.bubble-row.candidate {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.bubble-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  background: var(--canvas);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.bubble-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.bubble-content {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 12px 16px;
+  border-radius: 12px;
+  position: relative;
+  line-height: 1.5;
+  font-size: 14.5px;
+}
+.bubble-row.interviewer .bubble-content {
+  background: var(--canvas);
+  border-top-left-radius: 0;
+}
+.bubble-row.candidate .bubble-content {
+  background: var(--ink);
+  color: var(--canvas);
+  border-color: var(--ink);
+  border-top-right-radius: 0;
+}
+.bubble-speaker {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin-bottom: 4px;
+  display: block;
+  font-weight: 600;
+}
+.bubble-row.candidate .bubble-speaker {
+  text-align: right;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Thought bubbles */
+.bubble-row.thought {
+  align-self: center;
+  max-width: 90%;
+}
+.bubble-row.thought .bubble-content {
+  background: rgba(255, 189, 46, 0.08);
+  border-color: rgba(255, 189, 46, 0.3);
+  color: #a37603;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+/* Candidate lists */
+.candidate-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: var(--body);
+}
+.candidate-item.eliminated {
+  text-decoration: line-through;
+  opacity: 0.45;
+}
+.candidate-item .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1e7e2c;
+}
+.candidate-item.eliminated .status-dot {
+  background: #b52c24;
+}
+
+.auth-warning {
+  background: rgba(255, 95, 86, 0.1);
+  border: 1px solid rgba(255, 95, 86, 0.2);
+  padding: 16px 20px;
+  color: #b52c24;
+  font-size: 14px;
+  margin-bottom: 24px;
+  display: none;
+  border-radius: 8px;
+}
+
+@media(max-width:900px){
+  .grid-cols-2 { grid-template-columns: 1fr; }
+  dialog#simulation-overlay { height: 95vh; width: 95%; }
+  .sim-arena-layout { flex-direction: column; }
+  .sim-arena-sidebar { width: 100%; height: 180px; border-top: 1px solid var(--hairline); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION BAR -->
+<nav class="primary-nav">
+  <div class="logo-area">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+      <path d="M10 20v-6h4v6M18 10a4 4 0 0 0-8 0v4H6a2 2 0 0 0-2 2v2M20 20v-4a4 4 0 0 0-4-4h-2V6a2 2 0 0 0-4 0v4H9"></path>
+      <circle cx="14" cy="5" r="0.5"></circle>
+    </svg>
+    <span>Scout</span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Plan</a>
+    <a href="assistant.html">Chat</a>
+    <a href="placements.html">Placements</a>
+    <a href="simulator.html" class="active">Simulator</a>
+    <a href="settings.html">Setup</a>
+  </div>
+</nav>
+
+<div class="container page-offset">
+  <!-- AUTH ALERT -->
+  <section style="padding: 24px 0 0 0; border-bottom: none;">
+    <div id="auth-warning-box" class="auth-warning" style="display:inline-flex; align-items:center; gap:8px;">
+      <svg style="width:14px; height:14px; flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      Please authenticate on the <a href="settings.html">Setup Page</a> to connect with Cloud Firestore and log your simulated placement runs.
+    </div>
+  </section>
+
+  <div class="hero">
+    <h1>PLACEMENT SIMULATOR</h1>
+    <p>Practice competitive coding assessments, mock interviews, and group discussions evaluated by Google Gemini AI.</p>
+  </div>
+
+  <!-- SECTION 1: SETTINGS & CONTROLS -->
+  <section id="simulator-controls">
+    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Simulator Mode</h2></div>
+    
+    <!-- Reality Mode Toggle Switch Card -->
+    <div class="reality-banner">
+      <div>
+        <h3>
+          <svg style="width:18px; height:18px; color:#b52c24; vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          REALITY MODE ACTIVE
+        </h3>
+        <p>Enforces multi-day candidate processing delays (simulated) and triggers extremely harsh, realistic AI-generated rejection letters.</p>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="reality-mode-toggle" onchange="toggleRealityMode()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </section>
+
+  <!-- SECTION 2: OPENINGS BOARD -->
+  <section id="sim-openings">
+    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Active Openings</h2></div>
+    <p class="section-desc">Apply to custom mock openings. Eligibility status is computed based on CGPA and backlog counts configured in your setup profile.</p>
+    
+    <div class="sim-grid" id="sim-openings-grid">
+      <!-- Generated dynamically by JS -->
+    </div>
+  </section>
+
+  <!-- SECTION 3: GENERATE OPENING -->
+  <section id="custom-openings">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Publisher Portal</h2></div>
+    
+    <div class="grid-cols-2">
+      <div class="setup-card" style="margin-bottom:0;">
+        <h3>Generate Custom Opening</h3>
+        <form id="custom-sim-form" onsubmit="generateCustomSimOpening(event)">
+          <div class="form-group">
+            <label for="sim-company-name">Company Name (Altered)</label>
+            <input type="text" id="sim-company-name" class="input-pill" required placeholder="e.g. Boogle, Pineapple, Microhard">
+          </div>
+          <div class="form-group">
+            <label for="sim-job-title">Job Title</label>
+            <input type="text" id="sim-job-title" class="input-pill" required placeholder="e.g. Software Development Engineer">
+          </div>
+          <div class="form-group">
+            <label for="sim-job-ctc">CTC (Lakhs Per Annum / LPA)</label>
+            <input type="number" id="sim-job-ctc" class="input-pill" required min="1" max="150" placeholder="e.g. 35">
+          </div>
+          <div class="form-group">
+            <label for="sim-cgpa-cutoff">Min CGPA Requirement</label>
+            <input type="number" id="sim-cgpa-cutoff" class="input-pill" step="0.1" min="0" max="10" required placeholder="e.g. 8.5">
+          </div>
+          <div class="form-group">
+            <label for="sim-backlog-cutoff">Max Backlogs Allowed</label>
+            <input type="number" id="sim-backlog-cutoff" class="input-pill" min="0" max="10" required placeholder="e.g. 0">
+          </div>
+          <div class="form-group">
+            <label for="sim-pool-size">Initial Applicant Pool Size</label>
+            <input type="number" id="sim-pool-size" class="input-pill" min="10" max="2500" required placeholder="e.g. 500">
+          </div>
+          <button type="submit" class="btn btn-primary">Create &amp; Publish Opening</button>
+        </form>
+      </div>
+      
+      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <h3>Simulation Information</h3>
+          <p style="font-size:16px; line-height:1.5; color:var(--body); margin-bottom:12px;">
+            The placement process contains 5 core rounds: Group Discussion, Coding OA, System Design / Hackathon, Technical Interview, and HR Interview.
+          </p>
+          <ul style="font-size:14px; padding-left:20px; line-height:1.6; color:var(--body);">
+            <li>Rounds dynamically evaluate your GPA, backlogs, and responses.</li>
+            <li>Your placement settings (CGPA, active backlogs) are loaded from your Plan settings. Ensure they are correct!</li>
+            <li>Upon completion (Offer/Rejection), a detailed AI proctored outcome letter is mailed to your registered inbox via Brevo SMTP.</li>
+          </ul>
+        </div>
+        <div style="border-top:1px solid var(--hairline); padding-top:16px; margin-top:20px;">
+          <div style="font-family:ui-monospace; font-size:10px; text-transform:uppercase; color:var(--mute);">Simulation Proctor status:</div>
+          <div style="font-weight:700; font-size:14px; color:#1e7e2c; margin-top:4px;">Gemini Cognitive Evaluator Online ✓</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTIVE SIMULATION OVERLAY DIALOG -->
+  <dialog id="simulation-overlay">
+    <div class="sim-overlay-header">
+      <h3 id="sim-modal-title">Mock Placement Simulation</h3>
+      <button class="close-btn" onclick="terminateSimulation()">×</button>
+    </div>
+    <div class="sim-arena-layout">
+      <div class="sim-arena-main">
+        <div class="sim-arena-chat" id="sim-chat-container">
+          <!-- Populated dynamically by JS -->
+        </div>
+        <div class="sim-arena-input">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="sim-input-label" style="font-family:ui-monospace,monospace; font-size:10px; color:var(--mute); text-transform:uppercase;">Your Response</span>
+            <button id="sim-toggle-code-mode" class="btn-outline" style="font-size:11px; padding:2px 8px; cursor:pointer;" onclick="toggleEditorCodeMode()">Code Mode</button>
+          </div>
+          <textarea id="sim-user-input" placeholder="Type your contribution, answer, or code block here..."></textarea>
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" id="sim-submit-btn" onclick="submitSimulationAnswer()">Submit Response</button>
+          </div>
+        </div>
+      </div>
+      <div class="sim-arena-sidebar">
+        <h4>Simulation Status</h4>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--mute);">Current Stage:</div>
+          <div id="sim-sidebar-round" style="font-weight:700; color:#b52c24;">Round 1: Group Discussion</div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--mute);">Role Offered:</div>
+          <div id="sim-sidebar-title" style="font-weight:700; color:var(--ink);">SDE Intern</div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--mute);">Compensation:</div>
+          <div id="sim-sidebar-ctc" style="font-weight:700; color:#1e7e2c;">35 LPA</div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--mute);">Candidates Remaining:</div>
+          <div id="sim-sidebar-pool" style="font-weight:700; color:var(--ink);">500 / 500</div>
+        </div>
+        
+        <h4 style="margin-top:16px;">Applicants Roster</h4>
+        <div id="sim-sidebar-applicants">
+          <!-- Candidate elements rendered here -->
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <footer>
+    <span>Scout Academic Planner © 2026</span>
+    <span>Powered by Singulr.tech</span>
+  </footer>
+</div>
+
+<!-- Firebase SDK CDN Libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+// Load Config from localStorage
+const storedConfig = localStorage.getItem('firebase_config');
+let db = null;
+let currentUid = null;
+let placements = [];
+
+if (storedConfig) {
+  try {
+    const config = JSON.parse(storedConfig);
+    firebase.initializeApp(config);
+    db = firebase.firestore();
+    
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUid = user.uid;
+        document.getElementById('auth-warning-box').style.display = 'none';
+        loadPlacements();
+      } else {
+        document.getElementById('auth-warning-box').style.display = 'block';
+      }
+    });
+  } catch(e) {
+    console.error("Firebase load error", e);
+    document.getElementById('auth-warning-box').style.display = 'block';
+  }
+} else {
+  document.getElementById('auth-warning-box').style.display = 'block';
+}
+
+// Load Placements from Firestore (to update final outcomes)
+async function loadPlacements() {
+  if (!db || !currentUid) return;
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      placements = data.placements || [];
+    }
+  } catch (e) {
+    console.error("Error loading placements:", e);
+  }
+}
+
+// Save Placements to Firestore
+async function savePlacements() {
+  if (!db || !currentUid) return;
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    await docRef.set({ placements: placements }, { merge: true });
+  } catch (e) {
+    console.error("Error saving placements:", e);
+  }
+}
+
+// Global variables for Pre-Placements Simulator
+let mockCompanies = [];
+let activeSim = null;
+let isRealityMode = localStorage.getItem('reality_mode_active') === 'true';
+let isCodeMode = false;
+let simMessages = [];
+
+const defaultMockCompanies = [
+  { id: 'mock_boogle', name: 'Boogle', title: 'Software Engineer', ctc: 55, cgpa: 8.5, backlogs: 0, poolSize: 1200, vacancies: 1, desc: 'Advanced search, systems infrastructure, scale problems, algorithms.' },
+  { id: 'mock_microhard', name: 'Microhard', title: 'Software Engineer Intern', ctc: 44, cgpa: 8.0, backlogs: 0, poolSize: 950, vacancies: 2, desc: 'Cloud infrastructure, operating system kernels, application frameworks.' },
+  { id: 'mock_nile', name: 'Nile', title: 'Backend SDE', ctc: 38, cgpa: 7.5, backlogs: 1, poolSize: 800, vacancies: 3, desc: 'High throughput e-commerce transactions, microservices, databases.' },
+  { id: 'mock_pineapple', name: 'Pineapple', title: 'UI/UX Frontend Engineer', ctc: 40, cgpa: 8.0, backlogs: 0, poolSize: 600, vacancies: 1, desc: 'State-of-the-art interactive displays, motion animations, web frameworks.' },
+  { id: 'mock_swipe', name: 'Swipe', title: 'Systems Infrastructure SDE', ctc: 48, cgpa: 8.2, backlogs: 0, poolSize: 750, vacancies: 1, desc: 'Secure payment pipelines, transaction consistency, ledger databases.' }
+];
+
+const mockNames = ["Aarav", "Ananya", "Rohan", "Priya", "Vikram", "Kabir", "Meera", "Neha", "Aditya", "Siddharth", "Karan", "Rahul", "Ishaan", "Riya", "Sneha", "Tanvi", "Arjun", "Diya", "Reyansh", "Vihaan"];
+
+// Initialize Simulator Settings
+function initSimulator() {
+  const savedCustoms = localStorage.getItem('custom_mock_companies');
+  if (savedCustoms) {
+    try {
+      mockCompanies = [...defaultMockCompanies, ...JSON.parse(savedCustoms)];
+    } catch(e) {
+      mockCompanies = [...defaultMockCompanies];
+    }
+  } else {
+    mockCompanies = [...defaultMockCompanies];
+  }
+  
+  // Set Reality Mode Switch visual state
+  document.getElementById('reality-mode-toggle').checked = isRealityMode;
+  renderSimOpenings();
+}
+
+function toggleRealityMode() {
+  isRealityMode = document.getElementById('reality-mode-toggle').checked;
+  localStorage.setItem('reality_mode_active', isRealityMode ? 'true' : 'false');
+}
+
+function renderSimOpenings() {
+  const grid = document.getElementById('sim-openings-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  // Read user stats
+  const cgpa = parseFloat(localStorage.getItem('user_cgpa') || '8.5');
+  const backlogs = parseInt(localStorage.getItem('user_backlogs') || '0');
+  
+  mockCompanies.forEach(company => {
+    const isCgpaOk = cgpa >= company.cgpa;
+    const isBacklogOk = backlogs <= company.backlogs;
+    const isEligible = isCgpaOk && isBacklogOk;
+    
+    const card = document.createElement('div');
+    card.className = 'sim-card';
+    
+    let eligibilityHtml = '';
+    if (isEligible) {
+      eligibilityHtml = `<span class="eligibility-badge eligible">Eligible</span>`;
+    } else {
+      let reasons = [];
+      if (!isCgpaOk) reasons.push(`CGPA < ${company.cgpa}`);
+      if (!isBacklogOk) reasons.push(`Backlogs > ${company.backlogs}`);
+      eligibilityHtml = `<span class="eligibility-badge ineligible" title="${reasons.join(', ')}">Ineligible</span>`;
+    }
+    
+    card.innerHTML = `
+      <div>
+        <h4>${company.title}</h4>
+        <div class="company">${company.name}</div>
+        <div class="ctc">${company.ctc} LPA</div>
+        <div class="criteria">Cutoffs: CGPA ${company.cgpa} | Backlogs ${company.backlogs}<br>${company.desc}</div>
+        ${eligibilityHtml}
+      </div>
+      <div class="pool-size">
+        <span>Pool: ${company.poolSize} candidates</span>
+        <span>Vacancies: ${company.vacancies}</span>
+      </div>
+      <div style="margin-top: 14px;">
+        <button class="btn btn-outline" style="width: 100%; font-size: 11px; padding: 6px;" 
+          ${isEligible ? '' : 'disabled'} 
+          onclick="applyToSimOpening('${company.id}')">
+          ${isEligible ? 'Apply &amp; Start Simulation' : 'Locked (Cutoffs Not Met)'}
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function generateCustomSimOpening(event) {
+  event.preventDefault();
+  const name = document.getElementById('sim-company-name').value.trim();
+  const title = document.getElementById('sim-job-title').value.trim();
+  const ctc = parseInt(document.getElementById('sim-job-ctc').value, 10);
+  const cgpa = parseFloat(document.getElementById('sim-cgpa-cutoff').value);
+  const backlogs = parseInt(document.getElementById('sim-backlog-cutoff').value, 10);
+  const poolSize = parseInt(document.getElementById('sim-pool-size').value, 10);
+  
+  if (!name || !title || isNaN(ctc) || isNaN(cgpa) || isNaN(backlogs) || isNaN(poolSize)) return;
+  
+  const newCompany = {
+    id: 'mock_custom_' + Date.now(),
+    name,
+    title,
+    ctc,
+    cgpa,
+    backlogs,
+    poolSize,
+    vacancies: Math.max(1, Math.floor(Math.random() * 3) + 1),
+    desc: `AI-Generated custom recruitment drive for ${title} role.`
+  };
+  
+  const savedCustoms = localStorage.getItem('custom_mock_companies');
+  let customsList = [];
+  if (savedCustoms) {
+    try { customsList = JSON.parse(savedCustoms); } catch(e){}
+  }
+  customsList.push(newCompany);
+  localStorage.setItem('custom_mock_companies', JSON.stringify(customsList));
+  
+  mockCompanies.push(newCompany);
+  renderSimOpenings();
+  
+  document.getElementById('custom-sim-form').reset();
+}
+
+function applyToSimOpening(companyId) {
+  const company = mockCompanies.find(c => c.id === companyId);
+  if (!company) return;
+  
+  const initialCandidates = [];
+  const activeCount = Math.min(company.poolSize, 20); 
+  
+  for (let i = 0; i < activeCount - 1; i++) {
+    const randomName = mockNames[Math.floor(Math.random() * mockNames.length)] + " " + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + ".";
+    initialCandidates.push({ name: randomName, active: true, cgpa: (Math.random() * 2 + 8).toFixed(2), score: 50 });
+  }
+  initialCandidates.push({ name: "Aditya Dixit (You)", active: true, cgpa: localStorage.getItem('user_cgpa') || '8.5', score: 60 });
+  
+  activeSim = {
+    company,
+    roundIndex: 0,
+    pool: company.poolSize,
+    candidates: initialCandidates,
+    otherCandidates: initialCandidates,
+    messageHistory: []
+  };
+  
+  const overlay = document.getElementById('simulation-overlay');
+  overlay.showModal();
+  
+  document.getElementById('sim-modal-title').textContent = `${company.name} Recruitment Drive`;
+  document.getElementById('sim-sidebar-title').textContent = company.title;
+  document.getElementById('sim-sidebar-ctc').textContent = `${company.ctc} LPA`;
+  
+  document.getElementById('sim-chat-container').innerHTML = '';
+  simMessages = [];
+  
+  initiateRound();
+}
+
+function updateSidebarStats() {
+  const sim = activeSim;
+  if (!sim) return;
+  
+  const roundNames = [
+    "Round 1: Group Discussion (GD)",
+    "Round 2: Coding Assessment (OA)",
+    "Round 3: System Design & Hackathon",
+    "Round 4: Technical Interview",
+    "Round 5: HR Interview"
+  ];
+  
+  document.getElementById('sim-sidebar-pool').textContent = `${activeSim.pool} Candidates`;
+  document.getElementById('sim-sidebar-round').textContent = roundNames[activeSim.roundIndex] || "Simulation Complete";
+  
+  const container = document.getElementById('sim-sidebar-applicants');
+  container.innerHTML = '';
+  
+  sim.otherCandidates.forEach(c => {
+    const item = document.createElement('div');
+    item.className = `candidate-item ${c.active ? '' : 'eliminated'}`;
+    item.innerHTML = `
+      <span class="status-dot"></span>
+      <span>${c.name} (CGPA: ${c.cgpa})</span>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function toggleEditorCodeMode() {
+  const btn = document.getElementById('sim-toggle-code-mode');
+  const textarea = document.getElementById('sim-user-input');
+  isCodeMode = !isCodeMode;
+  if (isCodeMode) {
+    btn.textContent = "Text Mode";
+    btn.className = "btn-outline active";
+    textarea.className = "code-mode";
+    textarea.placeholder = "/* Enter your code block here */\n\nfunction solveProblem() {\n  // Code implementation...\n}";
+  } else {
+    btn.textContent = "Code Mode";
+    btn.className = "btn-outline";
+    textarea.className = "";
+    textarea.placeholder = "Type your contribution, answer, or code block here...";
+  }
+}
+
+function appendSimChat(speaker, text, isUser = false, isThought = false) {
+  const chat = document.getElementById('sim-chat-container');
+  if (!chat) return;
+  
+  const bubble = document.createElement('div');
+  
+  if (isThought) {
+    bubble.className = "bubble-row thought";
+    bubble.innerHTML = `
+      <div class="bubble-content">
+        ${text}
+      </div>
+    `;
+  } else {
+    bubble.className = `bubble-row ${isUser ? 'candidate' : 'interviewer'}`;
+    const avatarUrl = isUser 
+      ? `https://api.dicebear.com/7.x/bottts/svg?seed=aditya`
+      : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(speaker)}`;
+      
+    bubble.innerHTML = `
+      <div class="bubble-avatar">
+        <img src="${avatarUrl}" alt="${speaker}">
+      </div>
+      <div class="bubble-content">
+        <span class="bubble-speaker">${speaker}</span>
+        ${text.replace(/\n/g, '<br>')}
+      </div>
+    `;
+  }
+  
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+  simMessages.push({ speaker, text, isUser, isThought });
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function initiateRound() {
+  const sim = activeSim;
+  if (!sim) return;
+  
+  updateSidebarStats();
+  
+  const roundTitles = [
+    "Group Discussion (GD) Opening Statement",
+    "Coding Assessment (OA) Challenge Brief",
+    "System Design & Hackathon Specification",
+    "Technical Interview Assessment",
+    "HR Culture & Salary Fitment Interview"
+  ];
+  
+  appendSimChat("SYSTEM", `Initiating ${roundTitles[sim.roundIndex]}...`, false, true);
+  
+  const proctorPrompt = `You are a recruitment proctor/evaluator at ${sim.company.name}. 
+Current Stage: ${roundTitles[sim.roundIndex]} (Round ${sim.roundIndex + 1} of 5).
+The user is applying for ${sim.company.title} (${sim.company.ctc} LPA).
+Start the round by presenting a realistic prompt or challenge.
+- GD: Initiate a debate topic related to tech or business. Introduce a candidate prompt.
+- Coding: Present a medium-hard Leetcode style coding question (descriptions, examples, constraints).
+- System Design: Ask the candidate to design a high-scale service (e.g. pastebin, ticketmaster).
+- Tech Interview: Ask a deep technical question on concurrency, databases, operating systems, or CV/NLP.
+- HR Interview: Ask a behavioral question regarding culture fit, work ethic, or CTC expectations.
+
+Keep your response professional, firm, and fully in character. Speak directly.`;
+
+  appendSimChat("SYSTEM", "Proctor is generating challenge...", false, true);
+  const challengerSpeech = await callGeminiSimApi(proctorPrompt);
+  appendSimChat("Recruitment Proctor", challengerSpeech, false);
+}
+
+async function submitSimulationAnswer() {
+  const sim = activeSim;
+  if (!sim) return;
+  
+  const textarea = document.getElementById('sim-user-input');
+  const answer = textarea.value.trim();
+  if (!answer) return;
+  
+  appendSimChat("Aditya Dixit (You)", answer, true);
+  textarea.value = '';
+  
+  const btn = document.getElementById('sim-submit-btn');
+  btn.disabled = true;
+  btn.textContent = "Evaluating...";
+  
+  let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
+  
+  const proctorPrompt = `You are the recruitment proctor at ${sim.company.name} evaluating round ${sim.roundIndex + 1} (of 5).
+Role: ${sim.company.title} (${sim.company.ctc} LPA)
+Candidate: Aditya Dixit (CGPA: ${localStorage.getItem('user_cgpa') || '8.5'}, Backlogs: ${localStorage.getItem('user_backlogs') || '0'})
+Reality Mode is active: ${isRealityMode}. If reality mode is active, your grading standards are extremely severe.
+
+Here is the conversation log for this round:
+---
+${conversationHistoryStr}
+---
+
+Evaluate the candidate's last response.
+Determine:
+1. Outcome: PASS or FAIL. To pass, response must be technically accurate, coherent, and highly professional. Failing in reality mode should be common for weak or short answers.
+2. Eliminated candidate count: A number between 10% to 50% of the remaining pool (Current pool: ${sim.pool}).
+3. Feedback: Proctor speech response explaining the pass/fail decision, highlighting highlights/flaws in character.
+
+You MUST respond strictly using the following XML format:
+<evaluation>
+  <outcome>PASS or FAIL</outcome>
+  <eliminated>number</eliminated>
+  <message>interviewer response speech</message>
+</evaluation>`;
+
+  appendSimChat("SYSTEM", "AI Proctor is evaluating your performance...", false, true);
+  
+  const evaluationXml = await callGeminiSimApi(proctorPrompt);
+  btn.disabled = false;
+  btn.textContent = "Submit Response";
+  
+  let outcome = 'FAIL';
+  let eliminated = Math.floor(sim.pool * 0.2);
+  let feedbackMsg = "Your response did not satisfy our selection criteria. We wish you luck elsewhere.";
+  
+  try {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(evaluationXml, "text/xml");
+    const parsedOutcome = xmlDoc.getElementsByTagName("outcome")[0]?.textContent?.trim()?.toUpperCase();
+    const parsedElim = parseInt(xmlDoc.getElementsByTagName("eliminated")[0]?.textContent?.trim() || '0', 10);
+    const parsedMsg = xmlDoc.getElementsByTagName("message")[0]?.textContent?.trim();
+    
+    if (parsedOutcome === 'PASS' || parsedOutcome === 'FAIL') outcome = parsedOutcome;
+    if (!isNaN(parsedElim)) eliminated = parsedMsg ? parsedElim : eliminated;
+    if (parsedMsg) feedbackMsg = parsedMsg;
+  } catch (e) {
+    console.warn("XML Parsing failed, falling back to regex evaluation", e);
+    if (evaluationXml.includes('PASS')) outcome = 'PASS';
+    const matchMsg = evaluationXml.match(/<message>([\s\S]*?)<\/message>/);
+    if (matchMsg && matchMsg[1]) feedbackMsg = matchMsg[1].trim();
+  }
+  
+  appendSimChat("Recruitment Proctor", feedbackMsg, false);
+  
+  if (outcome === 'FAIL') {
+    appendSimChat("SYSTEM", `Simulation Terminated: You have been eliminated in Round ${sim.roundIndex + 1}.`, false, true);
+    appendSimChat("Recruitment Cell", `We regret to inform you that you did not clear Round ${sim.roundIndex + 1}. Feedback letter has been dispatched to your email.`, false);
+    
+    addSimPlacementToBoard(sim.company, 'rejected');
+    await sendSimEmail(false, feedbackMsg);
+    activeSim = null;
+  } else {
+    sim.pool = Math.max(1 + sim.company.vacancies, sim.pool - eliminated);
+    
+    let elimCount = 0;
+    sim.otherCandidates.forEach(c => {
+      if (c.active && elimCount < eliminated / 3) {
+        c.active = false;
+        elimCount++;
+      }
+    });
+    
+    updateSidebarStats();
+    sim.roundIndex++;
+    
+    if (sim.roundIndex === 5) {
+      appendSimChat("SYSTEM", "Congratulations! You have successfully cleared all recruitment rounds!", false, true);
+      appendSimChat("Recruitment Cell", `We are thrilled to extend an official SDE offer of ${sim.company.ctc} LPA at ${sim.company.name}! Check your email inbox for your official offer letter.`, false);
+      
+      addSimPlacementToBoard(sim.company, 'offer');
+      await sendSimEmail(true, feedbackMsg);
+      activeSim = null;
+    } else {
+      if (isRealityMode) {
+        await sendSimIntermediateEmail(sim, feedbackMsg);
+        appendSimChat("SYSTEM", "Reality Mode: Results are under review by the placement committee. Invitation to the next round has been emailed to you.", false, true);
+        let delayDays = Math.floor(Math.random() * 3) + 1;
+        for (let d = 1; d <= delayDays; d++) {
+          await sleep(1000);
+          appendSimChat("SYSTEM", `Simulated Day ${d} of waiting...`, false, true);
+        }
+        appendSimChat("SYSTEM", `Recruitment cell released results: You passed! Proceeding to next round.`, false, true);
+      }
+      
+      const continueBtn = document.createElement('button');
+      continueBtn.className = 'btn btn-primary';
+      continueBtn.style.margin = '20px auto';
+      continueBtn.style.display = 'block';
+      continueBtn.textContent = `Start Round ${sim.roundIndex + 1}`;
+      continueBtn.onclick = () => {
+        continueBtn.remove();
+        initiateRound();
+      };
+      document.getElementById('sim-chat-container').appendChild(continueBtn);
+      document.getElementById('sim-chat-container').scrollTop = document.getElementById('sim-chat-container').scrollHeight;
+    }
+  }
+}
+
+async function callGeminiSimApi(systemPrompt) {
+  const geminiKey = localStorage.getItem('gemini_api_key');
+  if (!geminiKey) {
+    return "<evaluation><outcome>FAIL</outcome><eliminated>0</eliminated><message>ERROR: Gemini API Key missing in Settings. Please navigate to Setup and input your key.</message></evaluation>";
+  }
+  
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: systemPrompt }] }]
+      })
+    });
+    const json = await response.json();
+    return json.candidates[0].content.parts[0].text;
+  } catch (e) {
+    console.error("Gemini API Error:", e);
+    return "<evaluation><outcome>FAIL</outcome><eliminated>0</eliminated><message>Evaluation call encountered network error.</message></evaluation>";
+  }
+}
+
+async function addSimPlacementToBoard(company, status) {
+  const type = 'on-campus';
+  const notes = `Simulated drive completed. Status: ${status.toUpperCase()}.`;
+  const jd = `Designation: ${company.title}\nCTC: ${company.ctc} LPA\nCutoff: CGPA ${company.cgpa}`;
+  
+  placements = placements.filter(p => p.name !== company.name);
+  
+  const id = 'company_' + Date.now();
+  placements.push({ id, name: company.name, title: company.title, type, ctc: `${company.ctc} LPA`, status, jd, notes });
+  await savePlacements();
+}
+
+async function sendSimIntermediateEmail(sim, feedback) {
+  const brevoKey = localStorage.getItem('brevo_api_key');
+  const userEmail = localStorage.getItem('user_email_target');
+  
+  if (!brevoKey || !userEmail) {
+    console.warn("Brevo API key or user email missing. Intermediate invite skipped.");
+    return;
+  }
+  
+  const roundNames = [
+    "Group Discussion",
+    "Coding Assessment (OA)",
+    "System Design & Hackathon",
+    "Technical Interview",
+    "HR Interview"
+  ];
+  const nextRoundName = roundNames[sim.roundIndex];
+  const company = sim.company;
+  const subject = `Scout: Invitation to Next Round - ${company.name}`;
+  
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + 1);
+  const dateString = nextDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeString = "10:30 AM IST";
+  
+  const portalLink = window.location.origin + window.location.pathname;
+  
+  const emailBody = `
+    <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
+      <div style="margin-bottom: 24px; border-bottom: 2px solid #2a6b5e; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; color: #2a6b5e;">${company.name.toUpperCase()} RECRUITMENT CELL</span>
+        <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px;">QUALIFIED</span>
+      </div>
+      
+      <p>Dear Candidate,</p>
+      <p>Congratulations! Based on your performance in the previous round, you have qualified for the next stage of our recruitment process.</p>
+      
+      <div style="background: #f2eee5; padding: 20px; border-radius: 2px; margin: 20px 0; border: 1px solid #dcd7ca;">
+        <h4 style="margin-top: 0; color: #2a6b5e; font-family: sans-serif;">Upcoming Round Details:</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; list-style-type: square; line-height: 1.8;">
+          <li><strong>Next Round Assessment:</strong> ${nextRoundName}</li>
+          <li><strong>Scheduled Date:</strong> ${dateString}</li>
+          <li><strong>Scheduled Time:</strong> ${timeString}</li>
+        </ul>
+      </div>
+      
+      <p>Please click the button below to enter the assessment portal and start the next round:</p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${portalLink}" style="background: #2a6b5e; color: #fff; text-decoration: none; padding: 12px 24px; font-family: monospace; font-size: 12px; font-weight: bold; border-radius: 2px; display: inline-block;">ENTER ASSESSMENT PORTAL</a>
+      </div>
+      
+      <blockquote style="border-left: 4px solid #2a6b5e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #555; background: #fdfcf9; padding: 10px 16px;">
+        <strong>Evaluator Feedback:</strong><br>
+        "${feedback.replace(/\n/g, '<br>')}"
+      </blockquote>
+      
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
+        <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+          SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+        </p>
+        <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+          POWERED BY SINGULR.TECH • CONNECTION SECURE
+        </p>
+      </div>
+    </div>
+  `;
+  
+  await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
+      to:          [{ email: userEmail }],
+      subject,
+      htmlContent: emailBody
+    })
+  });
+}
+
+async function sendSimEmail(isSuccess, feedback) {
+  const brevoKey = localStorage.getItem('brevo_api_key');
+  const userEmail = localStorage.getItem('user_email_target');
+  
+  if (!brevoKey || !userEmail) {
+    console.warn("Brevo API key or user email missing. Email dispatch skipped.");
+    return;
+  }
+  
+  const company = activeSim.company;
+  const subject = isSuccess 
+    ? `Scout: Official Offer Extended - ${company.name}` 
+    : `Scout: Recruitment Process Feedback - ${company.name}`;
+    
+  let emailBody = "";
+  if (isSuccess) {
+    emailBody = `
+      <div style="background-color: #faf8f3; padding: 40px; font-family: sans-serif; font-size: 15px; line-height: 1.6; color: #3d3a33; max-width: 650px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
+        <div style="text-align: center; border-bottom: 2px solid #2a6b5e; padding-bottom: 20px; margin-bottom: 30px;">
+          <h1 style="color: #2a6b5e; font-family: sans-serif; font-size: 28px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 0.05em;">OFFICIAL OFFER EXTENDED</h1>
+          <p style="font-family: monospace; font-size: 11px; color: #8c8573; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 0.1em;">CAMPUS PLACEMENT DRIVE — SELECTION OFFICE</p>
+        </div>
+        
+        <p>Dear Aditya Dixit,</p>
+        <p>On behalf of the recruitment team at <strong>${company.name}</strong>, we are thrilled to offer you the position of <strong>${company.title}</strong>. Your performance across our intensive interview evaluation stages proved exemplary.</p>
+        
+        <div style="background: #f2eee5; padding: 24px; border-radius: 2px; margin: 24px 0; border: 1px solid #dcd7ca;">
+          <h3 style="margin-top: 0; color: #2a6b5e; font-family: sans-serif;">Offer Details:</h3>
+          <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
+            <li><strong>Designation:</strong> ${company.title}</li>
+            <li><strong>Compensation (CTC):</strong> ${company.ctc} Lakhs Per Annum (LPA)</li>
+            <li><strong>Location:</strong> Bangalore, India (HQ)</li>
+            <li><strong>Start Date:</strong> Post Graduation / Immediate Placement</li>
+          </ul>
+        </div>
+        
+        <blockquote style="border-left: 4px solid #2a6b5e; margin: 20px 0; padding-left: 20px; font-style: italic; color: #555; background: #fdfcf9; padding: 12px 20px;">
+          <strong>Recruiter Panel Comments:</strong><br>
+          "${feedback.replace(/\n/g, '<br>')}"
+        </blockquote>
+        
+        <p>Congratulations once again on joining the team!</p>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
+          <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+            SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+          </p>
+          <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+            POWERED BY SINGULR.TECH • CONNECTION SECURE
+          </p>
+        </div>
+      </div>
+    `;
+  } else {
+    emailBody = `
+      <div style="background-color: #faf8f3; padding: 40px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 650px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
+        <div style="text-align: center; border-bottom: 2px solid #c13d2e; padding-bottom: 20px; margin-bottom: 30px;">
+          <h1 style="color: #c13d2e; font-family: sans-serif; font-size: 28px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 0.05em;">APPLICATION STATUS OUTCOME</h1>
+          <p style="font-family: monospace; font-size: 11px; color: #8c8573; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 0.1em;">RECRUITMENT BOARD EVALUATION REJECTION</p>
+        </div>
+        
+        <p>Dear Candidate,</p>
+        <p>Thank you for participating in our recruitment drive for the <strong>${company.title}</strong> role at <strong>${company.name}</strong>. After reviewing the logs and transcripts of your performance in the assessment rounds, we regret to inform you that you have not cleared our requirements.</p>
+        
+        <p>As a result, your application has been terminated at this time.</p>
+        
+        <div style="background: #fdf5f4; padding: 20px; border-radius: 2px; margin: 24px 0; border: 1px solid #f3dcd9;">
+          <h4 style="margin-top: 0; color: #c13d2e; font-family: sans-serif;">Official Evaluation Summary:</h4>
+          <blockquote style="border-left: 3px solid #c13d2e; margin: 10px 0; padding-left: 15px; font-style: italic; color: #52403f; line-height: 1.5;">
+            "${feedback.replace(/\n/g, '<br>')}"
+          </blockquote>
+        </div>
+        
+        <p style="font-size:12px; color: #7a7670;">Please note that we cannot offer further detailed responses due to the volume of applicants. We encourage you to focus on fundamental algorithm design and complex systems optimization before reapplying.</p>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
+          <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+            SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+          </p>
+          <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+            POWERED BY SINGULR.TECH • CONNECTION SECURE
+          </p>
+        </div>
+      </div>
+    `;
+  }
+  
+  await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
+      to:          [{ email: userEmail }],
+      subject,
+      htmlContent: emailBody
+    })
+  });
+}
+
+function terminateSimulation() {
+  if (confirm("Are you sure you want to exit the current placement simulation? Progress will be lost.")) {
+    const overlay = document.getElementById('simulation-overlay');
+    overlay.close();
+    activeSim = null;
+  }
+}
+
+// Start on page load
+window.addEventListener('DOMContentLoaded', () => {
+  initSimulator();
+});
+</script>
+</body>
+</html>

@@ -6,269 +6,165 @@
 <link rel="icon" type="image/png" href="logo.png">
 <title>SEM 05 // SCOUT SETUP</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ollama.css">
 <style>
-:root {
-  --bg:     #f5f2eb;
-  --paper:  #faf8f3;
-  --paper2: #ede9e0;
-  --paper3: #e5e0d4;
-  --ink:    #1a1814;
-  --ink2:   #3d3a33;
-  --ink3:   #7a7670;
-  --red:    #c13d2e;
-  --amber:  #c47d1a;
-  --teal:   #2a6b5e;
-  --blue:   #2c4f8a;
-  --line:   rgba(26,24,20,0.10);
-  --line2:  rgba(26,24,20,0.06);
+/* Page specific settings overrides */
+.hero {
+  text-align: center;
+  padding: 60px 0;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 40px;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background:var(--bg); color:var(--ink2); font-family:'Syne',sans-serif;
-  cursor:crosshair; position:relative; overflow-x:hidden;
+.hero h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--ink);
 }
-body::after {
-  content:''; position:fixed; inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events:none; z-index:9998; mix-blend-mode:multiply;
+.hero p {
+  color: var(--body);
+  font-size: 16px;
+  max-width: 600px;
+  margin: 12px auto 0 auto;
 }
-#cursor { width:6px;height:6px;background:var(--red);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:multiply; }
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--ink3);}
 
-.sidenav{position:fixed;left:0;top:0;bottom:0;width:60px;border-right:1px solid var(--line);background:var(--paper);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0;}
-.sidenav .logo{font-family:'Bebas Neue';color:var(--red);font-size:20px;writing-mode:vertical-rl;letter-spacing:0.1em;}
-.sidenav .logo-container {
+.section-label {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1.5px solid var(--red);
-  background: white;
-  transition: transform 0.2s ease;
-  margin-bottom: 12px;
-  flex-shrink: 0;
+  gap: 12px;
+  margin-bottom: 16px;
 }
-.sidenav .logo-container:hover {
-  transform: scale(1.1);
+.section-num {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  color: var(--body);
 }
-.sidenav .logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  flex-shrink: 0;
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
 }
-.sidenav .nav-group { display:flex; flex-direction:column; gap:16px; width:100%; align-items:center; }
-.sidenav .nav-group-title { font-family:'Syne Mono'; font-size:8px; color:var(--ink3); text-transform:uppercase; letter-spacing:0.1em; writing-mode:vertical-rl; margin-bottom:8px; opacity:0.6; }
-.sidenav .links{display:flex;flex-direction:column;gap:24px;width:100%;align-items:center;}
-.sidenav .links a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink3);font-family:'Syne Mono';font-size:10px;letter-spacing:0.2em;text-transform:uppercase;transition:color .15s;}
-.sidenav .links a:hover{color:var(--red);}
-.sidenav .links a.active{color:var(--red);font-weight:700;}
-.sidenav .tag{writing-mode:vertical-rl;font-family:'Syne Mono';font-size:9px;color:var(--ink3);letter-spacing:0.15em;}
-
-.main{margin-left:60px;}
-section{padding:80px;border-bottom:1px solid var(--line);position:relative;}
-.fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;}
-.fade-in.visible{opacity:1;transform:none;}
-
-.hero{padding:100px 80px;position:relative;overflow:hidden;}
-.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px);background-size:48px 48px;}
-.eyebrow{display:flex;align-items:center;gap:16px;margin-bottom:32px;position:relative;}
-.eyebrow .bar{width:40px;height:1px;background:var(--red);}
-.eyebrow span{font-family:'Syne Mono';font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--red);}
-.hero h1{font-family:'Bebas Neue';font-size:clamp(56px,10vw,100px);line-height:.9;position:relative;}
-.hero h1 .outline{-webkit-text-stroke:1.5px var(--ink);color:transparent;}
-
-.section-label{display:flex;align-items:baseline;gap:16px;margin-bottom:12px;}
-.section-num{font-family:'Syne Mono';font-size:11px;border:1px solid var(--line);padding:4px 10px;color:var(--ink3);}
-.section-title{font-family:'Bebas Neue';font-size:clamp(36px,5vw,52px);}
-.section-desc{font-family:'Instrument Serif';font-style:italic;font-size:18px;color:var(--ink3);max-width:680px;margin-bottom:48px;}
+.section-desc {
+  font-size: 15px;
+  color: var(--body);
+  margin-bottom: 32px;
+}
 
 .grid-cols-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 32px;
   margin-top: 20px;
 }
 
 .setup-card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  padding: 32px;
-  position: relative;
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  padding: 28px;
+  border-radius: 12px;
   margin-bottom: 24px;
 }
 .setup-card h3 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--ink);
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 8px;
-}
-
-.form-group {
   margin-bottom: 20px;
-}
-.form-group label {
-  display: block;
-  font-family: 'Syne Mono', monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--ink3);
-  margin-bottom: 6px;
-}
-.form-group input, .form-group textarea {
-  width: 100%;
-  background: var(--paper2);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  padding: 12px;
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.form-group input:focus, .form-group textarea:focus {
-  border-color: var(--red);
-}
-
-.btn {
-  background: var(--ink);
-  color: var(--bg);
-  border: 1px solid var(--ink);
-  padding: 12px 24px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.btn:hover {
-  background: transparent;
-  color: var(--ink);
-}
-.btn.btn-red {
-  background: var(--red);
-  border-color: var(--red);
-  color: white;
-}
-.btn.btn-red:hover {
-  background: transparent;
-  color: var(--red);
-}
-.btn.btn-outline {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--line);
-}
-.btn.btn-outline:hover {
-  background: var(--paper2);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 10px;
 }
 
 .auth-status {
-  padding: 12px 18px;
-  font-family: 'Syne Mono', monospace;
-  font-size: 12px;
+  padding: 10px 16px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  border-radius: 8px;
   margin-bottom: 20px;
-  background: rgba(42, 107, 94, 0.10);
-  border: 1px solid rgba(42, 107, 94, 0.25);
-  color: var(--teal);
+  background: rgba(39, 201, 63, 0.1);
+  border: 1px solid rgba(39, 201, 63, 0.2);
+  color: #1e7e2c;
 }
 .auth-status.disconnected {
-  background: rgba(193, 61, 46, 0.10);
-  border: 1px solid rgba(193, 61, 46, 0.25);
-  color: var(--red);
+  background: rgba(255, 95, 86, 0.1);
+  border: 1px solid rgba(255, 95, 86, 0.2);
+  color: #b52c24;
 }
 
 .instruction-box {
-  background: var(--paper2);
-  border-left: 3px solid var(--amber);
-  padding: 20px;
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  font-size: 16px;
+  background: var(--surface-soft);
+  border-left: 3px solid var(--primary);
+  padding: 16px;
+  font-size: 14px;
   line-height: 1.5;
-  color: var(--ink2);
+  color: var(--charcoal);
   margin-bottom: 20px;
+  border-radius: 4px;
 }
 .instruction-box code {
-  font-family: 'Syne Mono', monospace;
-  font-style: normal;
-  background: var(--paper3);
+  font-family: ui-monospace, monospace;
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
   padding: 2px 6px;
   font-size: 13px;
+  border-radius: 4px;
 }
 
 code.block {
   display: block;
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--surface-soft);
+  color: var(--ink);
   padding: 16px;
-  font-family: 'Syne Mono', monospace;
-  font-size: 12px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
   white-space: pre-wrap;
   word-break: break-all;
   margin-bottom: 16px;
-  border: 1px solid rgba(245,242,235,0.15);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 8px;
 }
 
-footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.15em;color:var(--ink3);text-transform:uppercase;display:flex;justify-content:space-between;}
+footer {
+  padding: 32px 0 0 0;
+  border-top: 1px solid var(--hairline);
+  margin-top: 88px;
+  font-size: 13px;
+  color: var(--body);
+  display: flex;
+  justify-content: space-between;
+}
 
 @media(max-width:900px){
-  .sidenav{display:none;}
-  .main{margin-left:0;}
-  section{padding:24px;}
   .grid-cols-2 { grid-template-columns:1fr; gap:20px; }
-  .hero{padding:56px 24px;}
-  footer{padding:32px 24px;flex-direction:column;gap:8px;}
+  .hero{padding:40px 0;}
 }
 </style>
 </head>
 <body>
-<div id="cursor"></div>
-
-<!-- NAVIGATION SIDEBAR -->
-<nav class="sidenav">
-  <a href="index.html" class="logo-container">
-    <img src="logo.png" alt="Scout Logo" class="logo-img">
-  </a>
-  
-  <div class="nav-group" style="margin: 20px 0; width: 100%; border-bottom: 1px solid var(--line); padding-bottom: 20px;">
-    <span class="nav-group-title">Menu</span>
-    <div class="links">
-      <a href="index.html">Plan</a>
-      <a href="assistant.html">Chat</a>
-      <a href="placements.html">Placements</a>
-      <a href="settings.html" class="active">Setup</a>
-    </div>
+<!-- NAVIGATION BAR -->
+<nav class="primary-nav">
+  <div class="logo-area">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+      <path d="M10 20v-6h4v6M18 10a4 4 0 0 0-8 0v4H6a2 2 0 0 0-2 2v2M20 20v-4a4 4 0 0 0-4-4h-2V6a2 2 0 0 0-4 0v4H9"></path>
+      <circle cx="14" cy="5" r="0.5"></circle>
+    </svg>
+    <span>Scout</span>
   </div>
-
-  <div class="nav-group" style="flex-grow: 1; justify-content: flex-start; overflow-y: auto; padding-top: 10px;">
-    <span class="nav-group-title">Sections</span>
-    <div class="links" style="gap: 18px;">
-      <a href="#firebase-auth">Auth</a>
-      <a href="#keys-config">Config</a>
-      <a href="#token-generator">Token Gen</a>
-    </div>
+  <div class="nav-links">
+    <a href="index.html">Plan</a>
+    <a href="assistant.html">Chat</a>
+    <a href="placements.html">Placements</a>
+    <a href="simulator.html">Simulator</a>
+    <a href="settings.html" class="active">Setup</a>
   </div>
-  
-  <div class="tag">JUL 2026 → JAN 2027</div>
 </nav>
 
-<div class="main">
+<div class="container page-offset">
 
   <div class="hero">
-    <div class="hero-grid-bg"></div>
-    <div class="eyebrow"><div class="bar"></div><span>Scout Configuration</span></div>
-    <h1>SETTINGS &amp;<br><span class="outline">INTEGRATIONS</span></h1>
+    <h1>SETTINGS &amp; INTEGRATIONS</h1>
+    <p>Configure your database credentials, API access tokens, and sync rules.</p>
   </div>
 
   <!-- SECTION: FIREBASE AUTHENTICATION -->
@@ -470,12 +366,7 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-// Local Cursor
-document.addEventListener('mousemove', e => {
-  const c = document.getElementById('cursor');
-  c.style.left = e.clientX + 'px';
-  c.style.top = e.clientY + 'px';
-});
+// Custom cursor disabled for native look
 
 // Setup redirects URL display
 const currentUrl = window.location.origin + window.location.pathname;
