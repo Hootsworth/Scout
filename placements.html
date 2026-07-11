@@ -1085,7 +1085,8 @@ async function submitSimulationAnswer() {
       } else {
         // Advance to next round, check Reality Mode delay
         if (isRealityMode) {
-          appendSimChat("SYSTEM", "Reality Mode: Results are under review by the placement committee...", false, true);
+          await sendSimIntermediateEmail(sim, feedbackMsg);
+          appendSimChat("SYSTEM", "Reality Mode: Results are under review by the placement committee. Invitation to next round has been emailed to you.", false, true);
           let delayDays = Math.floor(Math.random() * 3) + 1;
           for (let d = 1; d <= delayDays; d++) {
             await sleep(1000);
@@ -1167,6 +1168,88 @@ async function addSimPlacementToBoard(company, status) {
   const id = 'company_' + Date.now();
   placements.push({ id, name: company.name, title: company.title, type, ctc: `${company.ctc} LPA`, status, jd, notes });
   await savePlacements();
+}
+
+async function sendSimIntermediateEmail(sim, feedback) {
+  const brevoKey = localStorage.getItem('brevo_api_key');
+  const userEmail = localStorage.getItem('user_email_target');
+  
+  if (!brevoKey || !userEmail) {
+    console.warn("Brevo API key or Target email target missing. Intermediate invite skipped.");
+    return;
+  }
+  
+  const roundNames = [
+    "Group Discussion",
+    "Coding Assessment (OA)",
+    "System Design & Hackathon",
+    "Technical Interview",
+    "HR Interview"
+  ];
+  const nextRoundName = roundNames[sim.roundIndex];
+  const company = sim.company;
+  const subject = `Scout: Invitation to Next Round - ${company.name}`;
+  
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + 1);
+  const dateString = nextDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeString = "10:30 AM IST";
+  
+  const portalLink = window.location.origin + window.location.pathname + "#sim-arena";
+  
+  const emailBody = `
+    <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px;">
+      <div style="margin-bottom: 24px; border-bottom: 2px solid #2a6b5e; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; color: #2a6b5e;">${company.name.toUpperCase()} RECRUITMENT CELL</span>
+        <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px;">QUALIFIED</span>
+      </div>
+      
+      <p>Dear Candidate,</p>
+      <p>Congratulations! Based on your performance in the previous round, you have qualified for the next stage of our recruitment process.</p>
+      
+      <div style="background: #f2eee5; padding: 20px; border-radius: 2px; margin: 20px 0; border: 1px solid #dcd7ca;">
+        <h4 style="margin-top: 0; color: #2a6b5e; font-family: sans-serif;">Upcoming Round Details:</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; list-style-type: square; line-height: 1.8;">
+          <li><strong>Next Round Assessment:</strong> ${nextRoundName}</li>
+          <li><strong>Scheduled Date:</strong> ${dateString}</li>
+          <li><strong>Scheduled Time:</strong> ${timeString}</li>
+        </ul>
+      </div>
+      
+      <p>Please click the button below to enter the assessment portal and start the next round:</p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${portalLink}" style="background: #2a6b5e; color: #fff; text-decoration: none; padding: 12px 24px; font-family: monospace; font-size: 12px; font-weight: bold; border-radius: 2px; display: inline-block;">ENTER ASSESSMENT PORTAL</a>
+      </div>
+      
+      <blockquote style="border-left: 4px solid #2a6b5e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #555; background: #fdfcf9; padding: 10px 16px;">
+        <strong>Evaluator Feedback:</strong><br>
+        "${feedback.replace(/\n/g, '<br>')}"
+      </blockquote>
+      
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
+        <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+          SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+        </p>
+        <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+          POWERED BY SINGULR.TECH • CONNECTION SECURE
+        </p>
+      </div>
+    </div>
+  `;
+  
+  await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
+      to:          [{ email: userEmail }],
+      subject,
+      htmlContent: emailBody
+    })
+  });
 }
 
 async function sendSimEmail(isSuccess, feedback) {
