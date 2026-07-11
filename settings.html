@@ -203,7 +203,7 @@ footer {
               <input type="password" id="password-input" required>
             </div>
             <div style="display: flex; gap: 12px;">
-              <button type="submit" class="btn" name="action" value="login">Log In</button>
+              <button type="submit" class="btn btn-primary" name="action" value="login">Log In</button>
               <button type="submit" class="btn btn-outline" name="action" value="signup">Sign Up</button>
             </div>
           </form>
@@ -299,14 +299,14 @@ footer {
         Provide your Firebase Project Client SDK config snippet (JSON format) so this page can connect to your authentication backend.
       </p>
       <div class="form-group">
-        <textarea id="firebase-config-json" rows="6" style="font-family: 'Syne Mono', monospace; font-size: 12px;" placeholder='{
+        <textarea id="firebase-config-json" rows="6" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px;" placeholder='{
   "apiKey": "...",
   "authDomain": "...",
   "projectId": "...",
   "appId": "..."
 }'></textarea>
       </div>
-      <button class="btn" onclick="saveFirebaseConfig()">Save Firebase Configuration</button>
+      <button class="btn btn-primary" onclick="saveFirebaseConfig()">Save Firebase Configuration</button>
     </div>
   </section>
 

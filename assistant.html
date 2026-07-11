@@ -444,7 +444,7 @@ body {
           <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           New Chat
         </button>
-        <input type="text" id="chat-search-input" placeholder="Search chats..." style="width:100%; padding:6px 10px; font-family:'Syne',sans-serif; font-size:11px; border:1px solid var(--line); background:var(--paper); outline:none;" oninput="filterChatsList()">
+        <input type="text" id="chat-search-input" placeholder="Search chats..." style="width:100%; min-height:34px; padding:6px 12px; font-size:13px;" oninput="filterChatsList()">
       </div>
       
       <!-- List of Chats -->
@@ -490,8 +490,8 @@ body {
     <!-- RIGHT PANE: CODE EDITOR (HIDDEN BY DEFAULT) -->
     <div class="editor-pane" id="editor-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-        <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ink);">Interactive Editor</h3>
-        <select id="code-lang-selector" style="padding: 6px; font-family:'Syne',sans-serif; font-size:12px; border:1px solid var(--line); background:var(--paper2);">
+        <h3>Interactive Editor</h3>
+        <select id="code-lang-selector" style="width: 130px; min-height: 34px; padding: 4px 12px; font-size: 13px;">
           <option value="python">Python</option>
           <option value="javascript">JavaScript</option>
           <option value="java">Java</option>
@@ -500,16 +500,16 @@ body {
       </div>
 
       <!-- Pressure Mode Header -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; background:rgba(193,61,46,0.06); padding:8px 12px; border:1px solid var(--red); border-radius:2px;">
-        <label style="font-family:'Syne',sans-serif; font-size:11px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--red); font-weight:700; margin:0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; background:rgba(181, 44, 36, 0.06); padding:10px 14px; border:1px solid var(--red); border-radius:8px;">
+        <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--red); font-weight:700; margin:0;">
           <input type="checkbox" id="pressure-mode-toggle" onchange="togglePressureMode(this)" style="accent-color:var(--red); cursor:pointer;">
           ⚠️ PRESSURE MODE (30m Live Timer)
         </label>
-        <span id="pressure-timer-display" style="font-family:'Syne Mono',monospace; font-size:12px; font-weight:700; color:var(--red); display:none;">30:00</span>
+        <span id="pressure-timer-display" style="font-family:ui-monospace,monospace; font-size:13px; font-weight:700; color:var(--red); display:none;">30:00</span>
       </div>
 
       <div style="flex:1; display:flex; flex-direction:column; position:relative; min-height: 350px;">
-        <textarea id="code-editor-textarea" style="flex:1; width:100%; font-family:'Syne Mono',monospace; font-size:13px; background:var(--paper2); border:1px solid var(--line); padding:16px; color:var(--ink); resize:none; line-height: 1.4; outline:none;" placeholder="# Type your coding solution here...&#10;# Click the Submit button below for the AI Interviewer to review your code."></textarea>
+        <textarea id="code-editor-textarea" style="flex:1; width:100%; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13.5px; background:var(--surface-soft); padding:16px; color:var(--ink); resize:none; line-height: 1.5; outline:none; border-radius:8px;" placeholder="# Type your coding solution here...&#10;# Click the Submit button below for the AI Interviewer to review your code."></textarea>
       </div>
 
       <div style="margin-top: 16px;">
@@ -523,8 +523,8 @@ body {
     <!-- RIGHT PANE: MCQ QUIZ VIEW (HIDDEN BY DEFAULT) -->
     <div class="editor-pane" id="quiz-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
-        <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ink); letter-spacing:0.04em;">Placement Assessment</h3>
-        <span id="quiz-progress-badge" style="font-family:'Syne Mono',monospace; font-size:9px; color:var(--red); border:1px solid var(--red); padding:2px 6px; border-radius:2px; text-transform:uppercase;">10 Questions</span>
+        <h3>Placement Assessment</h3>
+        <span id="quiz-progress-badge" class="badge-pill badge-red">10 Questions</span>
       </div>
 
       <div id="quiz-questions-list" style="flex:1; display:flex; flex-direction:column; gap:24px; margin-bottom: 24px;">
@@ -542,8 +542,8 @@ body {
     <!-- RIGHT PANE: INTERACTIVE VISUALIZER (HIDDEN BY DEFAULT) -->
     <div class="editor-pane" id="visualizer-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
-        <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ink); letter-spacing:0.04em;">Interactive Visualizer</h3>
-        <button class="btn btn-outline" style="font-size:9px; padding:4px 8px;" onclick="closeVisualizer()">Close</button>
+        <h3>Interactive Visualizer</h3>
+        <button class="btn btn-outline" style="font-size:11px; padding:4px 12px; height:28px;" onclick="closeVisualizer()">Close</button>
       </div>
       <div id="visualizer-output-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
         <!-- Populated dynamically with SVG diagrams or slideshows -->
@@ -553,8 +553,8 @@ body {
     <!-- RIGHT PANE: COMMITMENT DASHBOARD (HIDDEN BY DEFAULT) -->
     <div class="editor-pane" id="commitment-dashboard-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
-        <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--ink); letter-spacing:0.04em;">Commitment Dashboard</h3>
-        <button class="btn btn-outline" style="font-size:9px; padding:4px 8px;" onclick="closeCommitmentDashboard()">Close</button>
+        <h3>Commitment Dashboard</h3>
+        <button class="btn btn-outline" style="font-size:11px; padding:4px 12px; height:28px;" onclick="closeCommitmentDashboard()">Close</button>
       </div>
       <div id="commitment-dashboard-content" style="display:flex; flex-direction:column; gap:16px;">
         <!-- Populated dynamically -->
