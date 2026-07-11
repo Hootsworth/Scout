@@ -243,11 +243,12 @@ dialog#simulation-overlay::backdrop {
   font-size: 10px;
 }
 
-/* AI Helper Button */
+/* AI Helper Button with Disco Colors */
 .disco-ai-btn {
-  background: var(--paper);
-  color: var(--ink);
-  border: 1.5px solid var(--hairline-strong);
+  background: linear-gradient(45deg, #ff007f, #7f00ff, #00f0ff, #ff007f);
+  background-size: 300% 300%;
+  color: white;
+  border: none;
   border-radius: 50%;
   width: 38px;
   height: 38px;
@@ -255,14 +256,14 @@ dialog#simulation-overlay::backdrop {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(127, 0, 255, 0.3);
+  animation: discoAnimation 4s ease infinite, discoPulse 2s infinite;
   transition: all 0.15s ease;
-  box-shadow: var(--shadow-sm);
   padding: 0;
 }
 .disco-ai-btn:hover {
-  background: var(--surface-soft);
-  border-color: var(--ink);
   transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(127, 0, 255, 0.5);
 }
 .disco-ai-btn:active {
   transform: scale(0.95);
@@ -1363,7 +1364,8 @@ Do not include any emojis in your response.`;
         hint = `<span style="color: var(--red);">${match[1]}</span>`;
       }
     }
-    bubbleContent.innerHTML = hint.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    bubbleContent.innerHTML = parseMarkdown(hint);
+    animateWords(bubbleContent, 25);
   } catch (e) {
     bubbleContent.innerHTML = `<span style="color: var(--red);">Error getting hints: ${e.message}</span>`;
   }
@@ -1399,24 +1401,43 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
         ${text}
       </div>
     `;
+    chat.appendChild(bubble);
   } else {
     bubble.className = `bubble-row ${isUser ? 'candidate' : 'interviewer'}`;
     const avatarUrl = isUser 
       ? `https://api.dicebear.com/7.x/bottts/svg?seed=aditya`
       : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(speaker)}`;
       
-    bubble.innerHTML = `
-      <div class="bubble-avatar">
-        <img src="${avatarUrl}" alt="${speaker}">
-      </div>
-      <div class="bubble-content">
-        <span class="bubble-speaker">${speaker}</span>
-        ${text.replace(/\n/g, '<br>')}
-      </div>
-    `;
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'bubble-content';
+    
+    const speakerSpan = document.createElement('span');
+    speakerSpan.className = 'bubble-speaker';
+    speakerSpan.textContent = speaker;
+    contentDiv.appendChild(speakerSpan);
+    
+    const bodySpan = document.createElement('span');
+    if (!isUser) {
+      bodySpan.innerHTML = parseMarkdown(text);
+    } else {
+      bodySpan.innerHTML = text.replace(/\n/g, '<br>');
+    }
+    contentDiv.appendChild(bodySpan);
+    
+    // Assemble
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'bubble-avatar';
+    avatarDiv.innerHTML = `<img src="${avatarUrl}" alt="${speaker}">`;
+    
+    bubble.appendChild(avatarDiv);
+    bubble.appendChild(contentDiv);
+    chat.appendChild(bubble);
+    
+    if (!isUser) {
+      animateWords(bodySpan, 25);
+    }
   }
   
-  chat.appendChild(bubble);
   chat.scrollTop = chat.scrollHeight;
   simMessages.push({ speaker, text, isUser, isThought });
 }
@@ -1824,6 +1845,80 @@ function terminateSimulation() {
     overlay.close();
     activeSim = null;
   }
+}
+
+function parseMarkdown(md) {
+  if (!md) return "";
+  
+  let html = md
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  html = html.replace(/^&gt;\s*(.*?)$/gm, '<blockquote>$1</blockquote>');
+
+  html = html.replace(/^\s*[-*+]\s+(.*?)$/gm, '<li>$1</li>');
+  
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+  html = html.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return '<br>';
+    if (trimmed.startsWith('<h') || trimmed.startsWith('<li') || trimmed.startsWith('<ul') || trimmed.startsWith('<block') || trimmed.startsWith('</ul')) {
+      return line;
+    }
+    return line + '<br>';
+  }).join('\n');
+
+  return html;
+}
+
+function animateWords(container, wordDelayMs = 25) {
+  let wordIndex = 0;
+  
+  function processNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+      const words = text.split(/(\s+)/);
+      const fragment = document.createDocumentFragment();
+      
+      words.forEach(part => {
+        if (part.trim() === '') {
+          fragment.appendChild(document.createTextNode(part));
+        } else {
+          const span = document.createElement('span');
+          span.className = 'animated-word';
+          span.textContent = part;
+          span.style.animationDelay = `${wordIndex * wordDelayMs}ms`;
+          fragment.appendChild(span);
+          wordIndex++;
+        }
+      });
+      
+      node.parentNode.replaceChild(fragment, node);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.classList.contains('message-actions') || node.classList.contains('chart-actions') || node.tagName === 'STYLE') {
+        return;
+      }
+      const children = Array.from(node.childNodes);
+      children.forEach(processNode);
+    }
+  }
+  
+  processNode(container);
 }
 
 // Start on page load

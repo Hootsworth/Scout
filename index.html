@@ -1979,6 +1979,42 @@ function renderAnimatedText(container, rawText) {
   }
   container.innerHTML = html;
   decorateAssistantMessage(container, rawText);
+  animateWords(container, 25);
+}
+
+function animateWords(container, wordDelayMs = 25) {
+  let wordIndex = 0;
+  
+  function processNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+      const words = text.split(/(\s+)/);
+      const fragment = document.createDocumentFragment();
+      
+      words.forEach(part => {
+        if (part.trim() === '') {
+          fragment.appendChild(document.createTextNode(part));
+        } else {
+          const span = document.createElement('span');
+          span.className = 'animated-word';
+          span.textContent = part;
+          span.style.animationDelay = `${wordIndex * wordDelayMs}ms`;
+          fragment.appendChild(span);
+          wordIndex++;
+        }
+      });
+      
+      node.parentNode.replaceChild(fragment, node);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.classList.contains('message-actions') || node.classList.contains('chart-actions') || node.tagName === 'STYLE') {
+        return;
+      }
+      const children = Array.from(node.childNodes);
+      children.forEach(processNode);
+    }
+  }
+  
+  processNode(container);
 }
 
 function decorateAssistantMessage(container, rawText) {
