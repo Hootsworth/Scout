@@ -1353,7 +1353,13 @@ Keep the tone friendly, positive, soft, and bright! Highlight key technical or s
 Do not include any emojis in your response.`;
 
   try {
-    const hint = await callGeminiSimApi(systemPrompt);
+    let hint = await callGeminiSimApi(systemPrompt);
+    if (hint.includes('<evaluation>')) {
+      const match = hint.match(/<message>([\s\S]*?)<\/message>/);
+      if (match) {
+        hint = `<span style="color: var(--red);">${match[1]}</span>`;
+      }
+    }
     bubbleContent.innerHTML = hint.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   } catch (e) {
     bubbleContent.innerHTML = `<span style="color: var(--red);">Error getting hints: ${e.message}</span>`;
@@ -1445,7 +1451,13 @@ Start the round by presenting a realistic prompt or challenge.
 Keep your response professional, firm, and fully in character. Speak directly.`;
 
   appendSimChat("SYSTEM", "Proctor is generating challenge...", false, true);
-  const challengerSpeech = await callGeminiSimApi(proctorPrompt);
+  let challengerSpeech = await callGeminiSimApi(proctorPrompt);
+  if (challengerSpeech.includes('<evaluation>')) {
+    const match = challengerSpeech.match(/<message>([\s\S]*?)<\/message>/);
+    if (match) {
+      challengerSpeech = `<span style="color: var(--red);">${match[1]}</span>`;
+    }
+  }
   appendSimChat("Recruitment Proctor", challengerSpeech, false);
 }
 
@@ -1589,11 +1601,21 @@ async function callGeminiSimApi(systemPrompt) {
         contents: [{ parts: [{ text: systemPrompt }] }]
       })
     });
+    
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || `HTTP ${response.status}`);
+    }
+    
     const json = await response.json();
-    return json.candidates[0].content.parts[0].text;
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error("Empty response received from Gemini.");
+    }
+    return text;
   } catch (e) {
     console.error("Gemini API Error:", e);
-    return "<evaluation><outcome>FAIL</outcome><eliminated>0</eliminated><message>Evaluation call encountered network error.</message></evaluation>";
+    return `<evaluation><outcome>FAIL</outcome><eliminated>0</eliminated><message>Gemini API Error: ${e.message}</message></evaluation>`;
   }
 }
 
