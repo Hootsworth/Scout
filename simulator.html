@@ -2602,7 +2602,12 @@ async function speakTextElevenLabs(text) {
       })
     });
     
-    if (!response.ok) throw new Error(`ElevenLabs returned HTTP ${response.status}`);
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.error("ElevenLabs speak error: Unauthorized (HTTP 401). Your ElevenLabs API key in Settings is invalid, expired, or missing. Falling back to browser Speech Synthesis.");
+      }
+      throw new Error(`ElevenLabs returned HTTP ${response.status}`);
+    }
     const blob = await response.blob();
     const audioUrl = URL.createObjectURL(blob);
     const audio = new Audio(audioUrl);
