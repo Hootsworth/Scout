@@ -358,6 +358,14 @@ footer{padding:48px 80px;font-family:'Syne Mono';font-size:10px;letter-spacing:.
             <label for="leetcode-solved-goal">LeetCode Weekly Solve Goal</label>
             <input type="number" id="leetcode-solved-goal" placeholder="e.g. 3" value="3">
           </div>
+          <div class="form-group">
+            <label for="user-cgpa">Your Current CGPA</label>
+            <input type="number" id="user-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.75" value="8.5">
+          </div>
+          <div class="form-group">
+            <label for="user-backlogs">Active Backlogs Count</label>
+            <input type="number" id="user-backlogs" min="0" max="10" placeholder="e.g. 0" value="0">
+          </div>
           <hr style="border:0; border-top:1px solid var(--line); margin: 20px 0;">
           <div class="form-group">
             <label for="discord-bot-token">Discord Bot Token</label>
@@ -513,6 +521,8 @@ document.getElementById('github-username').value = localStorage.getItem('github_
 document.getElementById('leetcode-username').value = localStorage.getItem('leetcode_username') || '';
 document.getElementById('github-commit-goal').value = localStorage.getItem('github_commit_goal') || '5';
 document.getElementById('leetcode-solved-goal').value = localStorage.getItem('leetcode_solved_goal') || '3';
+document.getElementById('user-cgpa').value = localStorage.getItem('user_cgpa') || '8.5';
+document.getElementById('user-backlogs').value = localStorage.getItem('user_backlogs') || '0';
 document.getElementById('discord-bot-token').value = localStorage.getItem('discord_bot_token') || '';
 document.getElementById('discord-channel-id').value = localStorage.getItem('discord_channel_id') || '';
 
@@ -662,6 +672,8 @@ function saveApiKeys() {
   localStorage.setItem('leetcode_username', document.getElementById('leetcode-username').value.trim());
   localStorage.setItem('github_commit_goal', document.getElementById('github-commit-goal').value.trim());
   localStorage.setItem('leetcode_solved_goal', document.getElementById('leetcode-solved-goal').value.trim());
+  localStorage.setItem('user_cgpa', document.getElementById('user-cgpa').value.trim());
+  localStorage.setItem('user_backlogs', document.getElementById('user-backlogs').value.trim());
   localStorage.setItem('discord_bot_token', document.getElementById('discord-bot-token').value.trim());
   localStorage.setItem('discord_channel_id', document.getElementById('discord-channel-id').value.trim());
   alert("Credentials and placement configuration saved locally!");
