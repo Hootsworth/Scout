@@ -384,8 +384,7 @@ body {
     </svg>
     <span>Scout</span>
   </div>
-  <div class="nav-links">
-    <a href="index.html">Plan</a>
+  <div class="nav-links" id="actions-group-links">
     <a href="assistant.html" class="active">Chat</a>
     <a href="placements.html">Placements</a>
     <a href="simulator.html">Simulator</a>
@@ -503,7 +502,7 @@ body {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; background:rgba(181, 44, 36, 0.06); padding:10px 14px; border:1px solid var(--red); border-radius:8px;">
         <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--red); font-weight:700; margin:0;">
           <input type="checkbox" id="pressure-mode-toggle" onchange="togglePressureMode(this)" style="accent-color:var(--red); cursor:pointer;">
-          ⚠️ PRESSURE MODE (30m Live Timer)
+          PRESSURE MODE (30m Live Timer)
         </label>
         <span id="pressure-timer-display" style="font-family:ui-monospace,monospace; font-size:13px; font-weight:700; color:var(--red); display:none;">30:00</span>
       </div>
@@ -561,6 +560,11 @@ body {
       </div>
     </div>
 
+    <!-- UNIVERSAL FOOTER -->
+    <footer>
+      <span>Scout Academic Planner © 2026</span>
+      <span>Powered by Singulr.tech</span>
+    </footer>
   </div>
 </div>
 
@@ -648,13 +652,19 @@ function initFirebase() {
 }
 
 function setupAuthStateListener() {
+  // Null-safe style setter — ignores missing elements gracefully
+  function $s(id, prop, val) {
+    const el = document.getElementById(id);
+    if (el) el.style[prop] = val;
+  }
+
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
       currentUid = user.uid;
-      document.getElementById('auth-warning-container').style.display = 'none';
-      document.getElementById('chat-interface-container').style.display = 'flex';
-      document.getElementById('actions-group-links').style.opacity = '1';
-      document.getElementById('actions-group-links').style.pointerEvents = 'auto';
+      $s('auth-warning-container', 'display', 'none');
+      $s('chat-interface-container', 'display', 'flex');
+      $s('actions-group-links', 'opacity', '1');
+      $s('actions-group-links', 'pointerEvents', 'auto');
       await loadUserData();
     } else {
       currentUid = null;
@@ -664,10 +674,14 @@ function setupAuthStateListener() {
 }
 
 function showAuthWarning() {
-  document.getElementById('auth-warning-container').style.display = 'flex';
-  document.getElementById('chat-interface-container').style.display = 'none';
-  document.getElementById('actions-group-links').style.opacity = '0.3';
-  document.getElementById('actions-group-links').style.pointerEvents = 'none';
+  function $s(id, prop, val) {
+    const el = document.getElementById(id);
+    if (el) el.style[prop] = val;
+  }
+  $s('auth-warning-container', 'display', 'flex');
+  $s('chat-interface-container', 'display', 'none');
+  $s('actions-group-links', 'opacity', '0.3');
+  $s('actions-group-links', 'pointerEvents', 'none');
 }
 
 async function loadUserData() {
@@ -2473,10 +2487,10 @@ async function handleOpenAIResponse(data) {
       let result;
       try {
         result = await executeTool(name, args);
-        setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name} ✓`);
+        setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name}`);
       } catch(e) {
         result = { error: e.message };
-        setThinking(`⚠ ${name} failed: ${e.message}`);
+        setThinking(`Error: ${name} failed — ${e.message}`);
       }
 
       // OpenAI tool result format
@@ -2727,11 +2741,11 @@ async function handleGeminiResponse(data, systemInstruction) {
     let result = null;
     try {
       result = await executeTool(name, args);
-      setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name} ✓`);
+      setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name}`);
     } catch(e) {
       console.error(e);
       result = { error: e.message };
-      setThinking(`⚠ ${name} failed: ${e.message}`);
+      setThinking(`Error: ${name} failed — ${e.message}`);
     }
 
     // Gemini API requires functionResponse.response to be an object, never an array
