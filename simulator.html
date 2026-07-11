@@ -719,15 +719,17 @@ dialog#jd-overlay::backdrop {
       </div>
 
       <!-- Calendar Sync -->
-      <div class="setup-card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 24px;">
+      <div class="reality-banner" style="margin-bottom:0; height:100%;">
         <div>
-          <h4 style="margin-bottom:4px; font-size:14px; text-transform:uppercase; color:var(--mute); letter-spacing:0.04em;">Placement Season Clock</h4>
-          <div class="sim-calendar-badge" id="sim-calendar-badge-display">
-            📅 Day 1
-          </div>
+          <h3 style="margin:0; font-size:15px; font-weight:800; font-family:'Syne',sans-serif; display:flex; align-items:center; gap:8px;">
+            PLACEMENT SEASON CLOCK
+          </h3>
+          <p style="font-size:12.5px; margin-top:4px;">
+            Current date: <span class="sim-calendar-badge" id="sim-calendar-badge-display">Day 1</span>
+          </p>
         </div>
-        <button class="btn btn-outline" onclick="advanceSimulatedCalendar(1)" style="height:36px; font-size:12.5px;">
-          Simulate Next Day →
+        <button class="btn btn-outline" onclick="advanceSimulatedCalendar(1)" style="height:36px; font-size:12.5px; flex-shrink:0;">
+          Simulate Next Day &rarr;
         </button>
       </div>
     </div>
@@ -982,7 +984,11 @@ let activeSim = null;
 let isRealityMode = localStorage.getItem('reality_mode_active') === 'true';
 let isCodeMode = false;
 let simMessages = [];
-let elapsedDays = parseInt(localStorage.getItem('sim_elapsed_days') || '1');
+let elapsedDays = parseInt(localStorage.getItem('sim_elapsed_days') || '1', 10);
+if (isNaN(elapsedDays)) {
+  elapsedDays = 1;
+  localStorage.setItem('sim_elapsed_days', 1);
+}
 
 const defaultMockCompanies = [
   { id: 'mock_boogle', name: 'Boogle', title: 'Software Engineer', ctc: 55, cgpa: 8.5, backlogs: 0, poolSize: 1200, vacancies: 1, desc: 'Advanced search, systems infrastructure, scale problems, algorithms.', recruiter: { name: "Sophia Patel", seed: "sophia", quote: "We want SDEs who can articulate system choices and code cleanly." } },
@@ -1025,7 +1031,7 @@ function initSimulator() {
   document.getElementById('reality-mode-toggle').checked = isRealityMode;
   
   // Set calendar clock visual state
-  document.getElementById('sim-calendar-badge-display').textContent = '📅 Day ' + elapsedDays;
+  document.getElementById('sim-calendar-badge-display').textContent = 'Day ' + elapsedDays;
   
   renderSimOpenings();
 }
@@ -1172,7 +1178,7 @@ function incrementDaysSilently(daysCount) {
   
   const badge = document.getElementById('sim-calendar-badge-display');
   if (badge) {
-    badge.textContent = '📅 Day ' + elapsedDays;
+    badge.textContent = 'Day ' + elapsedDays;
   }
   
   if (elapsedDays % 2 === 0) {
