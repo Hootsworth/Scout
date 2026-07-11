@@ -168,16 +168,32 @@ footer {
   </div>
 
   <div class="settings-layout">
-    <!-- Tabs Sidebar Selector -->
-    <div class="settings-tabs">
-      <button class="settings-tab-btn active" onclick="switchSettingsTab('firebase-auth', this)">Firebase Auth &amp; Database</button>
-      <button class="settings-tab-btn" onclick="switchSettingsTab('keys-config', this)">API Credentials &amp; Goals</button>
-      <button class="settings-tab-btn" onclick="switchSettingsTab('token-generator', this)">OAuth Refresh Token</button>
-    </div>
+    <!-- Sidebar Navigation -->
+    <aside class="settings-sidebar">
+      <div class="settings-sidebar-header">System Setup</div>
+      <nav class="settings-tabs">
+        <button class="settings-tab-btn active" onclick="switchSettingsTab('firebase-auth', this)">
+          <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+          <span>Firebase Connection</span>
+        </button>
+        <button class="settings-tab-btn" onclick="switchSettingsTab('api-credentials', this)">
+          <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+          <span>API Credentials</span>
+        </button>
+        <button class="settings-tab-btn" onclick="switchSettingsTab('academic-goals', this)">
+          <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          <span>Academic Goals</span>
+        </button>
+        <button class="settings-tab-btn" onclick="switchSettingsTab('token-generator', this)">
+          <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 9.5A9 9 0 1 0 20.49 15m-.49-5.5h-5m5 0V4"></path></svg>
+          <span>Offline Auth Tokens</span>
+        </button>
+      </nav>
+    </aside>
 
     <!-- Panels Contents -->
     <div class="settings-panels">
-      <!-- SECTION: FIREBASE AUTHENTICATION -->
+      <!-- PANEL 1: FIREBASE CONNECTION -->
       <section id="firebase-auth" class="settings-panel active" style="padding:0; border-bottom:none;">
         <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Firebase Auth &amp; Firestore</h2></div>
         <p class="section-desc">Connect your account. Firebase is used to authenticate you and manage links to your Google Calendar and Gmail.</p>
@@ -220,87 +236,6 @@ footer {
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- SECTION: KEYS AND SYSTEM CONFIGURATION -->
-      <section id="keys-config" class="settings-panel" style="padding:0; border-bottom:none;">
-        <div class="section-label"><span class="section-num">02</span><h2 class="section-title">API Keys &amp; Goals</h2></div>
-        <p class="section-desc">These keys are saved locally in your browser's <code>localStorage</code>. They are used client-side by Scout to edit the schedule and process queries.</p>
-        
-        <div class="grid-cols-2">
-          <div>
-            <div class="setup-card">
-              <h3>Local API &amp; Placement Credentials</h3>
-              <div class="form-group">
-                <label for="gemini-key">Gemini API Key</label>
-                <input type="password" id="gemini-key" placeholder="gemini-3.1-flash-lite key">
-              </div>
-              <div class="form-group">
-                <label for="openai-key">OpenAI API Key</label>
-                <input type="password" id="openai-key" placeholder="gpt-5.4-nano key">
-              </div>
-              <div class="form-group">
-                <label for="brevo-key">Brevo API Key (for Scout email tool)</label>
-                <input type="password" id="brevo-key" placeholder="Get from Brevo → SMTP &amp; API → API Keys">
-              </div>
-              <div class="form-group">
-                <label for="user-email-target">Target Email (Weekly Updates)</label>
-                <input type="email" id="user-email-target" placeholder="Where notifications are sent">
-              </div>
-              <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
-              <div class="form-group">
-                <label for="github-username">GitHub Username</label>
-                <input type="text" id="github-username" placeholder="e.g. Hootsworth">
-              </div>
-              <div class="form-group">
-                <label for="leetcode-username">LeetCode Username</label>
-                <input type="text" id="leetcode-username" placeholder="e.g. adityadixit">
-              </div>
-              <div class="form-group">
-                <label for="github-commit-goal">GitHub Weekly Commit Goal</label>
-                <input type="number" id="github-commit-goal" placeholder="e.g. 5" value="5">
-              </div>
-              <div class="form-group">
-                <label for="leetcode-solved-goal">LeetCode Weekly Solve Goal</label>
-                <input type="number" id="leetcode-solved-goal" placeholder="e.g. 3" value="3">
-              </div>
-              <div class="form-group">
-                <label for="user-cgpa">Your Current CGPA</label>
-                <input type="number" id="user-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.75" value="8.5">
-              </div>
-              <div class="form-group">
-                <label for="user-backlogs">Active Backlogs Count</label>
-                <input type="number" id="user-backlogs" min="0" max="10" placeholder="e.g. 0" value="0">
-              </div>
-              <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
-              <div class="form-group">
-                <label for="discord-bot-token">Discord Bot Token</label>
-                <input type="password" id="discord-bot-token" placeholder="Bot token from Discord Portal">
-              </div>
-              <div class="form-group">
-                <label for="discord-channel-id">Discord Channel ID</label>
-                <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
-              </div>
-              <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials &amp; Goals</button>
-            </div>
-          </div>
-
-          <div>
-            <div class="setup-card">
-              <h3>GitHub Actions Cron Secrets</h3>
-              <div class="instruction-box">
-                To run the background sync scanner in GitHub, configure these secrets in your repository (**Settings &gt; Secrets and variables &gt; Actions**):
-              </div>
-              <ul style="font-family:'Outfit', sans-serif; font-size:14.5px; line-height:1.6; padding-left:20px; color:var(--body); margin-top: 12px;">
-                <li><code>GEMINI_API_KEY</code>: Your Gemini Key</li>
-                <li><code>BREVO_API_KEY</code>: Your Brevo key (noreply@singulr.tech)</li>
-                <li><code>USER_EMAIL</code>: Target Email for updates</li>
-                <li><code>USER_UID</code>: Your Firebase UID (displayed in Connection Status)</li>
-                <li><code>FIREBASE_SERVICE_ACCOUNT</code>: Content of downloaded Firebase Service Account Private Key (JSON)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
 
         <!-- Firebase Config Setup Card -->
         <div class="setup-card" style="margin-top: 32px;">
@@ -320,9 +255,110 @@ footer {
         </div>
       </section>
 
-      <!-- SECTION: BACKGROUND GOOGLE TOKEN GENERATOR -->
+      <!-- PANEL 2: API CREDENTIALS -->
+      <section id="api-credentials" class="settings-panel" style="padding:0; border-bottom:none;">
+        <div class="section-label"><span class="section-num">02</span><h2 class="section-title">API Credentials</h2></div>
+        <p class="section-desc">API Keys used client-side for generating responses and sending automated email updates.</p>
+        
+        <div class="grid-cols-2">
+          <div>
+            <div class="setup-card">
+              <h3>Local API Keys</h3>
+              <div class="form-group">
+                <label for="gemini-key">Gemini API Key</label>
+                <input type="password" id="gemini-key" placeholder="gemini-3.1-flash-lite key">
+              </div>
+              <div class="form-group">
+                <label for="openai-key">OpenAI API Key</label>
+                <input type="password" id="openai-key" placeholder="gpt-5.4-nano key">
+              </div>
+              <div class="form-group">
+                <label for="brevo-key">Brevo API Key (for Scout email tool)</label>
+                <input type="password" id="brevo-key" placeholder="Get from Brevo → SMTP &amp; API → API Keys">
+              </div>
+              <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
+              <div class="form-group">
+                <label for="discord-bot-token">Discord Bot Token</label>
+                <input type="password" id="discord-bot-token" placeholder="Bot token from Discord Portal">
+              </div>
+              <div class="form-group">
+                <label for="discord-channel-id">Discord Channel ID</label>
+                <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
+              </div>
+              <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="setup-card">
+              <h3>GitHub Actions Cron Secrets</h3>
+              <div class="instruction-box">
+                To run the background sync scanner in GitHub, configure these secrets in your repository (**Settings &gt; Secrets and variables &gt; Actions**):
+              </div>
+              <ul style="font-family:'Outfit', sans-serif; font-size:14.5px; line-height:1.6; padding-left:20px; color:var(--body); margin-top: 12px;">
+                <li><code>GEMINI_API_KEY</code>: Your Gemini Key</li>
+                <li><code>BREVO_API_KEY</code>: Your Brevo key (noreply@singulr.tech)</li>
+                <li><code>USER_EMAIL</code>: Target Email for updates</li>
+                <li><code>USER_UID</code>: Your Firebase UID (displayed in Connection Status)</li>
+                <li><code>FIREBASE_SERVICE_ACCOUNT</code>: Content of downloaded Firebase Service Account Private Key (JSON)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 3: ACADEMIC GOALS -->
+      <section id="academic-goals" class="settings-panel" style="padding:0; border-bottom:none;">
+        <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Academic &amp; Placement Goals</h2></div>
+        <p class="section-desc">Configure target goals, commit thresholds, and placement details for eligibility checks.</p>
+        
+        <div class="setup-card">
+          <h3>Your Profile Goals</h3>
+          <div class="grid-cols-2" style="margin-top: 12px;">
+            <div>
+              <div class="form-group">
+                <label for="user-email-target">Target Email (Weekly Updates)</label>
+                <input type="email" id="user-email-target" placeholder="Where notifications are sent">
+              </div>
+              <div class="form-group">
+                <label for="github-username">GitHub Username</label>
+                <input type="text" id="github-username" placeholder="e.g. Hootsworth">
+              </div>
+              <div class="form-group">
+                <label for="leetcode-username">LeetCode Username</label>
+                <input type="text" id="leetcode-username" placeholder="e.g. adityadixit">
+              </div>
+              <div class="form-group">
+                <label for="github-commit-goal">GitHub Weekly Commit Goal</label>
+                <input type="number" id="github-commit-goal" placeholder="e.g. 5" value="5">
+              </div>
+            </div>
+
+            <div>
+              <div class="form-group">
+                <label for="leetcode-solved-goal">LeetCode Weekly Solve Goal</label>
+                <input type="number" id="leetcode-solved-goal" placeholder="e.g. 3" value="3">
+              </div>
+              <div class="form-group">
+                <label for="user-cgpa">Your Current CGPA</label>
+                <input type="number" id="user-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.75" value="8.5">
+              </div>
+              <div class="form-group">
+                <label for="user-backlogs">Active Backlogs Count</label>
+                <input type="number" id="user-backlogs" min="0" max="10" placeholder="e.g. 0" value="0">
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px; border-top: 1px solid var(--hairline); padding-top: 20px;">
+            <button class="btn btn-red" onclick="saveApiKeys()">Save Profile &amp; Goals</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 4: OAUTH REFRESH TOKEN GENERATOR -->
       <section id="token-generator" class="settings-panel" style="padding:0; border-bottom:none;">
-        <div class="section-label"><span class="section-num">03</span><h2 class="section-title">OAuth Refresh Token Generator</h2></div>
+        <div class="section-label"><span class="section-num">04</span><h2 class="section-title">OAuth Refresh Token Generator</h2></div>
         <p class="section-desc">Generate a Google Refresh Token so your GitHub Actions background job can read your emails and update your Google Calendar offline.</p>
         
         <div class="setup-card">
