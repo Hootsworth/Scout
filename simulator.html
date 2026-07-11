@@ -1327,7 +1327,10 @@ function applyToSimOpening(companyId) {
     pool: company.poolSize,
     candidates: initialCandidates,
     otherCandidates: initialCandidates,
-    messageHistory: []
+    messageHistory: [],
+    gdTurnIndex: 0,
+    maxGdTurns: Math.floor(Math.random() * 3) + 3, // 3 to 5 rounds
+    gdTopic: ""
   };
   
   const overlay = document.getElementById('simulation-overlay');
@@ -1594,6 +1597,24 @@ Keep your response professional and ask a single direct question. Do not include
     return;
   }
   
+  if (sim.roundIndex === 0) {
+    appendSimChat("SYSTEM", `Initiating Group Discussion (GD) Round...`, false, true);
+    
+    const proctorPrompt = `You are a recruitment proctor at ${sim.company.name}. 
+You are starting Round 1: Group Discussion for the role of ${sim.company.title}.
+Present a realistic, controversial technology or business topic for discussion (e.g., "AI replacing junior engineers", "Remote work vs. Hybrid", "Monolithic vs. Microservices").
+Keep your response professional, firm, and state the topic clearly, asking the candidates to begin.`;
+    
+    appendSimChat("SYSTEM", "Proctor is generating discussion topic...", false, true);
+    let topicText = await callGeminiSimApi(proctorPrompt);
+    sim.gdTopic = topicText;
+    appendSimChat("Recruitment Proctor", topicText, false);
+    
+    await sleep(2000);
+    await triggerCandidateStatements();
+    return;
+  }
+  
   const roundTitles = [
     "Group Discussion (GD) Opening Statement",
     "Coding Assessment (OA) Challenge Brief",
@@ -1748,6 +1769,24 @@ ${feedback}
       chat.scrollTop = chat.scrollHeight;
     }
     return;
+  }
+  
+  if (sim.roundIndex === 0 && !sim.isStarPlayground) {
+    if (sim.gdTurnIndex < sim.maxGdTurns) {
+      sim.gdTurnIndex++;
+      appendSimChat("SYSTEM", `Turn ${sim.gdTurnIndex} of ${sim.maxGdTurns} completed. Other candidates are responding...`, false, true);
+      
+      btn.textContent = "Wait...";
+      await triggerCandidateReactions(answer);
+      
+      btn.disabled = false;
+      btn.textContent = "Submit Response";
+      appendSimChat("SYSTEM", "It is your turn to speak again. Add your points to the discussion.", false, true);
+      return;
+    } else {
+      appendSimChat("Recruitment Proctor", "Thank you, candidates. The time is up. The group discussion is now closed. I will review the transcripts and announce results shortly.", false);
+      await sleep(2000);
+    }
   }
 
   let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
@@ -2369,6 +2408,58 @@ function animateWords(container, wordDelayMs = 25) {
   }
   
   processNode(container);
+}
+
+async function triggerCandidateStatements() {
+  const sim = activeSim;
+  if (!sim || sim.roundIndex !== 0) return;
+  
+  const candidates = sim.otherCandidates.filter(c => c.active && !c.name.includes("Aditya"));
+  if (candidates.length === 0) return;
+  
+  const count = Math.min(candidates.length, Math.floor(Math.random() * 2) + 1);
+  const shuffled = candidates.sort(() => 0.5 - Math.random());
+  
+  for (let i = 0; i < count; i++) {
+    const candidate = shuffled[i];
+    appendSimChat("SYSTEM", `${candidate.name} is preparing statement...`, false, true);
+    
+    const prompt = `You are candidate ${candidate.name} participating in a recruitment Group Discussion for ${sim.company.name} (${sim.company.title}).
+The GD topic introduced by the proctor is:
+"${sim.gdTopic}"
+
+Provide a short, realistic 2-3 sentence contribution or opinion on this topic. State your view clearly. Speak in character as a candidate.`;
+    
+    const speech = await callGeminiSimApi(prompt);
+    appendSimChat(candidate.name, speech, false);
+    await sleep(2000);
+  }
+}
+
+async function triggerCandidateReactions(lastUserAnswer) {
+  const sim = activeSim;
+  if (!sim) return;
+  
+  const candidates = sim.otherCandidates.filter(c => c.active && !c.name.includes("Aditya"));
+  if (candidates.length === 0) return;
+  
+  const count = Math.min(candidates.length, Math.floor(Math.random() * 2) + 1);
+  const shuffled = candidates.sort(() => 0.5 - Math.random());
+  
+  for (let i = 0; i < count; i++) {
+    const candidate = shuffled[i];
+    appendSimChat("SYSTEM", `${candidate.name} is writing a response...`, false, true);
+    
+    const prompt = `You are candidate ${candidate.name} participating in a recruitment Group Discussion for ${sim.company.name} (${sim.company.title}).
+The topic is: "${sim.gdTopic}"
+The user (Aditya Dixit) just said: "${lastUserAnswer}"
+
+Write a short, realistic 2-3 sentence reaction, counter-argument, or agreement building on Aditya's statement. Speak in character as a candidate.`;
+    
+    const speech = await callGeminiSimApi(prompt);
+    appendSimChat(candidate.name, speech, false);
+    await sleep(2000);
+  }
 }
 
 // Start on page load
