@@ -96,31 +96,33 @@ body {
 }
 .message {
   max-width: 75%;
-  padding: 16px 20px;
-  border: 1px solid var(--hairline);
-  border-radius: 16px;
+  width: fit-content;
   line-height: 1.5;
   font-size: 15px;
 }
 .message-row.user .message {
   background: var(--primary);
   color: var(--on-primary);
-  border-color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 16px;
   border-bottom-right-radius: 4px;
+  padding: 12px 18px;
 }
 .message-row.assistant .message {
-  background: var(--canvas);
-  color: var(--charcoal);
-  border-bottom-left-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  padding: 8px 0;
 }
 .message-row.system-log .message {
   background: var(--surface-soft);
-  border-color: var(--hairline);
+  border: 1px solid var(--hairline);
   color: var(--body);
   font-family: ui-monospace, monospace;
   font-size: 12px;
   max-width: 90%;
   border-radius: 8px;
+  padding: 10px 14px;
 }
 
 /* Formatting overrides inside assistant message */
