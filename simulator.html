@@ -742,19 +742,33 @@ dialog#jd-overlay::backdrop {
     </div>
   </section>
 
-  <!-- SECTION 3: BEHAVIORAL STAR SANDBOX -->
+  <!-- SECTION 3: PRACTICE SANDBOXES -->
   <section id="star-sandbox">
-    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Behavioral STAR Playground</h2></div>
-    <p class="section-desc">Practice leadership, teamwork, and behavioral interview questions. The AI proctor will critique your answers strictly using the STAR format (Situation, Task, Action, Result).</p>
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Practice Sandboxes</h2></div>
+    <p class="section-desc">Launch targeted training sessions to practice behavioral parameters or test your verbal voice interview capabilities.</p>
     
-    <div class="setup-card" style="display:flex; justify-content:space-between; align-items:center; padding:24px 32px; margin-bottom:0;">
-      <div>
-        <h3 style="margin-bottom:6px; border:none; padding:0;">Behavioral Interview Training</h3>
-        <p style="font-size:14px; color:var(--mute); margin:0;">Launch a turn-based proctored session to practice Situation-Task-Action-Result format compliance.</p>
+    <div class="grid-cols-2" style="margin-top:20px;">
+      <!-- STAR Playground -->
+      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between; min-height:160px; padding:24px;">
+        <div>
+          <h3 style="margin-bottom:6px; border:none; padding:0;">Behavioral STAR Playground</h3>
+          <p style="font-size:13.5px; color:var(--mute); margin:0;">Practice teamwork, failure responses, and leadership using strict STAR scoring metrics.</p>
+        </div>
+        <button class="btn btn-primary" onclick="startStarPlayground()" style="height:40px; width:100%; margin-top:16px;">
+          Launch STAR Playground
+        </button>
       </div>
-      <button class="btn btn-primary" onclick="startStarPlayground()" style="height:44px; padding:0 24px; flex-shrink:0;">
-        Launch STAR Playground
-      </button>
+      
+      <!-- Voice HR Sandbox -->
+      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between; min-height:160px; padding:24px;">
+        <div>
+          <h3 style="margin-bottom:6px; border:none; padding:0;">Voice HR Interview Sandbox</h3>
+          <p style="font-size:13.5px; color:var(--mute); margin:0;">Simulate verbal HR questions using ElevenLabs human TTS voices and microphone recognition.</p>
+        </div>
+        <button class="btn btn-red" onclick="startVoiceHrSandbox()" style="height:40px; width:100%; margin-top:16px; background: linear-gradient(135deg, #b52c24 0%, #d32f2f 100%); border:none; color:#fff;">
+          Launch Voice HR Sandbox
+        </button>
+      </div>
     </div>
   </section>
 
@@ -1349,6 +1363,17 @@ function updateSidebarStats() {
   const sim = activeSim;
   if (!sim) return;
   
+  if (sim.isVoiceHrSandbox) {
+    document.getElementById('sim-sidebar-pool').textContent = "Not Applicable";
+    document.getElementById('sim-sidebar-round').textContent = `Question ${sim.voiceHrTurnIndex + 1} of ${sim.maxVoiceHrTurns}`;
+    document.getElementById('sim-sidebar-applicants').innerHTML = `
+      <div style="font-size: 13px; color: var(--mute); line-height: 1.5; padding: 12px; border: 1px dashed var(--hairline-strong); border-radius: 8px; text-align: center;">
+        Voice HR Sandbox. Testing ElevenLabs audio synthesis and speech-to-text.
+      </div>
+    `;
+    return;
+  }
+  
   if (sim.isStarPlayground) {
     document.getElementById('sim-sidebar-pool').textContent = "Not Applicable";
     document.getElementById('sim-sidebar-round').textContent = `Round ${sim.roundIndex + 1} of 3`;
@@ -1538,10 +1563,12 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
     if (!isUser) {
       animateWords(bodySpan, 25);
       
-      // Speak text out loud in voice rounds in Hyper Mode
+      // Speak text out loud in voice rounds or voice sandbox in Hyper Mode
       const sim = activeSim;
-      if (sim && sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) && !isThought) {
-        speakTextElevenLabs(stripXml(text));
+      if (sim && (sim.isVoiceHrSandbox || (sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4))) && !isThought) {
+        if (speaker === "Recruitment Proctor" || speaker === "STAR Evaluator" || speaker === "HR Interviewer") {
+          speakTextElevenLabs(stripXml(text));
+        }
       }
     }
   }
@@ -1677,6 +1704,89 @@ async function submitSimulationAnswer() {
   const btn = document.getElementById('sim-submit-btn');
   btn.disabled = true;
   btn.textContent = "Evaluating...";
+  
+  if (sim.isVoiceHrSandbox) {
+    let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
+    const isFinal = sim.voiceHrTurnIndex >= sim.maxVoiceHrTurns - 1;
+    
+    const customPersonality = localStorage.getItem('elevenlabs_personality') || "A friendly yet strict senior corporate recruiter who speaks clearly and asks human-centric interview questions.";
+    const proctorPrompt = `You are a professional HR Director.
+You are evaluating the candidate's last answer in a mock voice interview.
+Interviewer Personality: ${customPersonality}
+Current Round: Question ${sim.voiceHrTurnIndex + 1} of ${sim.maxVoiceHrTurns}.
+
+Here is the conversation log:
+${conversationHistoryStr}
+
+You MUST evaluate the candidate response and reply strictly in this XML structure:
+<evaluation>
+  <outcome>PASS</outcome>
+  <message>${isFinal ? 'Final summary feedback on their verbal communication, tone, confidence, and answer strength.' : 'Brief verbal feedback and a follow-up HR question.'}</message>
+</evaluation>
+Keep the message concise and voice-friendly since it will be spoken back to them.`;
+
+    appendSimChat("SYSTEM", "AI Proctor is evaluating verbal response...", false, true);
+    const evaluationXml = await callGeminiSimApi(proctorPrompt);
+    
+    btn.disabled = false;
+    btn.textContent = "Submit Response";
+    
+    let feedback = "";
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(evaluationXml, "text/xml");
+      feedback = xmlDoc.getElementsByTagName("message")[0]?.textContent || evaluationXml;
+    } catch (e) {
+      feedback = evaluationXml;
+    }
+    
+    appendSimChat("HR Interviewer", feedback, false);
+    
+    if (isFinal) {
+      appendSimChat("SYSTEM", "Voice HR Interview sandbox completed.", false, true);
+      
+      const exitBtn = document.createElement('button');
+      exitBtn.className = 'btn btn-outline';
+      exitBtn.style.margin = '20px auto';
+      exitBtn.style.display = 'block';
+      exitBtn.textContent = `Exit Voice HR Sandbox`;
+      exitBtn.onclick = () => {
+        exitBtn.remove();
+        terminateSimulation();
+      };
+      
+      const chat = document.getElementById('sim-chat-container');
+      const thinkingIndicator = document.getElementById('sim-thinking-indicator');
+      if (thinkingIndicator) {
+        chat.insertBefore(exitBtn, thinkingIndicator);
+      } else {
+        chat.appendChild(exitBtn);
+      }
+      chat.scrollTop = chat.scrollHeight;
+    } else {
+      sim.voiceHrTurnIndex++;
+      
+      const continueBtn = document.createElement('button');
+      continueBtn.className = 'btn btn-primary';
+      continueBtn.style.margin = '20px auto';
+      continueBtn.style.display = 'block';
+      continueBtn.textContent = `Continue to Question ${sim.voiceHrTurnIndex + 1}`;
+      continueBtn.onclick = () => {
+        continueBtn.remove();
+        initiateRound();
+      };
+      
+      const chat = document.getElementById('sim-chat-container');
+      const thinkingIndicator = document.getElementById('sim-thinking-indicator');
+      if (thinkingIndicator) {
+        chat.insertBefore(continueBtn, thinkingIndicator);
+      } else {
+        chat.appendChild(continueBtn);
+      }
+      chat.scrollTop = chat.scrollHeight;
+    }
+    return;
+  }
   
   if (sim.isStarPlayground) {
     let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
@@ -2289,7 +2399,7 @@ function checkVoiceModeState() {
   const micBtn = document.getElementById('sim-mic-btn');
   if (!micBtn) return;
   
-  if (sim && sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4)) {
+  if (sim && (sim.isVoiceHrSandbox || (sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4)))) {
     micBtn.style.display = 'inline-flex';
     document.getElementById('sim-user-input').placeholder = "Click microphone or speak verbally...";
   } else {
@@ -2441,6 +2551,58 @@ function updateMicButtonUI() {
       <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
     `;
   }
+}
+
+// Standalone Voice HR Interview Sandbox Launcher
+function startVoiceHrSandbox() {
+  activeSim = {
+    isVoiceHrSandbox: true,
+    isHyperMode: true,
+    roundIndex: 4, // HR round
+    company: { name: "Voice HR Sandbox", title: "Practice Mode", ctc: "0" },
+    messageHistory: [],
+    voiceHrTurnIndex: 0,
+    maxVoiceHrTurns: 3
+  };
+  
+  const overlay = document.getElementById('simulation-overlay');
+  overlay.showModal();
+  document.getElementById('disco-ai-helper-bubble').classList.remove('active');
+  
+  document.getElementById('sim-modal-title').textContent = `Voice HR Interview Sandbox`;
+  document.getElementById('sim-sidebar-title').textContent = `HR Practice Sandbox`;
+  document.getElementById('sim-sidebar-ctc').textContent = `Voice: ACTIVE`;
+  
+  const chatContainer = document.getElementById('sim-chat-container');
+  chatContainer.innerHTML = '';
+  
+  const thinkingRow = document.createElement('div');
+  thinkingRow.id = 'sim-thinking-indicator';
+  thinkingRow.className = 'bubble-row interviewer';
+  thinkingRow.style.display = 'none';
+  thinkingRow.style.marginBottom = '12px';
+  thinkingRow.style.gap = '12px';
+  thinkingRow.innerHTML = `
+    <div class="bubble-avatar">
+      <img id="sim-thinking-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Recruitment%20Proctor" alt="Proctor">
+    </div>
+    <div class="bubble-content" style="background: transparent; border: none; padding: 0;">
+      <span class="bubble-speaker" id="sim-thinking-speaker">STAR Evaluator</span>
+      <span style="font-style: italic; color: var(--mute); font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px;">
+        <span id="sim-thinking-text">Proctor is thinking...</span>
+        <span class="thinking-dots" style="display: inline-flex; gap: 3px;">
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0s;"></span>
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0.2s;"></span>
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0.4s;"></span>
+        </span>
+      </span>
+    </div>
+  `;
+  chatContainer.appendChild(thinkingRow);
+  
+  simMessages = [];
+  checkVoiceModeState();
+  initiateRound();
 }
 
 async function syncOaDeadlineToCalendar(companyName, jobTitle) {
