@@ -242,6 +242,10 @@ dialog#simulation-overlay::backdrop {
   color: rgba(255, 255, 255, 0.2);
   font-size: 10px;
 }
+@keyframes pulseRing {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
 
 /* AI Helper Button with Disco Colors */
 .disco-ai-btn {
@@ -906,6 +910,52 @@ dialog#jd-overlay::backdrop {
         </div>
       </div>
 
+      <!-- VOICE FIRST MODE OVERLAY PANELS -->
+      <div class="sim-arena-voice" id="sim-voice-container" style="display:none; width: 100%; height: 100%; gap: 32px; padding: 40px; background: var(--surface-soft); flex: 1; align-items: stretch;">
+        <!-- Left Half: Big Text Feed -->
+        <div style="flex: 1.2; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--hairline); padding-right: 32px; gap: 24px; overflow: hidden;">
+          <div id="sim-voice-text-feed" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 28px; justify-content: flex-end; padding-bottom: 20px;">
+            <!-- Render proctor statements and candidate transcripts in big font -->
+          </div>
+          
+          <!-- Typing Fallback area (hidden by default) -->
+          <div id="sim-voice-typing-fallback" style="display: none; flex-direction: column; gap: 10px; background: var(--canvas); padding: 16px; border-radius: 12px; border: 1px solid var(--hairline);">
+            <textarea id="sim-voice-typed-input" placeholder="Type your response here..." style="width: 100%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid var(--hairline); background: var(--surface-soft); font-family: inherit; font-size: 14px; resize: none; color: var(--ink);"></textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+              <button class="btn btn-outline" style="height: 32px; font-size: 11px;" onclick="hideTypingFallback()">Use Microphone</button>
+              <button class="btn btn-primary" style="height: 32px; font-size: 11px;" onclick="submitVoiceTypedResponse()">Submit</button>
+            </div>
+          </div>
+          
+          <!-- Controls Bar at bottom of Left Half -->
+          <div id="sim-voice-controls-bar" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <button class="btn btn-outline" id="sim-voice-cant-talk-btn" onclick="showTypingFallback()" style="font-family: ui-monospace, monospace; font-size: 11px;">CAN'T TALK?</button>
+            
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <!-- Pulsing Big Mic button -->
+              <button id="sim-voice-record-btn" onclick="toggleVoiceInput()" style="width: 56px; height: 56px; border-radius: 50%; border: none; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 12px rgba(181, 44, 36, 0.4); transition: all 0.2s ease;">
+                <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+              </button>
+              
+              <button class="btn btn-primary" id="sim-voice-submit-btn" onclick="submitSimulationAnswer()" style="height: 44px; padding: 0 24px; display: inline-flex; align-items: center;">Submit Answer</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Half: Big DiceBear PFP -->
+        <div style="flex: 0.8; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 24px; position: relative;">
+          <div id="sim-voice-avatar-circle" style="width: 220px; height: 220px; border-radius: 50%; background: var(--canvas); border: 4px solid var(--hairline); display: flex; align-items: center; justify-content: center; overflow: visible; box-shadow: var(--shadow); position: relative; transition: all 0.3s ease;">
+            <img id="sim-voice-avatar-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Recruitment%20Proctor" style="width: 170px; height: 170px; object-fit: contain; border-radius: 50%;" alt="Proctor">
+            <!-- Pulsing ring overlay for speaking state -->
+            <div id="sim-voice-pulse-ring" style="display: none; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border-radius: 50%; border: 4px solid var(--primary); animation: pulseRing 1.5s infinite; opacity: 0; pointer-events: none;"></div>
+          </div>
+          <div>
+            <h3 id="sim-voice-proctor-name" style="margin: 0; font-size: 20px; border: none; padding: 0;">STAR Evaluator</h3>
+            <p id="sim-voice-proctor-state" style="margin: 8px 0 0 0; font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; color: var(--mute); letter-spacing: 0.08em; font-weight: bold;">STANDBY</p>
+          </div>
+        </div>
+      </div>
+
       <div class="sim-arena-main">
         <div class="sim-arena-chat" id="sim-chat-container">
           <!-- Populated dynamically by JS -->
@@ -1565,8 +1615,10 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
       
       // Speak text out loud in voice rounds or voice sandbox in Hyper Mode
       const sim = activeSim;
-      if (sim && (sim.isVoiceHrSandbox || (sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4))) && !isThought) {
-        if (speaker === "Recruitment Proctor" || speaker === "STAR Evaluator" || speaker === "HR Interviewer") {
+      const isVoiceActive = sim && (sim.isVoiceHrSandbox || (sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4)));
+      if (isVoiceActive) {
+        if (!isThought && (speaker === "Recruitment Proctor" || speaker === "STAR Evaluator" || speaker === "HR Interviewer")) {
+          appendVoiceFeed(speaker, stripXml(text), false);
           speakTextElevenLabs(stripXml(text));
         }
       }
@@ -1697,6 +1749,10 @@ async function submitSimulationAnswer() {
   const textarea = document.getElementById('sim-user-input');
   const answer = textarea.value.trim();
   if (!answer) return;
+  
+  // Update proctor state
+  setVoiceProctorState('thinking');
+  stopListening();
   
   appendSimChat("Aditya Dixit (You)", answer, true);
   textarea.value = '';
@@ -2396,16 +2452,129 @@ function selectStarTheme(theme) {
 
 function checkVoiceModeState() {
   const sim = activeSim;
-  const micBtn = document.getElementById('sim-mic-btn');
-  if (!micBtn) return;
+  const layoutMain = document.querySelector('.sim-arena-main');
+  const layoutSidebar = document.querySelector('.sim-arena-sidebar');
+  const voiceContainer = document.getElementById('sim-voice-container');
   
-  if (sim && (sim.isVoiceHrSandbox || (sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4)))) {
-    micBtn.style.display = 'inline-flex';
-    document.getElementById('sim-user-input').placeholder = "Click microphone or speak verbally...";
+  if (!layoutMain || !layoutSidebar || !voiceContainer) return;
+  
+  const isVoiceActive = sim && (sim.isVoiceHrSandbox || (sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4)));
+  
+  if (isVoiceActive) {
+    // Hide standard chat UI
+    layoutMain.style.display = 'none';
+    layoutSidebar.style.display = 'none';
+    
+    // Show voice-first console UI
+    voiceContainer.style.display = 'flex';
+    
+    // Set proctor details in voice UI
+    const speakerName = sim.isVoiceHrSandbox ? "HR Interviewer" : "Recruitment Proctor";
+    document.getElementById('sim-voice-proctor-name').textContent = speakerName;
+    document.getElementById('sim-voice-avatar-img').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(speakerName)}`;
+    
+    // Hide typing fallback by default
+    hideTypingFallback();
+    
+    // Initialize Voice Recognition automatically for hands-free
+    initVoiceRecognition();
+    
+    // Set appropriate placeholder or state
+    setVoiceProctorState('standby');
   } else {
-    micBtn.style.display = 'none';
+    // Restore standard UI
+    layoutMain.style.display = 'flex';
+    layoutSidebar.style.display = 'flex';
+    voiceContainer.style.display = 'none';
+    
     stopListening();
-    document.getElementById('sim-user-input').placeholder = "Type your response here...";
+  }
+}
+
+function showTypingFallback() {
+  document.getElementById('sim-voice-typing-fallback').style.display = 'flex';
+  document.getElementById('sim-voice-record-btn').style.display = 'none';
+  document.getElementById('sim-voice-cant-talk-btn').style.display = 'none';
+  stopListening();
+}
+
+function hideTypingFallback() {
+  document.getElementById('sim-voice-typing-fallback').style.display = 'none';
+  document.getElementById('sim-voice-record-btn').style.display = 'flex';
+  document.getElementById('sim-voice-cant-talk-btn').style.display = 'block';
+}
+
+function submitVoiceTypedResponse() {
+  const text = document.getElementById('sim-voice-typed-input').value.trim();
+  if (!text) return;
+  
+  document.getElementById('sim-user-input').value = text;
+  document.getElementById('sim-voice-typed-input').value = '';
+  
+  hideTypingFallback();
+  submitSimulationAnswer();
+}
+
+function appendVoiceFeed(speaker, text, isUser) {
+  const feed = document.getElementById('sim-voice-text-feed');
+  if (!feed) return;
+  
+  if (isUser) {
+    const lastMsg = feed.lastElementChild;
+    if (lastMsg && lastMsg.classList.contains('voice-user-bubble')) {
+      lastMsg.remove();
+    }
+  }
+  
+  const div = document.createElement('div');
+  div.className = isUser ? 'voice-user-bubble' : 'voice-proctor-bubble';
+  
+  if (isUser) {
+    div.style.fontSize = '20px';
+    div.style.fontWeight = '500';
+    div.style.color = 'var(--primary)';
+    div.style.lineHeight = '1.4';
+    div.style.fontStyle = 'italic';
+    div.innerHTML = `<strong>You:</strong> "${text}"`;
+  } else {
+    div.style.fontSize = '24px';
+    div.style.fontWeight = '700';
+    div.style.color = 'var(--ink)';
+    div.style.lineHeight = '1.4';
+    div.innerHTML = `<strong>${speaker}:</strong> ${text}`;
+  }
+  
+  feed.appendChild(div);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function setVoiceProctorState(state) {
+  const pfp = document.getElementById('sim-voice-avatar-circle');
+  const label = document.getElementById('sim-voice-proctor-state');
+  const ring = document.getElementById('sim-voice-pulse-ring');
+  
+  if (!pfp || !label || !ring) return;
+  
+  if (state === 'speaking') {
+    pfp.style.borderColor = 'var(--primary)';
+    label.textContent = 'Speaking...';
+    label.style.color = 'var(--primary)';
+    ring.style.display = 'block';
+  } else if (state === 'listening') {
+    pfp.style.borderColor = '#1e7e2c';
+    label.textContent = 'Listening...';
+    label.style.color = '#1e7e2c';
+    ring.style.display = 'none';
+  } else if (state === 'thinking') {
+    pfp.style.borderColor = 'var(--amber)';
+    label.textContent = 'Thinking...';
+    label.style.color = 'var(--amber)';
+    ring.style.display = 'none';
+  } else {
+    pfp.style.borderColor = 'var(--hairline)';
+    label.textContent = 'Standby';
+    label.style.color = 'var(--mute)';
+    ring.style.display = 'none';
   }
 }
 
@@ -2437,6 +2606,16 @@ async function speakTextElevenLabs(text) {
     const blob = await response.blob();
     const audioUrl = URL.createObjectURL(blob);
     const audio = new Audio(audioUrl);
+    
+    audio.onplay = () => {
+      setVoiceProctorState('speaking');
+      stopListening();
+    };
+    audio.onended = () => {
+      setVoiceProctorState('listening');
+      startListening();
+    };
+    
     audio.play();
   } catch (err) {
     console.error("ElevenLabs speak error:", err);
@@ -2448,7 +2627,22 @@ function speakTextBrowserFallback(text) {
   const synth = window.speechSynthesis;
   if (!synth) return;
   synth.cancel();
+  
   const utterance = new SpeechSynthesisUtterance(text);
+  const voices = synth.getVoices();
+  const selectedVoice = voices.find(v => v.name.includes("Google US English") || v.name.includes("Microsoft Zira") || (v.lang.startsWith("en") && v.name.includes("Female"))) || voices.find(v => v.lang.startsWith("en"));
+  
+  if (selectedVoice) utterance.voice = selectedVoice;
+  
+  utterance.onstart = () => {
+    setVoiceProctorState('speaking');
+    stopListening();
+  };
+  utterance.onend = () => {
+    setVoiceProctorState('listening');
+    startListening();
+  };
+  
   synth.speak(utterance);
 }
 
@@ -2483,7 +2677,10 @@ function initVoiceRecognition() {
         interimTranscript += event.results[i][0].transcript;
       }
     }
-    document.getElementById('sim-user-input').value = finalTranscript || interimTranscript;
+    
+    const text = finalTranscript || interimTranscript;
+    document.getElementById('sim-user-input').value = text;
+    appendVoiceFeed("You", text, true);
   };
   
   recognition.onerror = (event) => {
@@ -2517,7 +2714,6 @@ function startListening() {
     recognition.start();
     isListening = true;
     updateMicButtonUI();
-    document.getElementById('sim-user-input').placeholder = "Listening... Speak verbally now.";
   } catch(e) {
     console.error(e);
   }
@@ -2529,26 +2725,25 @@ function stopListening() {
     recognition.stop();
     isListening = false;
     updateMicButtonUI();
-    document.getElementById('sim-user-input').placeholder = "Click microphone or speak verbally...";
   } catch(e) {
     console.error(e);
   }
 }
 
 function updateMicButtonUI() {
-  const btn = document.getElementById('sim-mic-btn');
+  const btn = document.getElementById('sim-voice-record-btn');
   if (!btn) return;
   if (isListening) {
-    btn.style.background = '#b52c24';
-    btn.style.color = '#fff';
+    btn.style.background = '#1e7e2c';
+    btn.style.boxShadow = '0 0 12px rgba(30, 126, 44, 0.4)';
     btn.innerHTML = `
-      <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="6" height="6"></rect></svg>
+      <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="6" height="6"></rect></svg>
     `;
   } else {
-    btn.style.background = 'transparent';
-    btn.style.color = 'var(--ink)';
+    btn.style.background = 'var(--primary)';
+    btn.style.boxShadow = '0 0 12px rgba(181, 44, 36, 0.4)';
     btn.innerHTML = `
-      <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+      <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
     `;
   }
 }
@@ -2572,6 +2767,10 @@ function startVoiceHrSandbox() {
   document.getElementById('sim-modal-title').textContent = `Voice HR Interview Sandbox`;
   document.getElementById('sim-sidebar-title').textContent = `HR Practice Sandbox`;
   document.getElementById('sim-sidebar-ctc').textContent = `Voice: ACTIVE`;
+  
+  // Clear text feeds
+  const feed = document.getElementById('sim-voice-text-feed');
+  if (feed) feed.innerHTML = '';
   
   const chatContainer = document.getElementById('sim-chat-container');
   chatContainer.innerHTML = '';
