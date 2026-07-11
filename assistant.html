@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>window.location.replace("index.html");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
@@ -559,12 +560,6 @@ body {
         <!-- Populated dynamically -->
       </div>
     </div>
-
-    <!-- UNIVERSAL FOOTER -->
-    <footer>
-      <span>Scout Academic Planner © 2026</span>
-      <span>Powered by Singulr.tech</span>
-    </footer>
   </div>
 </div>
 
@@ -931,8 +926,8 @@ function renderChatsList() {
       if (!isSelected) item.style.background = 'transparent';
     };
     
-    item.onclick = () => selectChat(chat.id);
-    
+    item.onclick = (e) => { if (e.target !== delBtn) selectChat(chat.id); };
+
     const titleSpan = document.createElement('span');
     titleSpan.style.fontWeight = '700';
     titleSpan.style.whiteSpace = 'nowrap';
@@ -940,7 +935,7 @@ function renderChatsList() {
     titleSpan.style.textOverflow = 'ellipsis';
     titleSpan.textContent = chat.title;
     item.appendChild(titleSpan);
-    
+
     const metaSpan = document.createElement('span');
     metaSpan.style.fontSize = '9px';
     metaSpan.style.fontFamily = 'Syne Mono';
@@ -948,9 +943,61 @@ function renderChatsList() {
     const dateStr = new Date(chat.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     metaSpan.textContent = `${chat.provider.toUpperCase()} // ${dateStr}`;
     item.appendChild(metaSpan);
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.style.cssText = `
+      margin-top: 4px;
+      padding: 2px 8px;
+      font-size: 9px;
+      font-family: 'Syne Mono', monospace;
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 4px;
+      cursor: pointer;
+      align-self: flex-start;
+      opacity: 0;
+      transition: opacity 0.15s;
+    `;
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteChat(chat.id);
+    });
+    item.onmouseenter = () => {
+      if (!isSelected) item.style.background = 'var(--paper)';
+      delBtn.style.opacity = '1';
+    };
+    item.onmouseleave = () => {
+      if (!isSelected) item.style.background = 'transparent';
+      delBtn.style.opacity = '0';
+    };
+    if (isSelected) delBtn.style.opacity = '1';
+    item.appendChild(delBtn);
     
     listContainer.appendChild(item);
   });
+}
+
+async function deleteChat(chatId) {
+  if (!semesterData || !semesterData.chats) return;
+  if (semesterData.chats.length <= 1) {
+    alert('You must keep at least one chat.');
+    return;
+  }
+  semesterData.chats = semesterData.chats.filter(c => c.id !== chatId);
+  // If deleted the active chat, switch to first available
+  if (currentChatId === chatId) {
+    currentChatId = semesterData.chats[0].id;
+    selectChat(currentChatId);
+  }
+  renderChatsList();
+  try {
+    await db.collection('users').doc(currentUid).set({ chats: semesterData.chats }, { merge: true });
+  } catch(e) {
+    console.error('Failed to save after delete:', e);
+  }
 }
 
 function filterChatsList() {

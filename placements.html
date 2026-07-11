@@ -259,8 +259,7 @@ footer {
     <span>Scout</span>
   </div>
   <div class="nav-links">
-    <a href="index.html">Plan</a>
-    <a href="assistant.html">Chat</a>
+    <a href="index.html">Chat</a>
     <a href="placements.html" class="active">Placements</a>
     <a href="simulator.html">Simulator</a>
     <a href="settings.html">Settings</a>
@@ -275,6 +274,16 @@ footer {
       Please authenticate on the <a href="settings.html">Settings Page</a> to connect with Cloud Firestore and load your placements data.
     </div>
   </section>
+
+  <!-- PLACEMENTS TABS SWITCHER -->
+  <div class="tabs-switcher" style="display: flex; gap: 24px; margin-bottom: 32px; border-bottom: 1.5px solid var(--hairline-strong); padding-bottom: 0;">
+    <button id="btn-tab-overview" onclick="switchPlacementsTab('overview')" style="background: none; border: none; border-bottom: 2.5px solid var(--primary); padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
+      Overview &amp; Application Board
+    </button>
+    <button id="btn-tab-add" onclick="switchPlacementsTab('add')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
+      Add Opportunity
+    </button>
+  </div>
 
   <!-- SECTION: PLACEMENTS OVERVIEW -->
   <section id="stats">
@@ -321,9 +330,7 @@ footer {
   </section>
 
   <!-- SECTION: ADD OPPORTUNITY -->
-  <section id="add-drive">
-    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Add Opportunity</h2></div>
-    
+  <section id="add-drive" style="display: none; border-bottom: none;">
     <div class="setup-card" style="max-width: 600px; margin: 0;">
       <h3>New Company Entry</h3>
       <form id="job-entry-form" onsubmit="addCompanyEntry(event)">
@@ -370,6 +377,12 @@ footer {
       </form>
     </div>
   </section>
+
+  <!-- UNIVERSAL FOOTER -->
+  <footer>
+    <span>Scout Academic Planner © 2026</span>
+    <span>Powered by Singulr.tech</span>
+  </footer>
 </div>
 
 <!-- Firebase SDKs -->
@@ -545,6 +558,35 @@ function renderBoard() {
   document.getElementById('on-campus-badge').textContent = `${onCampusCount} Job(s)`;
   document.getElementById('off-campus-badge').textContent = `${offCampusCount} Job(s)`;
 }
+
+function switchPlacementsTab(tabId) {
+  const btnOverview = document.getElementById('btn-tab-overview');
+  const btnAdd = document.getElementById('btn-tab-add');
+  const secStats = document.getElementById('stats');
+  const secApps = document.getElementById('applications');
+  const secAdd = document.getElementById('add-drive');
+  
+  if (tabId === 'overview') {
+    btnOverview.style.borderBottomColor = 'var(--primary)';
+    btnOverview.style.color = 'var(--ink)';
+    btnAdd.style.borderBottomColor = 'transparent';
+    btnAdd.style.color = 'var(--mute)';
+    secStats.style.display = 'block';
+    secApps.style.display = 'block';
+    secAdd.style.display = 'none';
+  } else {
+    btnOverview.style.borderBottomColor = 'transparent';
+    btnOverview.style.color = 'var(--mute)';
+    btnAdd.style.borderBottomColor = 'var(--primary)';
+    btnAdd.style.color = 'var(--ink)';
+    secStats.style.display = 'none';
+    secApps.style.display = 'none';
+    secAdd.style.display = 'block';
+  }
+}
+
+// Set default view on load
+switchPlacementsTab('overview');
 
 // End of placement tracking board script
 </script>

@@ -4,513 +4,373 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
-<title>Scout Plan</title>
+<title>Scout Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
 <style>
-/* Page specific index overrides */
-.hero {
-  text-align: center;
-  padding: 60px 0;
-  border-bottom: 1px solid var(--hairline);
-  margin-bottom: 40px;
-}
-.hero h1 {
-  font-family: 'Nunito', sans-serif;
-  font-size: 40px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 12px;
-}
-.hero .outline {
-  text-decoration: underline;
-  text-decoration-style: double;
-}
-.hero p.sub {
-  color: var(--body);
-  font-size: 16px;
-  max-width: 600px;
-  margin: 0 auto 28px auto;
-}
-.hero .stats {
+/* Page specific assistant overrides */
+body {
+  height: 100vh;
   display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 24px;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
-.stat {
-  background: var(--surface-soft);
-  border: 1px solid var(--hairline);
-  padding: 16px 24px;
-  border-radius: 12px;
-  min-width: 160px;
-}
-.stat .num {
-  font-family: 'Nunito', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.stat .lbl {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--mute);
-  font-weight: 600;
-  margin-top: 4px;
-}
-
-.ticker {
-  background: var(--primary);
-  color: var(--on-primary);
-  padding: 10px 0;
-  overflow: hidden;
-  white-space: nowrap;
-  font-size: 13px;
-  font-family: ui-monospace, monospace;
-}
-.ticker .track {
-  display: inline-flex;
-  animation: ticker 40s linear infinite;
-}
-.ticker span {
-  padding: 0 24px;
-}
-
-.section-label {
+.main-chat-container {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.section-num {
-  font-family: ui-monospace, monospace;
-  font-size: 12px;
-  background: var(--surface-soft);
-  border: 1px solid var(--hairline);
-  padding: 2px 8px;
-  border-radius: 9999px;
-  color: var(--body);
-}
-.section-title {
-  font-size: 24px;
-  font-weight: 600;
-}
-.section-desc {
-  font-size: 15px;
-  color: var(--body);
-  margin-bottom: 32px;
-}
-
-/* Boards and grids */
-.board {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-.card {
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  padding: 20px;
-  transition: border-color 0.15s;
-}
-.card:hover {
-  border-color: var(--ink);
-}
-.card h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-.card .meta {
-  font-family: ui-monospace, monospace;
-  font-size: 12px;
-  color: var(--mute);
-  margin-bottom: 8px;
-}
-.card p {
-  font-size: 14px;
-  color: var(--body);
-}
-
-.triage-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-.triage-col {
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--canvas);
-}
-.triage-col .head {
-  padding: 16px;
-  background: var(--surface-soft);
-  border-bottom: 1px solid var(--hairline);
-}
-.triage-col .head h3 {
-  font-size: 18px;
-}
-.triage-item {
-  padding: 16px;
-  border-bottom: 1px solid var(--hairline);
-}
-.triage-item:last-child {
-  border-bottom: none;
-}
-.triage-item h5 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.triage-item p {
-  font-size: 13px;
-  color: var(--body);
-}
-
-.exec-list {
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  background: var(--canvas);
-  overflow: hidden;
-}
-.exec-item {
-  display: grid;
-  grid-template-columns: 40px 100px 1fr auto;
-  gap: 16px;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--hairline);
-}
-.exec-item:last-child {
-  border-bottom: none;
-}
-.exec-title {
-  font-size: 14px;
-  font-weight: 600;
-}
-.exec-body {
-  font-size: 14px;
-  color: var(--body);
-}
-
-.subj-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-}
-.subj-card {
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  padding: 20px;
+  flex-direction: column;
+  height: 100vh;
   position: relative;
-}
-.subj-card .credits {
-  font-family: 'Nunito', sans-serif;
-  font-size: 24px;
-  color: var(--mute);
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  font-weight: 700;
-}
-.subj-card h4 {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.subj-card p {
-  font-size: 13px;
-  color: var(--body);
+  background-color: var(--canvas);
 }
 
-.week-block {
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+.chat-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--hairline);
   background: var(--canvas);
-  margin-top: 24px;
-  overflow: hidden;
-}
-.week-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
-  background: var(--surface-soft);
-  border-bottom: 1px solid var(--hairline);
+  margin-top: 56px; /* offset for top fixed nav bar */
 }
-.week-head h4 {
-  font-size: 16px;
+.chat-header h1 {
+  font-size: 20px;
+  font-weight: 600;
 }
-.week-head span {
+.status-indicator {
   font-family: ui-monospace, monospace;
   font-size: 11px;
   color: var(--mute);
-}
-.week-tasks {
-  padding: 16px;
-}
-.wtask {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--hairline);
-}
-.wtask:last-child {
-  border-bottom: none;
-}
-.wtask p {
-  font-size: 14px;
-  color: var(--charcoal);
-}
-
-.phase-row {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  border-bottom: 1px solid var(--hairline);
-}
-.phase-sidebar {
-  padding: 24px;
-  border-right: 1px solid var(--hairline);
-}
-.phase-sidebar .tag {
-  font-family: ui-monospace, monospace;
-  font-size: 10px;
-  color: var(--mute);
-  margin-bottom: 8px;
-}
-.phase-sidebar h4 {
-  font-size: 20px;
-}
-.phase-body {
-  padding: 24px 32px;
-}
-.phase-body .name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 12px;
-}
-.phase-body li {
-  font-size: 14px;
-  color: var(--charcoal);
-  padding: 8px 0;
-  border-bottom: 1px dashed var(--hairline);
-  padding-left: 14px;
-  position: relative;
-}
-.phase-body li:last-child {
-  border-bottom: none;
-}
-.phase-body li::before {
-  content: '→';
-  position: absolute;
-  left: 0;
-  color: var(--mute);
-}
-
-.stress-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 16px;
-}
-.stress-col h3 {
-  font-size: 18px;
-  margin-bottom: 16px;
-}
-.cause, .remedy {
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  background: var(--surface-soft);
-}
-.cause h5, .remedy h5 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-.cause p, .remedy p {
-  font-size: 13px;
-  color: var(--body);
-}
-
-.dark-band {
-  background: var(--surface-dark);
-  color: var(--on-dark);
-  padding: 48px;
-  border-radius: 12px;
-  margin: 40px 0;
-}
-.dark-band h2 {
-  font-size: 28px;
-  margin-bottom: 20px;
-}
-.rules-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-.rule-card {
-  border: 1px solid var(--charcoal);
-  border-radius: 12px;
-  padding: 20px;
-  background: rgba(255,255,255,0.02);
-}
-.rule-card .n {
-  font-family: 'Nunito', sans-serif;
-  font-size: 24px;
-  color: var(--on-dark-mute);
-  font-weight: 700;
-}
-.rule-card h5 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--on-dark);
-  margin: 6px 0;
-}
-.rule-card p {
-  font-size: 13px;
-  color: var(--on-dark-mute);
-}
-
-.warning-banner {
-  background: var(--surface-soft);
-  border: 1px solid var(--red);
-  padding: 16px 24px;
-  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 6px;
 }
-.warning-banner .lbl {
-  font-family: ui-monospace, monospace;
-  font-size: 13px;
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--red);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
 }
-.warning-banner p {
-  font-size: 14px;
-  color: var(--charcoal);
+.status-dot.active {
+  background: var(--green);
 }
 
-.task-check {
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 4px;
-  background: var(--canvas);
-  cursor: pointer;
+/* Model toggle pill */
+.model-toggle {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--surface-soft);
+}
+.model-toggle button {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--body);
   transition: all 0.1s;
 }
-.task-check.checked {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on-primary);
-}
-
-footer {
-  padding: 32px 0 0 0;
-  border-top: 1px solid var(--hairline);
-  margin-top: 88px;
-  font-size: 13px;
-  color: var(--body);
-  display: flex;
-  justify-content: space-between;
-}
-
-#sync-status-toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
+.model-toggle button.active {
   background: var(--primary);
   color: var(--on-primary);
-  padding: 12px 24px;
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
-  border-radius: 9999px;
-  z-index: 9999;
-  display: none;
-  align-items: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
-/* Workload Analysis and Heatmap Styles */
-.heatmap-container {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-.heatmap-week {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%; /* Pill circles */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: ui-monospace, monospace;
-  font-size: 11px;
-  font-weight: 700;
+  gap: 20px;
+  background-color: var(--canvas);
+}
+
+.message-row {
+  display: flex;
+  width: 100%;
+}
+.message-row.user {
+  justify-content: flex-end;
+}
+.message {
+  max-width: 75%;
+  padding: 16px 20px;
   border: 1px solid var(--hairline);
-  transition: transform 0.15s;
+  border-radius: 16px;
+  line-height: 1.5;
+  font-size: 15px;
 }
-.heatmap-week:hover {
-  transform: scale(1.1);
-  border-color: var(--ink);
+.message-row.user .message {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+  border-bottom-right-radius: 4px;
 }
-.heatmap-week.level-0 { background: var(--surface-soft); color: var(--body); }
-.heatmap-week.level-1 { background: rgba(39, 201, 63, 0.15); color: #1e7e2c; }
-.heatmap-week.level-2 { background: rgba(39, 201, 63, 0.4); color: white; }
-.heatmap-week.level-3 { background: rgba(255, 189, 46, 0.6); color: white; }
-.heatmap-week.level-4 { background: rgba(255, 95, 86, 0.8); color: white; }
-
-.deepwork-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.message-row.assistant .message {
+  background: var(--canvas);
+  color: var(--charcoal);
+  border-bottom-left-radius: 4px;
 }
-.deepwork-card {
+.message-row.system-log .message {
   background: var(--surface-soft);
+  border-color: var(--hairline);
+  color: var(--body);
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  max-width: 90%;
+  border-radius: 8px;
+}
+
+/* Formatting overrides inside assistant message */
+.message-row.assistant .message h1,
+.message-row.assistant .message h2,
+.message-row.assistant .message h3 {
+  color: var(--ink);
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+.message-row.assistant .message h1 { font-size: 18px; }
+.message-row.assistant .message h2 { font-size: 16px; }
+.message-row.assistant .message h3 { font-size: 14px; }
+.message-row.assistant .message p { margin-bottom: 10px; }
+.message-row.assistant .message ul,
+.message-row.assistant .message ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+.message-row.assistant .message li { margin-bottom: 4px; }
+
+/* Code blocks */
+.message-row.assistant .message pre {
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline-strong);
+  padding: 12px;
+  overflow-x: auto;
+  margin: 12px 0;
+  border-radius: 8px;
+}
+.message-row.assistant .message code {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  background: var(--surface-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+.message-row.assistant .message pre code {
+  padding: 0;
+  background: transparent;
+  display: block;
+}
+
+/* SVG Chart styling */
+.message-row.assistant .message svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 12px 0;
   border: 1px solid var(--hairline);
   border-radius: 12px;
-  padding: 16px;
+  background: var(--canvas);
 }
-.deepwork-card h4 {
+.message-row.assistant .message .chart-fallback {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px dashed var(--hairline);
+  background: var(--surface-soft);
+  color: var(--mute);
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.code-block-wrapper {
+  position: relative;
+  margin: 12px 0;
+}
+.code-block-wrapper pre {
+  padding-top: 40px !important;
+}
+
+/* Tables */
+.message-row.assistant .message .table-container {
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+}
+.message-row.assistant .message table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 14px;
+}
+.message-row.assistant .message th,
+.message-row.assistant .message td {
+  border: 1px solid var(--hairline);
+  padding: 8px 12px;
+  text-align: left;
+}
+.message-row.assistant .message th {
+  background: var(--surface-soft);
   font-weight: 600;
   color: var(--ink);
 }
-.deepwork-card p {
-  font-size: 13px;
+
+/* Blockquotes */
+.message-row.assistant .message blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 14px;
+  margin: 12px 0;
+  color: var(--body);
+  font-style: italic;
+}
+
+#thinking-bar {
+  display: none;
+  padding: 8px 24px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--body);
+  background: var(--surface-soft);
+  border-top: 1px solid var(--hairline);
+  gap: 8px;
+  align-items: center;
+}
+#thinking-bar.active { display: flex; }
+#thinking-bar .spinner {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 1.5px solid var(--body);
+  border-top-color: var(--primary);
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.quick-prompts {
+  padding: 12px 24px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-top: 1px solid var(--hairline);
+  background: var(--canvas);
+  align-items: center;
+}
+.quick-prompts::-webkit-scrollbar {
+  height: 2px;
+}
+.prompt-chip {
+  background: var(--canvas);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--charcoal);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.1s;
+}
+.prompt-chip:hover {
+  border-color: var(--ink);
+  background: var(--surface-soft);
+}
+
+.chat-input-container {
+  padding: 16px 24px;
+  border-top: 1px solid var(--hairline);
+  background: var(--canvas);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.chat-input {
+  flex: 1;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9999px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+}
+.chat-input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+.send-btn {
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  height: 38px;
+}
+
+.message-actions,
+.chart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.message-action-btn,
+.chart-action-btn {
+  border: 1px solid var(--hairline);
+  background: var(--surface-soft);
+  color: var(--body);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.message-action-btn:hover,
+.chart-action-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--canvas);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.dashboard-stat,
+.warning-badge,
+.planner-card {
+  border: 1px solid var(--hairline);
+  background: var(--canvas);
+  padding: 12px;
+  border-radius: 8px;
+}
+.dashboard-stat .num {
+  font-family: 'Nunito', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.dashboard-stat .lbl,
+.warning-badge,
+.planner-card {
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--body);
 }
 
 @media(max-width:900px){
-  section { padding: 40px 0; }
-  .board,.triage-cols,.subj-grid,.rules-grid{grid-template-columns:1fr; gap:16px;}
-  .phase-row{grid-template-columns:1fr;}
-  .phase-sidebar{border-right:none;border-bottom:1px solid var(--hairline);}
-  .hero{padding:40px 0;}
-  .exec-item{grid-template-columns:24px 1fr;}
-  .exec-item .meta-col{display:none;}
+  .main-chat-container{margin-left:0;}
+  .chat-header{padding:12px 16px;}
+  .chat-messages{padding:16px;}
+  .message{max-width:85%;}
+  .chat-input-container{padding:12px 16px;}
 }
 </style>
 </head>
@@ -524,9 +384,8 @@ footer {
     </svg>
     <span>Scout</span>
   </div>
-  <div class="nav-links">
-    <a href="index.html" class="active">Plan</a>
-    <a href="assistant.html">Chat</a>
+  <div class="nav-links" id="actions-group-links">
+    <a href="index.html" class="active">Chat</a>
     <a href="placements.html">Placements</a>
     <a href="simulator.html">Simulator</a>
     <a href="settings.html">Settings</a>
@@ -537,191 +396,171 @@ footer {
 <div id="auth-warning-container" style="display: none; padding: 120px 24px; text-align: center; max-width: 600px; margin: 80px auto;">
   <h2>Authentication Required</h2>
   <p style="color: var(--body); font-size: 16px; margin: 16px 0 24px 0;">
-    To protect your personal data, your schedule and commitments are securely stored in Firestore. Please log in first.
+    To protect your personal data and load your chat sessions, please sign in.
   </p>
   <button class="btn btn-primary" onclick="window.location.href='settings.html'">Go to Settings &amp; Sign In</button>
 </div>
 
-<!-- DYNAMIC CONTENT (HIDDEN UNTIL AUTHENTICATED) -->
-<div class="container page-offset" id="main-content-container" style="display: none;">
-
-  <!-- SECTION STICKY PILLS -->
-  <div class="section-pills" style="display: flex; gap: 8px; overflow-x: auto; padding: 12px 0; margin-bottom: 32px; border-bottom: 1px solid var(--hairline);">
-    <a href="#situation" class="badge-pill">01 Situation</a>
-    <a href="#analysis" class="badge-pill">02 Workload</a>
-    <a href="#triage" class="badge-pill">03 Triage</a>
-    <a href="#exec" class="badge-pill">04 Executables</a>
-    <a href="#academics" class="badge-pill">05 Academics</a>
-    <a href="#necessities" class="badge-pill">06 Necessities</a>
-    <a href="#pre" class="badge-pill">07 Pre-Sem</a>
-    <a href="#insem" class="badge-pill">08 In-Sem</a>
-    <a href="#stress" class="badge-pill">09 Stress</a>
-    <a href="#rules" class="badge-pill">10 Rules</a>
-  </div>
-
-  <div class="hero">
-    <h1>DO LESS, FINISH MORE</h1>
-    <p class="sub">You're carrying eleven roles, one messy exit, and a 24-credit semester that starts in three weeks. This isn't a to-do list — it's the plan that decides what you carry into August and what you set down before then.</p>
-    <div class="stats">
-      <div class="stat"><div class="num" id="stat-commitments">--</div><div class="lbl">Active commitments</div></div>
-      <div class="stat"><div class="num" id="stat-credits">--</div><div class="lbl">Credits, Aug–Jan</div></div>
-      <div class="stat"><div class="num" id="stat-cuts">--</div><div class="lbl">To cut or exit</div></div>
-      <div class="stat"><div class="num" id="stat-weeks">~24</div><div class="lbl">Weeks in semester</div></div>
+<!-- CHAT INTERFACE (HIDDEN UNTIL AUTHENTICATED) -->
+<div class="main-chat-container" id="chat-interface-container" style="display: none;">
+  <!-- HEADER -->
+  <div class="chat-header">
+    <h1>SCOUT <span class="outline">AI ASSISTANT</span></h1>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <!-- Toggle Sidebar Button -->
+      <button id="toggle-sidebar-btn" class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="toggleChatsSidebar()">
+        <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+        Chats List
+      </button>
+      <!-- Toggle button for interview mode -->
+      <button id="toggle-interview-mode-btn" class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="toggleInterviewMode()">
+        <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        Start Interview Mode
+      </button>
+      <button class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="openCommitmentDashboard()">
+        Dashboard
+      </button>
+      <!-- Model toggle -->
+      <div class="model-toggle">
+        <button id="btn-gemini" class="active" onclick="setProvider('gemini')">Gemini</button>
+        <button id="btn-openai" onclick="setProvider('openai')">GPT</button>
+      </div>
+      <div class="status-indicator">
+        <div class="status-dot" id="agent-status-dot"></div>
+        <span id="agent-status-text">Disconnected</span>
+      </div>
     </div>
   </div>
 
-  <div class="ticker">
-    <div class="track" id="ticker-track">
-      <!-- Rotating categories -->
-    </div>
-  </div>
-
-  <!-- 01 SITUATION -->
-  <section id="situation" class="fade-in">
-    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">The situation</h2></div>
-    <p class="section-desc">Everything you're currently holding, in one place. Titles are not the same as workload — a "Head of" role that takes two hours a week and an "unpaid intern" role that quietly takes ten are not equivalent, even if they look equal on a resume.</p>
-    <div class="board" id="commitments-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <!-- 01B ANALYSIS -->
-  <section id="analysis" class="fade-in">
-    <div class="section-label"><span class="section-num">01B</span><h2 class="section-title">Workload &amp; Deep Work</h2></div>
-    <p class="section-desc">Visual workload index and suggested deep-work blocks computed dynamically from your credits, checklist activities, and task checklist.</p>
+  <!-- WORKSPACE WRAPPER (Split chat & editor) -->
+  <div class="chat-workspace-wrapper" style="display:flex; flex:1; overflow:hidden; width: 100%;">
     
-    <div class="grid-cols-2">
-      <div>
-        <div class="setup-card" style="margin-bottom:0;">
-          <h3>16-Week Semester Heatmap</h3>
-          <p style="font-size:12px; color:var(--ink3); margin-bottom:16px;">Calculated load based on course credits and active weekly checklist burden.</p>
-          <div class="heatmap-container" id="load-heatmap-container">
-            <!-- Populated dynamically -->
+    <!-- CHAT LIST SIDEBAR (COLLAPSIBLE) -->
+    <div id="chats-sidebar" style="width:240px; display:flex; flex-direction:column; background:var(--paper2); border-right:1px solid var(--line); transition: width 0.2s, border-right-width 0.2s; overflow:hidden; flex-shrink:0;">
+      <!-- Search & New Chat Button -->
+      <div style="padding:16px; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:12px;">
+        <button class="btn btn-outline" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:12px; padding:8px;" onclick="createNewChat()">
+          <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          New Chat
+        </button>
+        <input type="text" id="chat-search-input" placeholder="Search chats..." style="width:100%; min-height:34px; padding:6px 12px; font-size:13px;" oninput="filterChatsList()">
+      </div>
+      
+      <!-- List of Chats -->
+      <div id="chats-list-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px; padding:10px 6px;">
+        <!-- Dynamically rendered chat items -->
+      </div>
+    </div>
+    
+    <!-- LEFT PANE: CHAT WINDOW -->
+    <div class="chat-pane" style="flex:1; display:flex; flex-direction:column; border-right: 1px solid var(--line); position:relative; overflow:hidden;">
+      <!-- CHAT MESSAGES -->
+      <div class="chat-messages" id="chat-messages-container" style="flex:1; overflow-y:auto; padding:40px;">
+        <div class="message-row assistant">
+          <div class="message" id="welcome-message-box">
+            Hello! I am Scout, your personal academic assistant. I am loading your profile from Firestore...
           </div>
         </div>
       </div>
+
+      <!-- THINKING BAR - single persistent line -->
+      <div id="thinking-bar">
+        <div class="spinner"></div>
+        <span id="thinking-text">Thinking...</span>
+      </div>
+
+      <!-- QUICK CHIPS -->
+      <div class="quick-prompts">
+        <div class="prompt-chip" onclick="sendPrompt('Show my commitments status this week')">Commitments</div>
+        <div class="prompt-chip" onclick="sendPrompt('Check my Gmail for any new deadlines or tasks')">Scan Gmail</div>
+        <div class="prompt-chip" onclick="sendPrompt('What events do I have on my calendar for the next 7 days?')">List Calendar</div>
+        <div class="prompt-chip" onclick="sendPrompt('Suggest a weekly study plan for CV and NLP')">Suggest Plan</div>
+        <div class="prompt-chip" onclick="sendPrompt('Run my weekly planning agent: propose Keep, Cut, and Watch changes with reasons.')">Weekly Agent</div>
+        <div class="prompt-chip" onclick="sendPrompt('I want to mark ECell exit task as done')">Exit ECell</div>
+      </div>
+
+      <!-- CHAT INPUT -->
+      <div class="chat-input-container">
+        <input type="text" class="chat-input" id="message-input" placeholder="Ask Scout anything..." onkeydown="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: CODE EDITOR (HIDDEN BY DEFAULT) -->
+    <div class="editor-pane" id="editor-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <h3>Interactive Editor</h3>
+        <select id="code-lang-selector" style="width: 130px; min-height: 34px; padding: 4px 12px; font-size: 13px;">
+          <option value="python">Python</option>
+          <option value="javascript">JavaScript</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+        </select>
+      </div>
+
+      <!-- Pressure Mode Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; background:rgba(181, 44, 36, 0.06); padding:10px 14px; border:1px solid var(--red); border-radius:8px;">
+        <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--red); font-weight:700; margin:0;">
+          <input type="checkbox" id="pressure-mode-toggle" onchange="togglePressureMode(this)" style="accent-color:var(--red); cursor:pointer;">
+          PRESSURE MODE (30m Live Timer)
+        </label>
+        <span id="pressure-timer-display" style="font-family:ui-monospace,monospace; font-size:13px; font-weight:700; color:var(--red); display:none;">30:00</span>
+      </div>
+
+      <div style="flex:1; display:flex; flex-direction:column; position:relative; min-height: 350px;">
+        <textarea id="code-editor-textarea" style="flex:1; width:100%; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13.5px; background:var(--surface-soft); padding:16px; color:var(--ink); resize:none; line-height: 1.5; outline:none; border-radius:8px;" placeholder="# Type your coding solution here...&#10;# Click the Submit button below for the AI Interviewer to review your code."></textarea>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <button class="btn btn-red" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="submitCodeForReview()">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          Submit Code for Review
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: MCQ QUIZ VIEW (HIDDEN BY DEFAULT) -->
+    <div class="editor-pane" id="quiz-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+        <h3>Placement Assessment</h3>
+        <span id="quiz-progress-badge" class="badge-pill badge-red">10 Questions</span>
+      </div>
+
+      <div id="quiz-questions-list" style="flex:1; display:flex; flex-direction:column; gap:24px; margin-bottom: 24px;">
+        <!-- Populated dynamically -->
+      </div>
+
       <div>
-        <div class="setup-card" style="margin-bottom:0;">
-          <h3>Suggested Deep-Work Focus Slots</h3>
-          <p style="font-size:12px; color:var(--ink3); margin-bottom:16px;">Targeted focus block allocations for your next 3 pending high-priority actions.</p>
-          <div class="deepwork-list" id="deepwork-blocks-container">
-            <!-- Populated dynamically -->
-          </div>
-        </div>
+        <button class="btn btn-red" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="submitQuizAnswers()">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          Submit Quiz Answers
+        </button>
       </div>
     </div>
-  </section>
 
-  <!-- 02 TRIAGE -->
-  <section id="triage" class="fade-in">
-    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Keep / cut / watch</h2></div>
-    <p class="section-desc">The rule: a role earns a place in your semester if it builds something (skill, network, income, portfolio, or identity you actually want) at a cost you can name. If you can't name the cost, that's the problem — not the role.</p>
-    <div class="triage-cols">
-      <div class="triage-col keep">
-        <div class="head"><h3>KEEP</h3></div>
-        <div id="triage-keep-container"></div>
+    <!-- RIGHT PANE: INTERACTIVE VISUALIZER (HIDDEN BY DEFAULT) -->
+    <div class="editor-pane" id="visualizer-pane-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+        <h3>Interactive Visualizer</h3>
+        <button class="btn btn-outline" style="font-size:11px; padding:4px 12px; height:28px;" onclick="closeVisualizer()">Close</button>
       </div>
-      <div class="triage-col cut">
-        <div class="head"><h3>CUT</h3></div>
-        <div id="triage-cut-container"></div>
-      </div>
-      <div class="triage-col watch">
-        <div class="head"><h3>WATCH</h3></div>
-        <div id="triage-watch-container"></div>
+      <div id="visualizer-output-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
+        <!-- Populated dynamically with SVG diagrams or slideshows -->
       </div>
     </div>
-  </section>
 
-  <!-- 03 EXECUTABLES -->
-  <section id="exec" class="fade-in">
-    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Executables</h2></div>
-    <p class="section-desc">Not intentions — actual actions, each with a "what does done look like." Ordered by urgency. Check them off as you go.</p>
-    <div class="exec-list" id="executables-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <div class="warning-banner">
-    <span class="lbl">NOTE</span>
-    <p>Right now you have <b id="warning-exits">several unresolved exits</b> and <b id="warning-placement">zero placement-prep hours</b> blocked for Java, DSA, DBMS, or DevOps. Fix the first problem before the second one becomes urgent.</p>
-  </div>
-
-  <!-- 04 ACADEMICS -->
-  <section id="academics" class="fade-in">
-    <div class="section-label"><span class="section-num">04</span><h2 class="section-title">The academic load</h2></div>
-    <p class="section-desc">24 credits across eight courses is a heavy semester on paper. The real risk isn't any one course — it's that CV and NLP (both 4-credit, both math- and code-heavy) land in the same weeks as your club and internship obligations.</p>
-    <div class="subj-grid" id="academics-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <!-- 05 NECESSITIES -->
-  <section id="necessities" class="fade-in">
-    <div class="section-label"><span class="section-num">05</span><h2 class="section-title">Necessities before term starts</h2></div>
-    <p class="section-desc">Concrete things to arrange, not just decide.</p>
-    <div class="board" id="necessities-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <!-- 06 PRE-SEMESTER -->
-  <section id="pre" class="fade-in">
-    <div class="section-label"><span class="section-num">06</span><h2 class="section-title">Pre-semester checklist</h2></div>
-    <p class="section-desc">Today is <span id="current-date-display">July 10, 2026</span>. The semester starts in <b>August</b>. Four weeks, four jobs: decide, exit, prepare, rest.</p>
-    <div id="pre-semester-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <!-- 07 IN SEMESTER -->
-  <section id="insem" class="fade-in">
-    <div class="section-label"><span class="section-num">07</span><h2 class="section-title">In-semester operating system</h2></div>
-    <p class="section-desc">Five phases, August through January, plus a weekly rhythm you repeat throughout. Exact exam dates aren't fixed yet — confirm them against your academic calendar and slot them into the phases below.</p>
-    <div id="in-semester-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <div class="dark-band fade-in">
-    <h2>Weekly rhythm (repeat every week, Aug–Jan)</h2>
-    <div class="rules-grid" id="weekly-rhythm-container">
-      <!-- Loaded dynamically -->
+    <!-- RIGHT PANE: COMMITMENT DASHBOARD (HIDDEN BY DEFAULT) -->
+    <div class="editor-pane" id="commitment-dashboard-container" style="display:none; width:45%; flex-direction:column; background:var(--paper); padding:24px; overflow-y:auto; border-left:1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+        <h3>Commitment Dashboard</h3>
+        <button class="btn btn-outline" style="font-size:11px; padding:4px 12px; height:28px;" onclick="closeCommitmentDashboard()">Close</button>
+      </div>
+      <div id="commitment-dashboard-content" style="display:flex; flex-direction:column; gap:16px;">
+        <!-- Populated dynamically -->
+      </div>
     </div>
   </div>
-
-  <!-- 08 STRESS -->
-  <section id="stress" class="fade-in">
-    <div class="section-label"><span class="section-num">08</span><h2 class="section-title">Where the stress will actually come from</h2></div>
-    <p class="section-desc">Specific to your situation, not generic advice. Each cause is paired with the structural fix, not a mood fix — the goal is to change what's causing the pressure, not just cope with it better.</p>
-    <div class="stress-grid">
-      <div class="stress-col">
-        <h3>Likely causes</h3>
-        <div id="stress-causes-container"></div>
-      </div>
-      <div class="stress-col">
-        <h3>Structural fixes</h3>
-        <div id="stress-remedies-container"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 09 RULES -->
-  <section id="rules" class="fade-in" style="border-bottom:none;">
-    <div class="section-label"><span class="section-num">09</span><h2 class="section-title">Non-negotiables</h2></div>
-    <p class="section-desc">The short version of everything above, for when you don't have time to reread the page.</p>
-    <div class="board" id="rules-container">
-      <!-- Loaded dynamically -->
-    </div>
-  </section>
-
-  <footer>
-    <span>Semester 5 Operations Plan</span>
-    <span>Built Jul 10, 2026 — Firestore Database</span>
-  </footer>
 </div>
-
-<!-- Sync Indicator Toast -->
-<div id="sync-status-toast">Saving changes to Firestore...</div>
 
 <!-- Firebase CDN Libraries -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -729,208 +568,48 @@ footer {
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-// State Management
-let semesterData = null;
+// Custom cursor disabled for native look
+
+// State & Configs
+let geminiKey   = localStorage.getItem('gemini_api_key')  || '';
+let openaiKey   = localStorage.getItem('openai_api_key')  || '';
+let brevoKey    = localStorage.getItem('brevo_api_key')   || '';
+let userEmail   = localStorage.getItem('user_email_target') || '';
+let googleToken = localStorage.getItem('google_access_token') || '';
 let db = null;
 let currentUid = null;
+let semesterData = null;
+let activeProvider = 'gemini'; // 'gemini' | 'openai'
+let isInterviewMode = false;
+let currentChatId = null;
+let latestCalendarEvents = [];
 
-// Template Data for New Users
-const DEFAULT_PLAN_DATA = {
-  "last_updated": "2026-07-10T19:16:56+05:30",
-  "commitments": [
-    { "id": "library", "title": "Library Student Assistant", "meta": "PAID · TILL SEPT", "category": "keep", "description": "₹10,000/month, has a natural end date already. Let it run its course." },
-    { "id": "cara", "title": "Intern — Centre for Applied & Responsible AI", "meta": "CREDIT-BEARING · TILL SEPT", "category": "keep", "description": "This *is* your 2-credit summer internship course. Unpaid in money, paid in transcript and research line." },
-    { "id": "sianom", "title": "Student Intern — Sianom Tech", "meta": "UNPAID · TILL AUGUST", "category": "cut", "description": "Low output, unpaid, near its natural end. Don't renew it." },
-    { "id": "vc", "title": "Project Intern — VC", "meta": "PAID · OPEN-ENDED", "category": "watch", "description": "₹10,000/month with no fixed end date is exactly the kind of role that quietly expands. Needs a boundary conversation, not an exit." },
-    { "id": "flyrank", "title": "Flyrank AI Student Intern", "meta": "UNPAID · REFUSED", "category": "cut", "description": "You already know what this is — a headcount number for someone else's LinkedIn and IPO story. You've correctly refused to do work. Now close it formally." },
-    { "id": "poethra", "title": "Poethra — Head of Literature", "meta": "CLUB · GROWING", "category": "keep", "description": "Possible President from August. The one role that's actually adjacent to your film/writing identity, not just your technical one." },
-    { "id": "vyoma", "title": "Vyoma — Ex-President → Advisor", "meta": "CLUB · TRANSITIONING", "category": "ending", "description": "Already stepping down in August. Good — advisor is low-touch by design if you keep it that way." },
-    { "id": "aws", "title": "AWS SBC — Director of Product", "meta": "CLUB · ACTIVE", "category": "keep", "description": "Real product leadership experience. Keep, but track hours honestly once the semester load lands." },
-    { "id": "foss", "title": "FOSS United — Head of Open Source", "meta": "CLUB · ACTIVE", "category": "keep", "description": "Closest to your actual technical identity and the community you've built. This is a keep, not a maybe." },
-    { "id": "ecell", "title": "ECell — Technical Team", "meta": "CLUB · ENDING", "category": "cut", "description": "Already leaving end of this semester. Confirm it's actually closed, don't let it drift." },
-    { "id": "placement", "title": "Student Placement Coordinator", "meta": "ADMIN ROLE", "category": "watch", "description": "Helps your seniors and batch. Valuable, but placement season is exactly when your own bandwidth for DSA/Java/DBMS prep is thinnest." },
-    { "id": "cr", "title": "Class Representative", "meta": "ADMIN ROLE · IRREGULAR", "category": "watch", "description": "\"Some instances\" — undefined scope is a stress source by itself. Needs a clear boundary, not necessarily an exit." },
-    { "id": "timetable", "title": "Timetable Team", "meta": "ADMIN ROLE · TEMPORARY", "category": "cut", "description": "You built the automation tool. Your job now is adoption, not manual correction forever. This should end, on purpose, this semester." },
-    { "id": "bharatgen", "title": "Possible Intern — BharatGen", "meta": "UNCONFIRMED · FROM AUGUST", "category": "watch", "description": "Don't pre-commit. Evaluate it against actual remaining capacity once the cuts above are done." },
-    { "id": "drone", "title": "Drone Intern — Indian Army project", "meta": "COMPLETED · ENDED JUNE", "category": "ending", "description": "Already finished. Nothing left to do except write it up properly for your portfolio." },
-    { "id": "kalpavikas", "title": "Kalpavikas 2.0 — Possible Event Coordinator", "meta": "RECONSIDERING", "category": "watch", "description": "University-level flagship fest is a real resume line, but it lands directly on top of your heaviest academic load and a possible club presidency. Decide early, not by drifting into it." }
-  ],
-  "executables": [
-    { "id": "exec_flyrank", "title": "Exit Flyrank AI in writing", "category": "cut", "meta": "Urgent", "description": "Send one clear, polite, unambiguous message withdrawing from the program — not a slow fade. Done = you're off any group chat, mailing list, or channel they use, and you've said explicitly you won't be contributing.", "done": false },
-    { "id": "exec_kalpavikas", "title": "Set a hard decision date for Kalpavikas 2.0", "category": "watch", "meta": "This week", "description": "By July 20, decide using one test: \"If Poethra presidency + this semester's course load are both real, does this fit without something else breaking?\" If the honest answer is no, decline now while it's still graceful.", "done": false },
-    { "id": "exec_ecell", "title": "Confirm the ECell exit is actually closed", "category": "cut", "meta": "This week", "description": "Message the team lead: confirm your last date, hand off anything you're holding, get removed from decision threads. \"Leaving end of semester\" should have a date attached, not a vibe.", "done": false },
-    { "id": "exec_timetable", "title": "Force a real handoff on the Timetable Team", "category": "cut", "meta": "Next 2 weeks", "description": "Write a one-page adoption plan: who owns the tool after you, what training they need, what \"fully adopted\" means. Take it to the faculty/staff coordinator and get a commitment, not just a thank-you.", "done": false },
-    { "id": "exec_vc", "title": "Name a boundary on the VC internship", "category": "watch", "meta": "Next 2 weeks", "description": "Have one direct conversation about expected weekly hours now that classes are starting. An open-ended paid role without a stated cap is the single most likely thing to silently eat your semester.", "done": false },
-    { "id": "exec_poethra", "title": "Scope the Poethra presidency before accepting it", "category": "keep", "meta": "Next 2 weeks", "description": "Ask the outgoing president directly: hours/week, biggest recurring headaches, what breaks if you say no. Walk in with eyes open in August, not mid-semester.", "done": false },
-    { "id": "exec_nptel", "title": "Enroll in the NPTEL Operations Research MOOC", "category": "watch", "meta": "Before enrollment closes", "description": "NPTEL/Swayam enrollment windows close early and don't reopen. Confirm the exact enrollment deadline and exam date now, not in August.", "done": false },
-    { "id": "exec_drone", "title": "Write up the drone RF detection project properly", "category": "ending", "meta": "Before semester", "description": "It's finished — close the loop. One clean write-up (problem, pipeline, SOTA result) you can point to in interviews, so it stops being an open task in your head.", "done": false },
-    { "id": "exec_bharatgen", "title": "Don't accept BharatGen until something else is actually gone", "category": "watch", "meta": "Ongoing", "description": "If the offer comes in August, hold it against this page. Only say yes if Flyrank, Sianom, ECell, and Timetable are genuinely closed by then.", "done": false }
-  ],
-  "academics": [
-    { "id": "toc", "title": "Theory of Computation", "credits": 3, "description": "Proof-heavy theory. Needs steady weekly problem sets, not last-minute cramming — it doesn't compress well." },
-    { "id": "cv", "title": "Computer Vision", "credits": 4, "description": "Heaviest technical course. Refresh linear algebra + probability before term starts if it's rusty." },
-    { "id": "nlp", "title": "Natural Language Processing", "credits": 4, "description": "Pairs naturally with CV — shared math foundations. Consider studying them together, not in isolation." },
-    { "id": "or", "title": "MOOC — Operations Research (NPTEL)", "credits": 3, "description": "Self-paced and easy to neglect. Block a fixed weekly slot now or it silently falls behind." },
-    { "id": "intern_cara", "title": "Summer Internship (CARA)", "credits": 2, "description": "Already covered by your CARA work through September — genuine synergy, not extra effort." },
-    { "id": "screenplay", "title": "Script to Screenplay", "credits": 3, "description": "Creative, structure-based. A good counterweight to the technical courses — protect it as your \"different kind of thinking\" slot." },
-    { "id": "cinema", "title": "Understanding Indian Cinema", "credits": 3, "description": "Screening + discussion heavy. Treat screenings as fixed, immovable calendar blocks." },
-    { "id": "drumming", "title": "Drumming — Level 1", "credits": 2, "description": "Physical, low cognitive load, fixed practice slot. This is a built-in stress release — don't let it get skipped for \"more important\" work." }
-  ],
-  "necessities": [
-    { "id": "nec_cv_nlp_env", "category": "TECHNICAL SETUP", "title": "CV / NLP environment", "description": "Python, PyTorch, OpenCV, a working GPU/Colab plan, and a refreshed grip on linear algebra + probability before week one." },
-    { "id": "nec_screenplay_sw", "category": "CREATIVE SETUP", "title": "Screenwriting software", "description": "Final Draft, Celtx, or similar set up ahead of Script to Screenplay — don't lose your first week to tooling." },
-    { "id": "nec_drums", "category": "PHYSICAL", "title": "Drumming practice access", "description": "Confirm practice room/kit access and a fixed slot before term — this is the one course that recovers you rather than draining you." },
-    { "id": "nec_nptel_admin", "category": "ADMIN", "title": "NPTEL enrollment + exam date", "description": "Lock this in now — Swayam windows are unforgiving and don't reopen." },
-    { "id": "nec_budget", "category": "FINANCIAL", "title": "Budget the ₹20k/month", "description": "Two paid roles (library + VC) at ₹10k each — decide now what's savings, what's spend, so money isn't one more thing to think about mid-semester." },
-    { "id": "nec_health", "category": "HEALTH", "title": "Sleep + health baseline", "description": "A basic checkup and a sleep schedule reset before term starts is cheaper than fixing burnout in November." },
-    { "id": "nec_tracker", "category": "SYSTEM", "title": "One single commitment tracker", "description": "All eleven-turned-seven roles, all eight courses, in one place you actually look at weekly — not scattered across memory and group chats." },
-    { "id": "nec_placement_baseline", "category": "PLACEMENT", "title": "Java / DSA / DBMS / DevOps baseline", "description": "Start now, even 30 minutes a day — this is the gap that placement season will expose if it's untouched until October." }
-  ],
-  "pre_semester": [
-    {
-      "title": "Week 1 — Jul 10–16",
-      "theme": "Audit & Decide",
-      "tasks": [
-        { "id": "pre_w1_t1", "text": "Write out every commitment — this page's board is the starting point, correct it where it's wrong.", "done": true },
-        { "id": "pre_w1_t2", "text": "Send the Flyrank exit message. Don't let this slide into week two.", "done": true },
-        { "id": "pre_w1_t3", "text": "Start the Kalpavikas decision — gather what it would actually require before the Jul 20 deadline.", "done": true },
-        { "id": "pre_w1_t4", "text": "Check NPTEL enrollment window for Operations Research and lock in the exam date.", "done": true }
-      ]
-    },
-    {
-      "title": "Week 2 — Jul 17–23",
-      "theme": "Handoffs & Boundaries",
-      "tasks": [
-        { "id": "pre_w2_t1", "text": "Confirm the ECell exit in writing with the team lead.", "done": false },
-        { "id": "pre_w2_t2", "text": "Write the Timetable Team adoption plan and send it to whoever owns the tool going forward.", "done": false },
-        { "id": "pre_w2_t3", "text": "Have the VC internship hours conversation. Name a weekly cap out loud.", "done": false },
-        { "id": "pre_w2_t4", "text": "Scope the Poethra presidency with the outgoing president.", "done": false },
-        { "id": "pre_w2_t5", "text": "Decide on Kalpavikas 2.0 — deadline is Jul 20. Say yes or no, not \"let's see.\"", "done": false }
-      ]
-    },
-    {
-      "title": "Week 3 — Jul 24–30",
-      "theme": "Course & Technical Prep",
-      "tasks": [
-        { "id": "pre_w3_t1", "text": "Get syllabi for TOC, CV, and NLP — know what week one actually demands.", "done": false },
-        { "id": "pre_w3_t2", "text": "Refresh linear algebra + probability — a few focused sessions, not a full course.", "done": false },
-        { "id": "pre_w3_t3", "text": "Set up your CV/NLP environment (Python, PyTorch, OpenCV, compute plan).", "done": false },
-        { "id": "pre_w3_t4", "text": "Set up screenwriting software and skim Script to Screenplay's likely structure.", "done": false },
-        { "id": "pre_w3_t5", "text": "Confirm drumming practice access and a fixed weekly slot.", "done": false },
-        { "id": "pre_w3_t6", "text": "Write up the drone project — close that loop for good.", "done": false }
-      ]
-    },
-    {
-      "title": "Week 4 — Jul 31–Aug 3",
-      "theme": "System & Rest",
-      "tasks": [
-        { "id": "pre_w4_t1", "text": "Build the single commitment tracker — every course, every kept role, one place.", "done": false },
-        { "id": "pre_w4_t2", "text": "Reset your sleep schedule to match term-time waking hours before term forces it.", "done": false },
-        { "id": "pre_w4_t3", "text": "Do a basic health check-in — nothing dramatic, just a baseline.", "done": false },
-        { "id": "pre_w4_t4", "text": "Take two genuinely unstructured days. Not \"catch-up\" days — actual rest, before the load starts.", "done": false }
-      ]
-    }
-  ],
-  "in_semester": [
-    {
-      "phase": "Phase 1 · Weeks 1–4",
-      "month": "AUGUST",
-      "intensity": 2,
-      "theme": "Onboarding — find the rhythm before you add anything back",
-      "tasks": [
-        "Attend everything the first two weeks before committing hours anywhere — you're calibrating real workload, not remembered workload.",
-        "Confirm which \"kept\" roles are actually active this term (Poethra presidency, AWS SBC, FOSS United).",
-        "Start CV/NLP foundations immediately — these compound, falling behind in week 2 costs you in week 10.",
-        "Hit the first NPTEL weekly deadline on time — set the precedent early.",
-        "Library job and CARA internship both still running — enjoy the last month of that income/credit overlap."
-      ]
-    },
-    {
-      "phase": "Phase 2 · Weeks 5–10",
-      "month": "SEPTEMBER",
-      "intensity": 3,
-      "theme": "Transition — two commitments end, bandwidth opens",
-      "tasks": [
-        "Library Assistant and CARA internship both wind down this month — plan the transition, don't let either end abruptly.",
-        "Likely window for Internal Assessment 1 — confirm dates and protect a study block for TOC and the technical courses.",
-        "Once CARA ends, redirect that freed time deliberately — into placement prep, not into a new commitment by default.",
-        "Reassess the VC internship hours cap now that your other obligations have shifted."
-      ]
-    },
-    {
-      "phase": "Phase 3 · Weeks 11–16",
-      "month": "OCTOBER – EARLY NOV",
-      "intensity": 4,
-      "theme": "Deep work — the bandwidth you freed up gets spent on purpose",
-      "tasks": [
-        "This is the window to actually close the Java / DSA / DBMS / DevOps gap — fewer competing commitments than any other phase.",
-        "Placement Coordinator duties likely intensify here as the season approaches — keep the pre-decided time cap.",
-        "CV and NLP move into project territory — this is where the math refresh from July pays off.",
-        "Keep the NPTEL weekly cadence going — don't let it slip because \"everything else is busier now.\""
-      ]
-    },
-    {
-      "phase": "Phase 4 · Weeks 17–20",
-      "month": "MID NOV – DEC",
-      "intensity": 5,
-      "theme": "Convergence — this is the highest-load stretch of the semester",
-      "tasks": [
-        "Likely window for Internal Assessment 2, NPTEL's proctored exam, and CV/NLP project submissions landing close together — check exact dates and map them onto one calendar the moment they're announced.",
-        "This is where role-overload actually bites if it hasn't been trimmed already — revisit this page's Cut list and make sure it actually happened.",
-        "Start winding down active club responsibilities for a clean handoff, especially anything with a successor waiting (Vyoma is already handled; do the same for Poethra if you're not continuing past this year).",
-        "Protect drumming and screenings as fixed blocks — this is exactly the phase where \"low-stakes\" courses get sacrificed first, which is backwards."
-      ]
-    },
-    {
-      "phase": "Phase 5 · Weeks 21–24",
-      "month": "JANUARY",
-      "intensity": 3,
-      "theme": "Close-out — end-semester exams and a real review",
-      "tasks": [
-        "End-semester exam prep and exams for all eight courses.",
-        "Run a full semester review: what actually got carried, what got dropped, what you'd cut earlier next time.",
-        "Decide what changes for Semester 6 before you're back in the habit of saying yes to everything."
-      ]
-    }
-  ],
-  "weekly_rhythm": [
-    { "num": "01", "title": "Sunday — Review + Plan", "desc": "30 minutes. What's due this week, what's overdue, what got dropped last week and why." },
-    { "num": "02", "title": "Protect one deep-work block", "desc": "A fixed morning or afternoon with no meetings, no club pings, for CV/NLP or TOC problem sets." },
-    { "num": "03", "title": "Hit the NPTEL slot", "desc": "Same time every week. Self-paced courses die from irregularity, not difficulty." },
-    { "num": "04", "title": "Keep the fixed creative blocks", "desc": "Script to Screenplay work, Indian Cinema screenings, drumming practice — treat these as immovable, not optional." },
-    { "num": "05", "title": "One \"no\" per week, if needed", "desc": "If a new ask arrives, hold it against the Keep/Cut/Watch board before answering." },
-    { "num": "06", "title": "One fully unscheduled evening", "desc": "Not for catching up. For nothing in particular." }
-  ],
-  "stress_audit": {
-    "causes": [
-      { "title": "Role overload / identity diffusion", "description": "Eleven roles pull you between technical, creative, entrepreneurial, and admin identities in the same week. That switching itself is tiring, separate from the work." },
-      { "title": "Difficulty saying no", "description": "Flyrank shows the pattern clearly — you got in before realizing what it was. The instinct to keep opportunities open, even bad ones, is worth noticing in yourself." },
-      { "title": "Undefined scope roles", "description": "Class Rep \"some instances\" and the Placement Coordinator role without a time cap are stressful precisely because you can't tell when you've done enough." },
-      { "title": "Compressed placement-prep window", "description": "Java, DSA, DBMS, and DevOps sitting untouched while 24 credits and multiple roles run in parallel is a real, specific source of dread if left unaddressed." },
-      { "title": "Convergence in Nov–Dec", "description": "Internal exams, NPTEL's proctored exam, and CV/NLP project deadlines are likely to cluster in the same few weeks — the single highest-risk stretch of the whole semester." },
-      { "title": "Over-identifying with titles", "description": "\"Head of,\" \"Director of,\" \"President of\" are easy to let become who you are rather than what you do. When one ends (Vyoma, ECell), it can feel like a loss even when it's the right call." }
-    ],
-    "remedies": [
-      { "title": "\"I don't have the bandwidth\"", "description": "\"No, but thank you — I don't have the bandwidth to do this well right now\" is a full sentence. Write it once, reuse it, stop improvising it under guilt." },
-      { "title": "Turn vague roles into defined ones", "description": "Ask the actual question: \"what's the recurring ask, and how many hours does that take?\" A named cost is far lighter than an unnamed one." },
-      { "title": "Daily 30 minutes, not weekend cramming", "description": "Placement prep started now, in small blocks, avoids the panic-mode version of the same work in October." },
-      { "title": "Map Nov–Dec the moment dates land", "description": "As soon as exam and deadline dates are announced, put them on one calendar together. Seeing the convergence early is what makes it survivable." },
-      { "title": "Let roles end without a replacement", "description": "When Vyoma and ECell close, don't backfill the identity gap with a new commitment immediately. Sit in the space for a week before deciding it needs filling." },
-      { "title": "Protect drumming and screenings as recovery", "description": "They're built into your credit load, but they function as decompression. Treat them that way rather than optimizing them." },
-      { "title": "Keep at least one non-productive social space", "description": "Friends or contexts that have nothing to do with any of the eleven roles — somewhere you're not \"Head of\" anything." }
-    ]
-  },
-  "rules": [
-    { "num": "01", "title": "Subtract before you add", "desc": "No new commitment gets accepted until an existing one has actually been closed." },
-    { "num": "02", "title": "Name every cost", "desc": "If you can't say how many hours a role takes, that's the first thing to fix — before deciding whether to keep it." },
-    { "num": "03", "title": "Fixed blocks are immovable", "desc": "Drumming, screenings, NPTEL, deep-work — once scheduled, they don't get sacrificed for \"urgent\" requests." },
-    { "num": "04", "title": "Review every Sunday", "desc": "Thirty minutes, every week, no exceptions, all the way to January." },
-    { "num": "05", "title": "Endings don't need replacing", "desc": "Vyoma and ECell closing is progress, not a gap to fill immediately." },
-    { "num": "06", "title": "November is the danger zone", "desc": "Map it the second real dates exist. Everything else on this page exists to make that phase survivable." }
-  ]
-};
+function setProvider(p) {
+  activeProvider = p;
+  document.getElementById('btn-gemini').classList.toggle('active', p === 'gemini');
+  document.getElementById('btn-openai').classList.toggle('active', p === 'openai');
+  const key = p === 'gemini' ? geminiKey : openaiKey;
+  if (key) {
+    statusDot.classList.add('active');
+    statusText.textContent = p === 'gemini' ? 'Gemini Ready' : 'GPT Ready';
+  } else {
+    statusDot.classList.remove('active');
+    statusText.textContent = p === 'gemini' ? 'No Gemini Key' : 'No OpenAI Key';
+  }
+  renderLoadedMessages();
+}
 
-// Custom cursor disabled for native look
+// Initialize status indicators
+const statusDot  = document.getElementById('agent-status-dot');
+const statusText = document.getElementById('agent-status-text');
+
+if (geminiKey) {
+  statusDot.classList.add('active');
+  statusText.textContent = "Gemini Ready";
+} else {
+  statusDot.classList.remove('active');
+  statusText.textContent = "No Gemini Key";
+}
 
 const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyDaltzwOuuOHJJ4tYtuagiJX1cEA1MvOOo",
@@ -942,8 +621,8 @@ const DEFAULT_FIREBASE_CONFIG = {
   measurementId: "G-3TZCM8L7E5"
 };
 
-// Initialize Firebase & Firestore
-function initFirebaseApp() {
+// Initialize Firebase Auth / Firestore
+function initFirebase() {
   let config = DEFAULT_FIREBASE_CONFIG;
   const storedConfig = localStorage.getItem('firebase_config');
   if (storedConfig) {
@@ -961,20 +640,25 @@ function initFirebaseApp() {
     db = firebase.firestore();
     setupAuthStateListener();
   } catch (e) {
-    console.error("Firebase Initialization Error:", e);
+    console.error("Firebase init failed in Chat:", e);
     showAuthWarning();
   }
 }
 
-// Setup Auth Listener
 function setupAuthStateListener() {
+  // Null-safe style setter — ignores missing elements gracefully
+  function $s(id, prop, val) {
+    const el = document.getElementById(id);
+    if (el) el.style[prop] = val;
+  }
+
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
       currentUid = user.uid;
-      document.getElementById('auth-warning-container').style.display = 'none';
-      document.getElementById('main-content-container').style.display = 'block';
-      document.getElementById('sections-nav-links').style.opacity = '1';
-      document.getElementById('sections-nav-links').style.pointerEvents = 'auto';
+      $s('auth-warning-container', 'display', 'none');
+      $s('chat-interface-container', 'display', 'flex');
+      $s('actions-group-links', 'opacity', '1');
+      $s('actions-group-links', 'pointerEvents', 'auto');
       await loadUserData();
     } else {
       currentUid = null;
@@ -984,389 +668,2517 @@ function setupAuthStateListener() {
 }
 
 function showAuthWarning() {
-  document.getElementById('auth-warning-container').style.display = 'block';
-  document.getElementById('main-content-container').style.display = 'none';
-  document.getElementById('sections-nav-links').style.opacity = '0.3';
-  document.getElementById('sections-nav-links').style.pointerEvents = 'none';
+  function $s(id, prop, val) {
+    const el = document.getElementById(id);
+    if (el) el.style[prop] = val;
+  }
+  $s('auth-warning-container', 'display', 'flex');
+  $s('chat-interface-container', 'display', 'none');
+  $s('actions-group-links', 'opacity', '0.3');
+  $s('actions-group-links', 'pointerEvents', 'none');
 }
 
-// Load Data from Firestore user document
 async function loadUserData() {
   if (!db || !currentUid) return;
-  
   try {
-    const docRef = db.collection('users').doc(currentUid);
-    const docSnap = await docRef.get();
-    
+    const docSnap = await db.collection('users').doc(currentUid).get();
     if (docSnap.exists) {
       semesterData = docSnap.data();
-      // Self-healing database plan if fields were deleted by updates
-      if (!semesterData.academics || !semesterData.commitments || !semesterData.pre_semester || !semesterData.in_semester) {
-        console.warn("User document missing core plan fields. Merging templates back in...");
-        semesterData = { ...DEFAULT_PLAN_DATA, ...semesterData };
-        await docRef.set(semesterData);
+      
+      // Initialize chats array if not present
+      if (!semesterData.chats || semesterData.chats.length === 0) {
+        // Migrate old history if present
+        const migratedMessages = semesterData.gemini_chat_history || [];
+        semesterData.chats = [{
+          id: "chat_" + Date.now(),
+          title: migratedMessages.length > 0 ? "Migrated Chat" : "New Chat",
+          provider: activeProvider,
+          created_at: new Date().toISOString(),
+          messages: migratedMessages
+        }];
+      }
+      
+      // Select first chat session as active
+      const lastChat = semesterData.chats[0];
+      currentChatId = lastChat.id;
+      activeProvider = lastChat.provider || 'gemini';
+      
+      // Toggle button highlights in UI
+      document.getElementById('btn-gemini').classList.toggle('active', activeProvider === 'gemini');
+      document.getElementById('btn-openai').classList.toggle('active', activeProvider === 'openai');
+      
+      loadActiveChatSession();
+      renderChatsList();
+      ensureWeeklyCommitmentSnapshot();
+    } else {
+      document.getElementById('welcome-message-box').innerHTML = `
+        Hello! I couldn't find a plan database for you in Firestore. 
+        Please navigate to the <b>Settings</b> page to check integrations, or type <b>"Initialize my profile"</b> and I will set up the defaults for you.
+      `;
+    }
+  } catch (e) {
+    console.error(e);
+    document.getElementById('welcome-message-box').innerHTML = `
+      Error connecting to Firestore: <code>${e.message}</code>. Check your settings and Firestore security rules.
+    `;
+  }
+}
+
+// Render persistent chat history
+function renderLoadedMessages() {
+  const container = document.getElementById('chat-messages-container');
+  container.innerHTML = ''; // Clear container
+
+  const history = activeProvider === 'openai' ? openaiHistory : conversationHistory;
+  
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="message-row assistant">
+        <div class="message" id="welcome-message-box">
+          Welcome back! Your database profile has been successfully loaded from Cloud Firestore. 
+          <br><br>
+          I have full context about your commitments and courses. Ask me to scan your Gmail or list your calendar events to get started!
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Iterate over history and render in UI
+  if (activeProvider === 'openai') {
+    history.forEach(msg => {
+      if (msg.role === 'user') {
+        appendMessageUI('user', msg.content);
+      } else if (msg.role === 'assistant' && msg.content) {
+        appendMessageUI('assistant', msg.content);
+      }
+    });
+  } else {
+    history.forEach(msg => {
+      const text = msg.parts?.[0]?.text;
+      if (text) {
+        const role = msg.role === 'model' ? 'assistant' : 'user';
+        appendMessageUI(role, text);
+      }
+    });
+  }
+}
+
+// Append message UI helper
+function appendMessageUI(role, text) {
+  const container = document.getElementById('chat-messages-container');
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+
+  const msg = document.createElement('div');
+  msg.className = 'message';
+
+  if (role === 'assistant') {
+    renderAnimatedText(msg, text);
+  } else {
+    msg.textContent = text;
+  }
+
+  row.appendChild(msg);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+// Save chat logs to Firestore
+// Save chat logs to Firestore
+async function saveChatHistory() {
+  if (!db || !currentUid || !semesterData || !currentChatId) return;
+  try {
+    // Find active chat session in semesterData.chats
+    let activeChat = semesterData.chats.find(c => c.id === currentChatId);
+    if (!activeChat) {
+      activeChat = {
+        id: currentChatId,
+        title: "New Chat",
+        provider: activeProvider,
+        created_at: new Date().toISOString(),
+        messages: []
+      };
+      semesterData.chats.unshift(activeChat);
+    }
+    
+    // Sync active history depending on active provider
+    if (activeProvider === 'openai') {
+      activeChat.messages = openaiHistory.filter(msg => msg.role === 'user' || msg.role === 'assistant');
+      activeChat.provider = 'openai';
+    } else {
+      activeChat.messages = conversationHistory.filter(msg => msg.role === 'user' || msg.role === 'model');
+      activeChat.provider = 'gemini';
+    }
+    
+    // Auto-generate title on first conversation message
+    if ((activeChat.title === "New Chat" || activeChat.title === "Migrated Chat") && activeChat.messages.length > 0) {
+      let firstText = "";
+      if (activeProvider === 'openai') {
+        firstText = activeChat.messages[0].content || "";
+      } else {
+        firstText = activeChat.messages[0].parts?.[0]?.text || "";
+      }
+      if (firstText) {
+        // Exclude system logs and truncate
+        if (!firstText.startsWith('[')) {
+          activeChat.title = firstText.slice(0, 26) + (firstText.length > 26 ? "..." : "");
+        }
+      }
+    }
+    
+    // Use set with merge: true to avoid deleting other semesterData fields (critical DB safeguard!)
+    ensureWeeklyCommitmentSnapshot();
+    semesterData.last_updated = new Date().toISOString();
+    await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
+    console.log("Chat history successfully synced to Firestore.");
+    renderChatsList();
+  } catch (e) {
+    console.error("Failed to save chat logs:", e);
+  }
+}
+
+// Active session loaders & sidebar controllers
+function loadActiveChatSession() {
+  const activeChat = semesterData.chats.find(c => c.id === currentChatId);
+  if (!activeChat) return;
+  
+  if (activeChat.provider === 'openai') {
+    openaiHistory = activeChat.messages || [];
+    conversationHistory = [];
+  } else {
+    conversationHistory = activeChat.messages || [];
+    openaiHistory = [];
+  }
+  
+  renderLoadedMessages();
+}
+
+function createNewChat() {
+  const newId = "chat_" + Date.now();
+  const newChat = {
+    id: newId,
+    title: "New Chat",
+    provider: activeProvider,
+    created_at: new Date().toISOString(),
+    messages: []
+  };
+  
+  if (!semesterData.chats) semesterData.chats = [];
+  semesterData.chats.unshift(newChat);
+  currentChatId = newId;
+  
+  loadActiveChatSession();
+  saveChatHistory();
+}
+
+function selectChat(chatId) {
+  currentChatId = chatId;
+  const activeChat = semesterData.chats.find(c => c.id === chatId);
+  if (activeChat) {
+    activeProvider = activeChat.provider || 'gemini';
+    document.getElementById('btn-gemini').classList.toggle('active', activeProvider === 'gemini');
+    document.getElementById('btn-openai').classList.toggle('active', activeProvider === 'openai');
+  }
+  loadActiveChatSession();
+  renderChatsList();
+}
+
+function renderChatsList() {
+  const listContainer = document.getElementById('chats-list-container');
+  if (!listContainer) return;
+  listContainer.innerHTML = '';
+  
+  const searchVal = document.getElementById('chat-search-input').value.toLowerCase();
+  
+  if (!semesterData || !semesterData.chats) return;
+  
+  semesterData.chats.forEach(chat => {
+    if (searchVal && !chat.title.toLowerCase().includes(searchVal)) {
+      return;
+    }
+    
+    const item = document.createElement('div');
+    item.style.padding = '10px 14px';
+    item.style.paddingRight = '36px'; // Prevent text overlap with delete button
+    item.style.fontFamily = 'Syne';
+    item.style.fontSize = '12px';
+    item.style.cursor = 'pointer';
+    item.style.borderBottom = '1px solid var(--line2)';
+    item.style.display = 'flex';
+    item.style.flexDirection = 'column';
+    item.style.gap = '2px';
+    item.style.transition = 'all 0.15s';
+    item.style.position = 'relative'; // Anchor for absolute delete button
+    
+    const isSelected = chat.id === currentChatId;
+    if (isSelected) {
+      item.style.background = 'var(--ink)';
+      item.style.color = 'var(--bg)';
+    } else {
+      item.style.background = 'transparent';
+      item.style.color = 'var(--ink2)';
+    }
+    
+    item.onmouseover = () => {
+      if (!isSelected) item.style.background = 'var(--paper)';
+    };
+    item.onmouseout = () => {
+      if (!isSelected) item.style.background = 'transparent';
+    };
+    
+    const titleSpan = document.createElement('span');
+    titleSpan.style.fontWeight = '700';
+    titleSpan.style.whiteSpace = 'nowrap';
+    titleSpan.style.overflow = 'hidden';
+    titleSpan.style.textOverflow = 'ellipsis';
+    titleSpan.textContent = chat.title;
+    item.appendChild(titleSpan);
+
+    const metaSpan = document.createElement('span');
+    metaSpan.style.fontSize = '9px';
+    metaSpan.style.fontFamily = 'Syne Mono';
+    metaSpan.style.opacity = '0.6';
+    const dateStr = new Date(chat.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    metaSpan.textContent = `${chat.provider.toUpperCase()} // ${dateStr}`;
+    item.appendChild(metaSpan);
+
+    // Delete button on hover
+    const delBtn = document.createElement('button');
+    delBtn.innerHTML = '&times;';
+    delBtn.style.cssText = `
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+      background: transparent;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, transform 0.15s;
+    `;
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteChat(chat.id);
+    });
+    delBtn.addEventListener('mouseenter', () => {
+      delBtn.style.transform = 'translateY(-50%) scale(1.2)';
+    });
+    delBtn.addEventListener('mouseleave', () => {
+      delBtn.style.transform = 'translateY(-50%)';
+    });
+
+    item.onmouseenter = () => {
+      if (!isSelected) item.style.background = 'var(--paper)';
+      delBtn.style.opacity = '1';
+    };
+    item.onmouseleave = () => {
+      if (!isSelected) item.style.background = 'transparent';
+      delBtn.style.opacity = '0';
+    };
+    if (isSelected) {
+      delBtn.style.opacity = '0.7';
+      delBtn.style.color = 'var(--red)';
+    }
+
+    item.onclick = (e) => {
+      if (e.target !== delBtn) selectChat(chat.id);
+    };
+
+    item.appendChild(delBtn);
+    
+    listContainer.appendChild(item);
+  });
+}
+
+async function deleteChat(chatId) {
+  if (!semesterData || !semesterData.chats) return;
+  if (semesterData.chats.length <= 1) {
+    alert('You must keep at least one chat.');
+    return;
+  }
+  if (!confirm('Are you sure you want to delete this chat session?')) {
+    return;
+  }
+  semesterData.chats = semesterData.chats.filter(c => c.id !== chatId);
+  // If deleted the active chat, switch to first available
+  if (currentChatId === chatId) {
+    currentChatId = semesterData.chats[0].id;
+    selectChat(currentChatId);
+  }
+  renderChatsList();
+  try {
+    await db.collection('users').doc(currentUid).set({ chats: semesterData.chats }, { merge: true });
+  } catch(e) {
+    console.error('Failed to save after delete:', e);
+  }
+}
+
+function filterChatsList() {
+  renderChatsList();
+}
+
+function toggleChatsSidebar() {
+  const sidebar = document.getElementById('chats-sidebar');
+  if (sidebar.style.width === '0px') {
+    sidebar.style.width = '240px';
+    sidebar.style.borderRightWidth = '1px';
+  } else {
+    sidebar.style.width = '0px';
+    sidebar.style.borderRightWidth = '0px';
+  }
+}
+
+// Interactive Placement Quiz State
+let activeQuizQuestions = [];
+
+function loadQuizIntoPane(quizData) {
+  activeQuizQuestions = quizData;
+  const listContainer = document.getElementById('quiz-questions-list');
+  listContainer.innerHTML = '';
+  
+  // Show Quiz Pane and Hide Code Editor
+  document.getElementById('editor-pane-container').style.display = 'none';
+  document.getElementById('visualizer-pane-container').style.display = 'none';
+  document.getElementById('commitment-dashboard-container').style.display = 'none';
+  document.getElementById('quiz-pane-container').style.display = 'flex';
+  
+  document.getElementById('quiz-progress-badge').textContent = `${quizData.length} Questions`;
+  
+  quizData.forEach((item, qIdx) => {
+    const qDiv = document.createElement('div');
+    qDiv.style.borderBottom = '1px solid var(--line)';
+    qDiv.style.paddingBottom = '16px';
+    qDiv.style.display = 'flex';
+    qDiv.style.flexDirection = 'column';
+    qDiv.style.gap = '8px';
+    
+    const qTitle = document.createElement('h4');
+    qTitle.style.fontFamily = 'Syne';
+    qTitle.style.fontSize = '14px';
+    qTitle.style.fontWeight = '700';
+    qTitle.style.color = 'var(--ink)';
+    qTitle.style.margin = '0';
+    qTitle.textContent = `${qIdx + 1}. ${item.question}`;
+    qDiv.appendChild(qTitle);
+    
+    if (item.type === 'mcq') {
+      const optionsContainer = document.createElement('div');
+      optionsContainer.style.display = 'flex';
+      optionsContainer.style.flexDirection = 'column';
+      optionsContainer.style.gap = '8px';
+      optionsContainer.style.marginTop = '6px';
+      
+      item.options.forEach((opt, oIdx) => {
+        const label = document.createElement('label');
+        label.style.fontFamily = 'Syne';
+        label.style.fontSize = '12px';
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '8px';
+        label.style.cursor = 'pointer';
+        label.style.color = 'var(--ink2)';
+        
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = `quiz_q_${qIdx}`;
+        input.value = oIdx;
+        input.style.accentColor = 'var(--red)';
+        
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(opt));
+        optionsContainer.appendChild(label);
+      });
+      qDiv.appendChild(optionsContainer);
+    } else {
+      // Short answer or fill-in-the-blank (fib)
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = `quiz_q_input_${qIdx}`;
+      input.placeholder = "Type your answer here...";
+      input.style.width = '100%';
+      input.style.padding = '8px';
+      input.style.fontFamily = 'Syne';
+      input.style.fontSize = '12px';
+      input.style.background = 'var(--paper2)';
+      input.style.border = '1px solid var(--line)';
+      input.style.outline = 'none';
+      input.style.marginTop = '6px';
+      qDiv.appendChild(input);
+    }
+    
+    listContainer.appendChild(qDiv);
+  });
+}
+
+async function submitQuizAnswers() {
+  if (activeQuizQuestions.length === 0) return;
+  
+  const userAnswers = [];
+  let score = 0;
+  
+  activeQuizQuestions.forEach((item, qIdx) => {
+    let answer = null;
+    let isCorrect = false;
+    
+    if (item.type === 'mcq') {
+      const selected = document.querySelector(`input[name="quiz_q_${qIdx}"]:checked`);
+      if (selected) {
+        answer = parseInt(selected.value);
+        if (answer === item.correct) {
+          isCorrect = true;
+          score++;
+        }
       }
     } else {
-      // Initialize with default template data
-      console.log("No document found. Initializing new user document in Firestore...");
-      semesterData = { ...DEFAULT_PLAN_DATA };
-      await docRef.set(semesterData);
+      const inputVal = document.getElementById(`quiz_q_input_${qIdx}`).value.trim();
+      answer = inputVal;
+      if (item.correct && String(item.correct).toLowerCase() === inputVal.toLowerCase()) {
+        isCorrect = true;
+        score++;
+      }
     }
-    renderDashboard();
-  } catch (e) {
-    console.error("Error loading Firestore document:", e);
-    alert("Error loading your database plan from Firestore. Check your console and Firestore security rules.");
-  }
-}
-
-// Save back to Firestore in real-time
-async function saveUserData() {
-  if (!db || !currentUid || !semesterData) return;
-  
-  const toast = document.getElementById('sync-status-toast');
-  toast.style.display = 'block';
-  
-  try {
-    semesterData.last_updated = new Date().toISOString();
-    await db.collection('users').doc(currentUid).set(semesterData);
-    toast.textContent = "Synced to Firestore";
-    setTimeout(() => { toast.style.display = 'none'; }, 1000);
-  } catch (e) {
-    console.error("Firestore Save Error:", e);
-    toast.textContent = "Error saving changes!";
-    toast.style.background = "var(--red)";
-    setTimeout(() => { toast.style.display = 'none'; toast.style.background = "var(--ink)"; }, 3000);
-  }
-}
-
-// Render Dashboard Elements
-function renderDashboard() {
-  if (!semesterData) return;
-
-  // Stats
-  const activeCommitments = semesterData.commitments.filter(c => c.category === 'keep' || c.category === 'watch').length;
-  const credits = semesterData.academics.reduce((sum, item) => sum + item.credits, 0);
-  const cuts = semesterData.commitments.filter(c => c.category === 'cut').length;
-  
-  document.getElementById('stat-commitments').textContent = activeCommitments;
-  document.getElementById('stat-credits').textContent = credits;
-  document.getElementById('stat-cuts').textContent = cuts;
-  
-  // Warning banner stats
-  const remainingExits = semesterData.commitments.filter(c => c.category === 'cut' && !isCommitmentExited(c.id)).length;
-  document.getElementById('warning-exits').textContent = remainingExits + " unresolved exit" + (remainingExits === 1 ? "" : "s");
-
-  // ── Load Heatmap & Deep Work Calculations ──────────────────────
-  const baseLoad = semesterData.academics.reduce((sum, item) => sum + item.credits, 0);
-  const weekLoads = [];
-  
-  // Pre-semester (Weeks 1 to 4)
-  for (let i = 0; i < 4; i++) {
-    const preSemWeek = semesterData.pre_semester[i];
-    const activeTasksCount = preSemWeek ? preSemWeek.tasks.filter(t => !t.done).length : 0;
-    weekLoads.push(baseLoad + (activeTasksCount * 2.5));
-  }
-  
-  // In-semester (Weeks 5 to 16)
-  // Month 1 / Phase 01: Weeks 5-8
-  const p1 = semesterData.in_semester[0] || { intensity: 2, tasks: [] };
-  const l1 = baseLoad + (p1.intensity * 2) + (p1.tasks.length * 1);
-  for (let i = 0; i < 4; i++) weekLoads.push(l1);
-  
-  // Month 2 / Phase 02: Weeks 9-11
-  const p2 = semesterData.in_semester[1] || { intensity: 3, tasks: [] };
-  const l2 = baseLoad + (p2.intensity * 2) + (p2.tasks.length * 1);
-  for (let i = 0; i < 3; i++) weekLoads.push(l2);
-  
-  // Month 3 / Phase 03: Weeks 12-14
-  const p3 = semesterData.in_semester[2] || { intensity: 4, tasks: [] };
-  const l3 = baseLoad + (p3.intensity * 2) + (p3.tasks.length * 1);
-  for (let i = 0; i < 3; i++) weekLoads.push(l3);
-  
-  // Month 4 / Phase 04: Weeks 15-16
-  const p4 = semesterData.in_semester[3] || { intensity: 5, tasks: [] };
-  const l4 = baseLoad + (p4.intensity * 2) + (p4.tasks.length * 1);
-  for (let i = 0; i < 2; i++) weekLoads.push(l4);
-
-  // Render Heatmap
-  const heatmapContainer = document.getElementById('load-heatmap-container');
-  heatmapContainer.innerHTML = '';
-  
-  weekLoads.forEach((load, idx) => {
-    let level = 0;
-    if (load < 24) level = 0;
-    else if (load < 27) level = 1;
-    else if (load < 30) level = 2;
-    else if (load < 33) level = 3;
-    else level = 4;
     
-    const weekDiv = document.createElement('div');
-    weekDiv.className = `heatmap-week level-${level}`;
-    weekDiv.title = `Week ${idx + 1}: Workload Score ${load.toFixed(1)}`;
-    weekDiv.innerHTML = `<span>W${idx + 1}</span><span style="font-size:7px; opacity:0.8;">${Math.round(load)}</span>`;
-    heatmapContainer.appendChild(weekDiv);
+    userAnswers.push({
+      question: item.question,
+      user_answer: answer,
+      correct_answer: item.correct,
+      is_correct: isCorrect
+    });
   });
+  
+  // Hide Quiz Pane
+  document.getElementById('quiz-pane-container').style.display = 'none';
+  
+  // Append message to chat and trigger coaching response
+  const summaryMsg = `[Placement Quiz Completed: User scored ${score}/${activeQuizQuestions.length} correct. Exited quiz mode.]`;
+  appendMessage('user', summaryMsg);
+  
+  const promptText = `I have finished the assessment. Here is my performance log:
+Total Score: ${score}/${activeQuizQuestions.length}
+User Answers:
+${JSON.stringify(userAnswers, null, 2)}
 
-  // Render Deep Work blocks
-  const deepworkContainer = document.getElementById('deepwork-blocks-container');
-  deepworkContainer.innerHTML = '';
-
-  const pendingExecs = semesterData.executables.filter(e => !e.done).slice(0, 3);
-
-  if (pendingExecs.length === 0) {
-    deepworkContainer.innerHTML = `
-      <div style="font-family:'Instrument Serif', serif; font-style:italic; font-size:18px; color:var(--ink3); padding: 10px 0;">
-        No pending tasks found. Your calendar is clear! Enjoy the downtime or start planning the next goals.
-      </div>
-    `;
+Please review my answers, point out which ones were wrong, explain the correct reasoning behind each, and give me coding/interview recommendations.`;
+  
+  if (activeProvider === 'openai') {
+    openaiHistory.push({ role: 'user', content: promptText });
+    saveChatHistory();
+    await callOpenAIApi();
   } else {
-    pendingExecs.forEach((task, idx) => {
-      const times = [
-        "Monday Morning (09:00 - 12:00 IST)",
-        "Wednesday Afternoon (14:00 - 17:00 IST)",
-        "Friday Morning (10:00 - 12:00 IST)"
-      ];
-      const duration = [3, 3, 2];
-      
-      deepworkContainer.innerHTML += `
-        <div class="deepwork-card">
-          <div style="font-family:'Syne Mono', monospace; font-size:9px; color:var(--red); text-transform:uppercase;">Block 0${idx + 1} // ${duration[idx]} Hours Focus</div>
-          <h4 style="margin-top:4px; font-size:13px; font-weight:700;">Work on: "${task.title}"</h4>
-          <p style="margin-top:6px; font-size:11px;"><b>Suggested Slot:</b> ${times[idx]}</p>
-          <p style="font-size:10px; opacity:0.8; margin-top:2px;"><b>Context:</b> ${task.description || 'No description'}</p>
-        </div>
-      `;
-    });
+    conversationHistory.push({ role: 'user', parts: [{ text: promptText }] });
+    saveChatHistory();
+    await callGeminiApi();
   }
-
-  // Dynamic Ticker Track
-  const tickerTrack = document.getElementById('ticker-track');
-  tickerTrack.innerHTML = '';
-  semesterData.commitments.filter(c => c.category === 'cut' || c.category === 'watch').forEach(c => {
-    tickerTrack.innerHTML += `<span>${c.title.toUpperCase()} — ${c.meta.toUpperCase()}</span><span class="sep">/</span>`;
-  });
-  // Repeat for wrap continuity
-  semesterData.commitments.filter(c => c.category === 'cut' || c.category === 'watch').forEach(c => {
-    tickerTrack.innerHTML += `<span>${c.title.toUpperCase()} — ${c.meta.toUpperCase()}</span><span class="sep">/</span>`;
-  });
-
-  // Commitments Board
-  const commitmentsContainer = document.getElementById('commitments-container');
-  commitmentsContainer.innerHTML = '';
-  semesterData.commitments.forEach(c => {
-    commitmentsContainer.innerHTML += `
-      <div class="card c-${c.category}">
-        <div class="meta">${c.meta}</div>
-        <h4>${c.title}</h4>
-        <p>${c.description}</p>
-      </div>
-    `;
-  });
-
-  // Keep/Cut/Watch Lists
-  const keepCont = document.getElementById('triage-keep-container');
-  const cutCont = document.getElementById('triage-cut-container');
-  const watchCont = document.getElementById('triage-watch-container');
-  keepCont.innerHTML = '';
-  cutCont.innerHTML = '';
-  watchCont.innerHTML = '';
-  
-  semesterData.commitments.forEach(c => {
-    const html = `
-      <div class="triage-item">
-        <h5>${c.title}</h5>
-        <p>${c.description}</p>
-      </div>
-    `;
-    if (c.category === 'keep') keepCont.innerHTML += html;
-    else if (c.category === 'cut') cutCont.innerHTML += html;
-    else if (c.category === 'watch') watchCont.innerHTML += html;
-  });
-
-  // Executables
-  const execContainer = document.getElementById('executables-container');
-  execContainer.innerHTML = '';
-  semesterData.executables.forEach(e => {
-    execContainer.innerHTML += `
-      <div class="exec-item ${e.done ? 'done' : ''}">
-        <div class="check">
-          <div class="task-check ${e.done ? 'checked' : ''}" onclick="toggleExecutable('${e.id}')">✓</div>
-        </div>
-        <div class="meta-col"><span class="badge ${e.category}">${e.meta}</span></div>
-        <div>
-          <div class="exec-title">${e.title}</div>
-          <div class="exec-body">${e.description}</div>
-        </div>
-        <div></div>
-      </div>
-    `;
-  });
-
-  // Academics
-  const academicsContainer = document.getElementById('academics-container');
-  academicsContainer.innerHTML = '';
-  semesterData.academics.forEach(a => {
-    academicsContainer.innerHTML += `
-      <div class="subj-card">
-        <div class="credits">${a.credits}</div>
-        <h4>${a.title}</h4>
-        <p>${a.description}</p>
-      </div>
-    `;
-  });
-
-  // Necessities
-  const necessitiesContainer = document.getElementById('necessities-container');
-  necessitiesContainer.innerHTML = '';
-  semesterData.necessities.forEach(n => {
-    necessitiesContainer.innerHTML += `
-      <div class="card c-watch">
-        <div class="meta">${n.category}</div>
-        <h4>${n.title}</h4>
-        <p>${n.description}</p>
-      </div>
-    `;
-  });
-
-  // Pre-Semester Checklist
-  const preSemContainer = document.getElementById('pre-semester-container');
-  preSemContainer.innerHTML = '';
-  semesterData.pre_semester.forEach((w, wIdx) => {
-    let tasksHtml = '';
-    w.tasks.forEach(t => {
-      tasksHtml += `
-        <div class="wtask ${t.done ? 'done' : ''}">
-          <div class="task-check ${t.done ? 'checked' : ''}" onclick="togglePreSemTask(${wIdx}, '${t.id}')">✓</div>
-          <p>${t.text}</p>
-        </div>
-      `;
-    });
-    preSemContainer.innerHTML += `
-      <div class="week-block">
-        <div class="week-head"><h4>${w.title}</h4><span>${w.theme}</span></div>
-        <div class="week-tasks">${tasksHtml}</div>
-      </div>
-    `;
-  });
-
-  // In-Semester Phase rows
-  const inSemContainer = document.getElementById('in-semester-container');
-  inSemContainer.innerHTML = '';
-  semesterData.in_semester.forEach(p => {
-    let intensityHtml = '';
-    for (let i = 1; i <= 5; i++) {
-      intensityHtml += `<div class="${i <= p.intensity ? 'on' : ''}"></div>`;
-    }
-    let tasksHtml = '';
-    p.tasks.forEach(t => {
-      tasksHtml += `<li>${t}</li>`;
-    });
-    inSemContainer.innerHTML += `
-      <div class="phase-row">
-        <div class="phase-sidebar">
-          <div class="tag">${p.phase}</div>
-          <h4>${p.month}</h4>
-          <div class="intensity">${intensityHtml}</div>
-        </div>
-        <div class="phase-body">
-          <p class="name">${p.theme}</p>
-          <ul>${tasksHtml}</ul>
-        </div>
-      </div>
-    `;
-  });
-
-  // Weekly rhythms
-  const rhythmContainer = document.getElementById('weekly-rhythm-container');
-  rhythmContainer.innerHTML = '';
-  semesterData.weekly_rhythm.forEach(r => {
-    rhythmContainer.innerHTML += `
-      <div class="rule-card">
-        <div class="n">${r.num}</div>
-        <h5>${r.title}</h5>
-        <p>${r.desc}</p>
-      </div>
-    `;
-  });
-
-  // Stress Audit
-  const causesContainer = document.getElementById('stress-causes-container');
-  const remediesContainer = document.getElementById('stress-remedies-container');
-  causesContainer.innerHTML = '';
-  remediesContainer.innerHTML = '';
-  
-  semesterData.stress_audit.causes.forEach(c => {
-    causesContainer.innerHTML += `
-      <div class="cause">
-        <h5>${c.title}</h5>
-        <p>${c.description}</p>
-      </div>
-    `;
-  });
-  semesterData.stress_audit.remedies.forEach(r => {
-    remediesContainer.innerHTML += `
-      <div class="remedy">
-        <h5>${r.title}</h5>
-        <p>${r.description}</p>
-      </div>
-    `;
-  });
-
-  // Rules Board
-  const rulesContainer = document.getElementById('rules-container');
-  rulesContainer.innerHTML = '';
-  semesterData.rules.forEach(r => {
-    rulesContainer.innerHTML += `
-      <div class="card c-keep">
-        <div class="meta">RULE ${r.num}</div>
-        <h4>${r.title}</h4>
-        <p>${r.desc}</p>
-      </div>
-    `;
-  });
-
-  // Observe and apply fade-in transitions
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.06 });
-  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 }
 
-// Helpers
-function isCommitmentExited(id) {
-  if (id === 'flyrank') {
-    const t = semesterData.executables.find(e => e.id === 'exec_flyrank');
-    return t ? t.done : false;
+// 1. One-Click Code Apply helper
+function applyCodeToEditor(btn) {
+  const codeWrapper = btn.parentNode;
+  const codeBlock = codeWrapper.querySelector('code');
+  if (codeBlock) {
+    const codeText = codeBlock.textContent || codeBlock.innerText;
+    document.getElementById('code-editor-textarea').value = codeText;
+    
+    // Auto-reveal the code editor pane and close others
+    document.getElementById('editor-pane-container').style.display = 'flex';
+    document.getElementById('quiz-pane-container').style.display = 'none';
+    document.getElementById('visualizer-pane-container').style.display = 'none';
+    document.getElementById('commitment-dashboard-container').style.display = 'none';
+    
+    // Auto-highlight/flash editor container
+    const editor = document.getElementById('editor-pane-container');
+    editor.style.boxShadow = '0 0 15px var(--red)';
+    setTimeout(() => { editor.style.boxShadow = 'none'; }, 800);
   }
-  if (id === 'ecell') {
-    const t = semesterData.executables.find(e => e.id === 'exec_ecell');
-    return t ? t.done : false;
+}
+
+// 2. Interactive Chat Checkbox Database Toggles
+async function toggleChatTaskStatus(cb) {
+  const title = cb.getAttribute('data-task-title');
+  const isDone = cb.checked;
+  
+  if (!semesterData) return;
+  
+  let found = false;
+  
+  // Update in Executables
+  if (semesterData.executables) {
+    const execTask = semesterData.executables.find(e => e.title.toLowerCase().trim() === title.toLowerCase().trim());
+    if (execTask) {
+      execTask.done = isDone;
+      found = true;
+    }
   }
+  
+  // Update in Pre-Semester
+  if (semesterData.pre_semester) {
+    semesterData.pre_semester.forEach(week => {
+      if (week.tasks) {
+        const preTask = week.tasks.find(t => t.task.toLowerCase().trim() === title.toLowerCase().trim());
+        if (preTask) {
+          preTask.done = isDone;
+          found = true;
+        }
+      }
+    });
+  }
+  
+  if (found) {
+    // Save to Firestore using merge: true to protect schema
+    semesterData.last_updated = new Date().toISOString();
+    await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
+    appendMessage('system-log', `Task "${title}" status set to ${isDone ? 'DONE' : 'PENDING'} (Synced to Firestore).`);
+  } else {
+    // If not found in existing list, optionally append as new executable task
+    if (isDone) {
+      if (!semesterData.executables) semesterData.executables = [];
+      semesterData.executables.push({
+        id: "exec_" + Date.now(),
+        title: title,
+        done: true,
+        urgency: "high"
+      });
+      semesterData.last_updated = new Date().toISOString();
+      await db.collection('users').doc(currentUid).set(semesterData, { merge: true });
+      appendMessage('system-log', `Added new task "${title}" to your commitments as DONE.`);
+    }
+  }
+}
+
+// 3. Pressure Mode countdown timers
+let pressureTimerInterval = null;
+let pressureTimeRemaining = 1800; // 30 minutes in seconds
+let pressureTimeElapsed = 0;
+
+function togglePressureMode(cb) {
+  const display = document.getElementById('pressure-timer-display');
+  if (cb.checked) {
+    display.style.display = 'inline';
+    pressureTimeRemaining = 1800;
+    pressureTimeElapsed = 0;
+    updatePressureTimerDisplay();
+    
+    clearInterval(pressureTimerInterval);
+    pressureTimerInterval = setInterval(() => {
+      if (pressureTimeRemaining > 0) {
+        pressureTimeRemaining--;
+        pressureTimeElapsed++;
+        updatePressureTimerDisplay();
+      } else {
+        clearInterval(pressureTimerInterval);
+        alert("Time's up! Pressure Mode is automatically submitting your code for AI review.");
+        submitCodeForReview(true);
+      }
+    }, 1000);
+  } else {
+    clearInterval(pressureTimerInterval);
+    display.style.display = 'none';
+  }
+}
+
+function updatePressureTimerDisplay() {
+  const mins = Math.floor(pressureTimeRemaining / 60);
+  const secs = pressureTimeRemaining % 60;
+  document.getElementById('pressure-timer-display').textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+
+// 4. Interactive visualizer slideshow pane
+let activeVisualizerSteps = [];
+let activeVisualizerIndex = 0;
+
+function loadVisualizerIntoPane(visData) {
+  activeVisualizerSteps = visData.steps || [];
+  activeVisualizerIndex = 0;
+  
+  // Display Visualizer and close others
+  document.getElementById('editor-pane-container').style.display = 'none';
+  document.getElementById('quiz-pane-container').style.display = 'none';
+  document.getElementById('commitment-dashboard-container').style.display = 'none';
+  document.getElementById('visualizer-pane-container').style.display = 'flex';
+  
+  renderVisualizerStep();
+}
+
+function renderVisualizerStep() {
+  const container = document.getElementById('visualizer-output-content');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  if (activeVisualizerSteps.length === 0) {
+    container.innerHTML = `<span style="font-family:'Instrument Serif',serif; font-style:italic;">No visualizer steps loaded.</span>`;
+    return;
+  }
+  
+  const step = activeVisualizerSteps[activeVisualizerIndex];
+  
+  // Render step label
+  const label = document.createElement('div');
+  label.style.fontFamily = 'Syne';
+  label.style.fontSize = '13px';
+  label.style.fontWeight = '700';
+  label.style.color = 'var(--ink)';
+  label.style.textAlign = 'center';
+  label.style.lineHeight = '1.4';
+  label.textContent = `Step ${activeVisualizerIndex + 1} of ${activeVisualizerSteps.length}: ${step.label}`;
+  container.appendChild(label);
+  
+  // Render SVG or shape HTML
+  const wrapper = document.createElement('div');
+  wrapper.style.width = '100%';
+  wrapper.style.display = 'flex';
+  wrapper.style.justifyContent = 'center';
+  wrapper.style.padding = '10px';
+  wrapper.style.border = '1px solid var(--line2)';
+  wrapper.style.background = '#faf8f3';
+  renderSvgOrFallback(wrapper, step.svg, 'This visualizer step has missing or invalid SVG.');
+  container.appendChild(wrapper);
+  
+  // Prev/Next Navigation Controls
+  const nav = document.createElement('div');
+  nav.style.display = 'flex';
+  nav.style.gap = '12px';
+  nav.style.marginTop = '16px';
+  
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'btn btn-outline';
+  prevBtn.style.padding = '4px 10px';
+  prevBtn.style.fontSize = '10px';
+  prevBtn.textContent = '◀ Prev';
+  prevBtn.disabled = activeVisualizerIndex === 0;
+  prevBtn.onclick = () => {
+    if (activeVisualizerIndex > 0) {
+      activeVisualizerIndex--;
+      renderVisualizerStep();
+    }
+  };
+  
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn btn-outline';
+  nextBtn.style.padding = '4px 10px';
+  nextBtn.style.fontSize = '10px';
+  nextBtn.textContent = 'Next ▶';
+  nextBtn.disabled = activeVisualizerIndex === activeVisualizerSteps.length - 1;
+  nextBtn.onclick = () => {
+    if (activeVisualizerIndex < activeVisualizerSteps.length - 1) {
+      activeVisualizerIndex++;
+      renderVisualizerStep();
+    }
+  };
+  
+  nav.appendChild(prevBtn);
+  nav.appendChild(nextBtn);
+  container.appendChild(nav);
+}
+
+function closeVisualizer() {
+  document.getElementById('visualizer-pane-container').style.display = 'none';
+}
+
+function normalizeVisualMarkup(markup) {
+  if (!markup || typeof markup !== 'string') return '';
+  return markup
+    .trim()
+    .replace(/^```(?:xml|svg|html)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim();
+}
+
+function isRenderableSvg(markup) {
+  const normalized = normalizeVisualMarkup(markup);
+  if (!normalized || !normalized.startsWith('<svg')) return false;
+  try {
+    const parsed = new DOMParser().parseFromString(normalized, 'image/svg+xml');
+    return !parsed.querySelector('parsererror') && !!parsed.documentElement?.matches('svg');
+  } catch (e) {
+    return false;
+  }
+}
+
+function renderSvgOrFallback(container, markup, fallbackText) {
+  const normalized = normalizeVisualMarkup(markup);
+  if (isRenderableSvg(normalized)) {
+    container.innerHTML = normalized;
+    return true;
+  }
+
+  const fallback = document.createElement('div');
+  fallback.className = 'chart-fallback';
+  fallback.textContent = fallbackText || 'This visual could not be rendered because the SVG was missing or invalid.';
+  container.replaceChildren(fallback);
   return false;
 }
 
-// Toggle Executables
-function toggleExecutable(id) {
-  const item = semesterData.executables.find(e => e.id === id);
-  if (item) {
-    item.done = !item.done;
-    renderDashboard();
-    saveUserData();
+// Tool definitions for Gemini
+const GEMINI_TOOLS = [
+  {
+    "function_declarations": [
+      {
+        "name": "list_calendar_events",
+        "description": "Lists upcoming events from Google Calendar for the next 7 days.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {}
+        }
+      },
+      {
+        "name": "create_calendar_event",
+        "description": "Creates a new event on Google Calendar.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "title": { "type": "STRING", "description": "Title/Summary of the event." },
+            "description": { "type": "STRING", "description": "Details/notes for the event." },
+            "start_time": { "type": "STRING", "description": "ISO 8601 DateTime string (e.g. 2026-07-11T15:00:00Z)." },
+            "end_time": { "type": "STRING", "description": "ISO 8601 DateTime string." }
+          },
+          "required": ["title", "start_time", "end_time"]
+        }
+      },
+      {
+        "name": "list_recent_emails",
+        "description": "Searches Gmail for recent academic or submission emails.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "query": { "type": "STRING", "description": "Gmail search query string (e.g. 'classroom' or 'CIE'). Defaults to searching recent unread mail." }
+          }
+        }
+      },
+      {
+        "name": "read_semester_schedule",
+        "description": "Reads the user's current semester schedule, commitments, rules, and tasks checklist from Firestore.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {}
+        }
+      },
+      {
+        "name": "update_semester_schedule",
+        "description": "Modifies user's semester commitments, executables, or tasks database directly in Firestore.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "updates": { 
+              "type": "STRING", 
+              "description": "The exact modified semester_data JSON database structure containing updates." 
+            }
+          },
+          "required": ["updates"]
+        }
+      },
+      {
+        "name": "send_email",
+        "description": "Sends an email to the user's own email address (and ONLY their email — no other recipient is allowed). Use this when the user asks to email, mail, or send any content to themselves via Brevo.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "subject": { "type": "STRING", "description": "Email subject line." },
+            "body": { "type": "STRING", "description": "Full HTML or plain-text body content of the email." }
+          },
+          "required": ["subject", "body"]
+        }
+      },
+      {
+        "name": "web_search",
+        "description": "Searches the public web for current information. Supports normal queries and Google-dork style operators such as site:, filetype:, intitle:, inurl:, and exact quoted phrases. Use only for public information.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "query": { "type": "STRING", "description": "Search query or dork." }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "scrape_webpage",
+        "description": "Reads a public web page URL as markdown-like text using a reader service. Use for public pages only, not logged-in/private pages.",
+        "parameters": {
+          "type": "OBJECT",
+          "properties": {
+            "url": { "type": "STRING", "description": "Public http(s) URL to read." }
+          },
+          "required": ["url"]
+        }
+      }
+    ]
+  }
+];
+
+// Message History State
+let conversationHistory = [];
+
+// Thinking bar helpers
+function setThinking(text) {
+  const bar = document.getElementById('thinking-bar');
+  const label = document.getElementById('thinking-text');
+  label.textContent = text;
+  bar.classList.add('active');
+  statusText.textContent = text;
+}
+function clearThinking() {
+  document.getElementById('thinking-bar').classList.remove('active');
+  statusText.textContent = 'Agent Ready';
+}
+
+// Robust markdown-to-HTML parser
+function normalizeEscapedMarkdownText(md) {
+  const segments = String(md || '').split(/(```[\s\S]*?```)/g);
+  return segments.map(segment => {
+    if (segment.startsWith('```')) return segment;
+    return segment
+      .replace(/\\r\\n/g, '\n')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '  ')
+      .replace(/\\"/g, '"')
+      .replace(/\\'/g, "'")
+      .replace(/\\“/g, '“')
+      .replace(/\\”/g, '”');
+  }).join('');
+}
+
+function escapeHtmlAttr(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function renderInvalidVisualFallback(message) {
+  return `<div class="chart-fallback">${message || 'This SVG/chart could not be rendered because the markup was missing or invalid.'}</div>`;
+}
+
+function renderPieChartTag(title, slices) {
+  const total = slices.reduce((sum, s) => sum + s.value, 0) || 1;
+  let accumPercent = 0;
+  
+  const circleElements = slices.map(s => {
+    const percent = (s.value / total) * 100;
+    const sliceSize = percent * 3.14;
+    const offset = -accumPercent * 3.14;
+    accumPercent += percent;
+    
+    return `<circle cx="150" cy="150" r="50" stroke-width="100" fill="none" stroke="${s.color || '#3d7a6a'}" stroke-dasharray="${sliceSize.toFixed(1)} 314" stroke-dashoffset="${offset.toFixed(1)}" transform="rotate(-90 150 150)"/>`;
+  }).join('\n');
+  
+  const legendElements = slices.map((s, idx) => {
+    const y = 60 + idx * 24;
+    return `
+      <rect x="290" y="${y}" width="12" height="12" fill="${s.color || '#3d7a6a'}" rx="2"/>
+      <text x="310" y="${y + 10}" font-size="12" font-family="'Syne', sans-serif" fill="#1a1a1a">${s.label} (${s.value})</text>
+    `;
+  }).join('\n');
+
+  return `
+    <div class="auto-chart" aria-label="${title}">
+      <svg width="100%" height="280" viewBox="0 0 500 280" role="img" style="font-family:'Syne',sans-serif; background:#faf8f3; border: 1px solid var(--line);">
+        <title>${title}</title>
+        <text x="250" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">${title}</text>
+        <g>${circleElements}</g>
+        <g>${legendElements}</g>
+      </svg>
+    </div>
+  `;
+}
+
+function renderBarChartTag(title, yLabel, bars) {
+  const maxValue = Math.max(...bars.map(b => b.value), 1);
+  
+  const barElements = bars.map((b, idx) => {
+    const x = 90 + idx * 80;
+    const barHeight = Math.round((b.value / maxValue) * 150);
+    const y = 220 - barHeight;
+    return `
+      <rect x="${x}" y="${y}" width="40" height="${barHeight}" fill="${b.color || '#3d7a6a'}" rx="2"/>
+      <text x="${x + 20}" y="${Math.max(55, y - 8)}" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">${b.value}</text>
+      <text x="${x + 20}" y="240" text-anchor="middle" font-size="11" fill="#1a1a1a">${b.label}</text>
+    `;
+  }).join('\n');
+
+  return `
+    <div class="auto-chart" aria-label="${title}">
+      <svg width="100%" height="280" viewBox="0 0 500 280" role="img" style="font-family:'Syne',sans-serif; background:#faf8f3; border: 1px solid var(--line);">
+        <title>${title}</title>
+        <text x="250" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">${title}</text>
+        <line x1="60" y1="70" x2="460" y2="70" stroke="#d0cdc8" stroke-width="1" opacity="0.5"/>
+        <line x1="60" y1="145" x2="460" y2="145" stroke="#d0cdc8" stroke-width="1" opacity="0.5"/>
+        <line x1="60" y1="220" x2="460" y2="220" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="60" y1="50" x2="60" y2="220" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="25" y="135" transform="rotate(-90 25 135)" text-anchor="middle" font-size="11" fill="#1a1a1a">${yLabel || 'Value'}</text>
+        ${barElements}
+      </svg>
+    </div>
+  `;
+}
+
+function parseMarkdown(md) {
+  md = normalizeEscapedMarkdownText(md);
+
+  const pieCharts = [];
+  const barCharts = [];
+
+  // Parse custom <pie-chart> tags before HTML escaping and replace with placeholders
+  md = md.replace(/<pie-chart\b[^>]*>([\s\S]*?)<\/pie-chart>/gi, (match) => {
+    const id = `%%PIECHART${pieCharts.length}%%`;
+    pieCharts.push(match);
+    return id;
+  });
+
+  // Parse custom <bar-chart> tags before HTML escaping and replace with placeholders
+  md = md.replace(/<bar-chart\b[^>]*>([\s\S]*?)<\/bar-chart>/gi, (match) => {
+    const id = `%%BARCHART${barCharts.length}%%`;
+    barCharts.push(match);
+    return id;
+  });
+
+  // Strip json-quiz blocks completely from the main message body to keep it clean in chat
+  let cleanedMd = md.replace(/```json-quiz[\s\S]*?```/g, '');
+  // Strip json-visualizer blocks completely from the main message body to keep it clean in chat
+  cleanedMd = cleanedMd.replace(/```json-visualizer[\s\S]*?```/g, '');
+
+  // Escape HTML entities to prevent injection
+  let html = cleanedMd
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 1. Code blocks: ```language ... ```
+  const codeBlocks = [];
+  html = html.replace(/```([a-zA-Z0-9_-]+)?[ \t]*\r?\n([\s\S]*?)```|```([\s\S]*?)```/g, (match, lang, codeWithLang, codeWithoutLang) => {
+    let cleanCode = (codeWithLang ?? codeWithoutLang ?? '').trim();
+    const normalizedLang = (lang || '').toLowerCase();
+    let isHtmlOrSvg = ['xml', 'html', 'svg'].includes(normalizedLang);
+    
+    // Strip known language prefix (xml, html, svg) when legacy parsing included it in the body.
+    const langPrefixMatch = cleanCode.match(/^(xml|html|svg)\r?\n/i);
+    if (langPrefixMatch) {
+      cleanCode = cleanCode.slice(langPrefixMatch[0].length).trim();
+      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      isHtmlOrSvg = true;
+    } else if (isHtmlOrSvg) {
+      cleanCode = cleanCode.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    } else {
+      // Unescape HTML entities and check if the content starts with known HTML/SVG tags
+      const unescaped = cleanCode
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+      const trimmedUnescaped = unescaped.replace(/^[a-zA-Z0-9_-]+\r?\n/, ''); // strip any residual lang prefix
+      if (
+        unescaped.startsWith('<svg') ||
+        unescaped.startsWith('<div') ||
+        unescaped.startsWith('<table') ||
+        trimmedUnescaped.startsWith('<svg') ||
+        trimmedUnescaped.startsWith('<div')
+      ) {
+        cleanCode = unescaped.startsWith('<') ? unescaped : trimmedUnescaped;
+        isHtmlOrSvg = true;
+      }
+    }
+    
+    const id = `%%CODEBLOCK${codeBlocks.length}%%`;
+    if (isHtmlOrSvg && cleanCode.trim().startsWith('<svg') && !isRenderableSvg(cleanCode)) {
+      cleanCode = renderInvalidVisualFallback('This SVG/chart could not be rendered because the markup was invalid.');
+      isHtmlOrSvg = true;
+    }
+    codeBlocks.push({ code: cleanCode, isHtml: isHtmlOrSvg });
+    return id;
+  });
+
+  // 2. Inline code: `code`
+  const inlineCodes = [];
+  html = html.replace(/`(.*?)`/g, (match, code) => {
+    const id = `%%INLINECODE${inlineCodes.length}%%`;
+    inlineCodes.push(code);
+    return id;
+  });
+
+  // 3. Tables
+  const lines = html.split('\n');
+  let inTable = false;
+  let tableRows = [];
+  const processedLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('|') && line.endsWith('|')) {
+      inTable = true;
+      const cells = line.split('|').slice(1, -1).map(c => c.trim());
+      tableRows.push(cells);
+    } else {
+      if (inTable) {
+        processedLines.push(renderTableHTML(tableRows));
+        tableRows = [];
+        inTable = false;
+      }
+      processedLines.push(lines[i]);
+    }
+  }
+  if (inTable) {
+    processedLines.push(renderTableHTML(tableRows));
+  }
+  html = processedLines.join('\n');
+
+  function renderTableHTML(rows) {
+    if (rows.length === 0) return '';
+    let hasHeader = false;
+    let startIdx = 0;
+    if (rows.length > 1) {
+      const secondRow = rows[1];
+      const isSep = secondRow.every(cell => cell.match(/^:?-+:?$/));
+      if (isSep) {
+        hasHeader = true;
+        startIdx = 2;
+      }
+    }
+    
+    let tableHtml = '<div class="table-container"><table>';
+    if (hasHeader) {
+      tableHtml += '<thead><tr>';
+      rows[0].forEach(cell => {
+        tableHtml += `<th>${cell}</th>`;
+      });
+      tableHtml += '</tr></thead>';
+    }
+    tableHtml += '<tbody>';
+    for (let r = startIdx; r < rows.length; r++) {
+      tableHtml += '<tr>';
+      rows[r].forEach(cell => {
+        tableHtml += `<td>${cell}</td>`;
+      });
+      tableHtml += '</tr>';
+    }
+    tableHtml += '</tbody></table></div>';
+    return tableHtml;
+  }
+
+  // 4. Headings
+  html = html.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, content) => {
+    const level = hashes.length;
+    return `<h${level}>${content}</h${level}>`;
+  });
+
+  // 5. Blockquotes
+  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // 6. Horizontal Rules
+  html = html.replace(/^(?:-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
+
+  // 7. Lists
+  const lines2 = html.split('\n');
+  let inUl = false;
+  let inOl = false;
+  const processed2 = [];
+
+  for (let line of lines2) {
+    let cleanLine = line;
+    
+    // Check for interactive checkbox patterns: [ ] or [x]
+    const checkboxMatch = cleanLine.match(/^(\s*)(?:[-*+])\s+\[([ xX])\]\s+(.+)$/);
+    if (checkboxMatch) {
+      const checked = checkboxMatch[2].toLowerCase() === 'x';
+      const taskTitle = checkboxMatch[3].trim();
+      const taskTitleAttr = escapeHtmlAttr(taskTitle.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"'));
+      
+      const checkboxHtml = `
+        <label class="interactive-checkbox-lbl" style="display:flex; align-items:center; gap:8px; cursor:pointer; margin: 6px 0; font-family:'Syne',sans-serif; font-size:13.5px; color:var(--ink2);">
+          <input type="checkbox" class="interactive-chat-checkbox" data-task-title="${taskTitleAttr}" ${checked ? 'checked' : ''} onchange="toggleChatTaskStatus(this)" style="accent-color:var(--red); cursor:pointer; width:14px; height:14px; margin:0;">
+          <span style="${checked ? 'text-decoration:line-through; opacity:0.5;' : ''}">${taskTitle}</span>
+        </label>
+      `;
+      processed2.push(checkboxHtml);
+      continue;
+    }
+
+    const ulMatch = cleanLine.match(/^(\s*)(?:[-*+])\s+(.+)$/);
+    const olMatch = cleanLine.match(/^(\s*)(?:\d+\.)\s+(.+)$/);
+
+    if (ulMatch) {
+      if (!inUl) {
+        processed2.push('<ul>');
+        inUl = true;
+      }
+      processed2.push(`<li>${ulMatch[2]}</li>`);
+    } else if (olMatch) {
+      if (!inOl) {
+        processed2.push('<ol>');
+        inOl = true;
+      }
+      processed2.push(`<li>${olMatch[2]}</li>`);
+    } else {
+      if (inUl) {
+        processed2.push('</ul>');
+        inUl = false;
+      }
+      if (inOl) {
+        processed2.push('</ol>');
+        inOl = false;
+      }
+      processed2.push(cleanLine);
+    }
+  }
+  if (inUl) processed2.push('</ul>');
+  if (inOl) processed2.push('</ol>');
+  html = processed2.join('\n');
+
+  // 8. Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(^|[^\w])__([^_\s][\s\S]*?[^_\s])__([^\w]|$)/g, '$1<strong>$2</strong>$3');
+
+  // 9. Italics
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/(^|[^\w])_([^_\s][^_\n]*?[^_\s])_([^\w]|$)/g, '$1<em>$2</em>$3');
+
+  // Restore Code Blocks
+  codeBlocks.forEach((item, idx) => {
+    if (item.isHtml) {
+      html = html.replace(`%%CODEBLOCK${idx}%%`, () => item.code);
+    } else {
+      const wrapped = `
+        <div class="code-block-wrapper" style="position:relative; margin: 12px 0;">
+          <button class="btn btn-outline" style="position:absolute; right:10px; top:10px; font-size:9px; padding:4px 8px; z-index:10; background:var(--paper2); font-family:'Syne',sans-serif; text-transform:uppercase; letter-spacing:0.05em; border-color:var(--line);" onclick="applyCodeToEditor(this)">Apply Code</button>
+          <pre style="margin:0;"><code style="font-family:'Syne Mono',monospace; font-size:12px; line-height:1.4;">${item.code}</code></pre>
+        </div>
+      `;
+      html = html.replace(`%%CODEBLOCK${idx}%%`, () => wrapped);
+    }
+  });
+
+  // Restore Inline Code
+  inlineCodes.forEach((code, idx) => {
+    html = html.replace(`%%INLINECODE${idx}%%`, () => `<code>${code}</code>`);
+  });
+
+  // Restore Pie Charts
+  pieCharts.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const pieNode = doc.querySelector('pie-chart');
+      const title = pieNode ? (pieNode.getAttribute('title') || 'Chart') : 'Chart';
+      const slices = pieNode ? Array.from(pieNode.querySelectorAll('slice')).map(node => ({
+        label: node.getAttribute('label') || '',
+        value: parseFloat(node.getAttribute('value') || '0'),
+        color: node.getAttribute('color') || '#3d7a6a'
+      })) : [];
+      html = html.replace(`%%PIECHART${idx}%%`, () => renderPieChartTag(title, slices));
+    } catch(e) {
+      console.error("Pie Chart restoration error:", e);
+      html = html.replace(`%%PIECHART${idx}%%`, () => '');
+    }
+  });
+
+  // Restore Bar Charts
+  barCharts.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const barNode = doc.querySelector('bar-chart');
+      const title = barNode ? (barNode.getAttribute('title') || 'Chart') : 'Chart';
+      const yLabel = barNode ? (barNode.getAttribute('y-label') || 'Value') : 'Value';
+      const bars = barNode ? Array.from(barNode.querySelectorAll('bar')).map(node => ({
+        label: node.getAttribute('label') || '',
+        value: parseFloat(node.getAttribute('value') || '0'),
+        color: node.getAttribute('color') || '#3d7a6a'
+      })) : [];
+      html = html.replace(`%%BARCHART${idx}%%`, () => renderBarChartTag(title, yLabel, bars));
+    } catch(e) {
+      console.error("Bar Chart restoration error:", e);
+      html = html.replace(`%%BARCHART${idx}%%`, () => '');
+    }
+  });
+
+  // Replace double newlines with paragraphs
+  const paragraphs = html.split(/\n{2,}/);
+  const formattedParagraphs = paragraphs.map(p => {
+    const trimmed = p.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<pre') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr') || trimmed.startsWith('<label') || trimmed.startsWith('<svg') || trimmed.startsWith('<table')) {
+      return trimmed;
+    }
+    return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+  });
+
+  return formattedParagraphs.join('\n');
+}
+
+function extractCommitmentStatusCounts(rawText) {
+  if (!rawText || !/Commitment Status/i.test(rawText)) return null;
+  const findCount = (patterns) => {
+    for (const pattern of patterns) {
+      const match = rawText.match(pattern);
+      if (match) return Number(match[1]);
+    }
+    return null;
+  };
+
+  const keep = findCount([/\bKeep\s*\((\d+)\)/i, /\bKeep\s*[:\-]\s*(\d+)/i]);
+  const cut = findCount([/\bCut\/End(?:ing)?\s*\((\d+)\)/i, /\bCut\/Ending\s*\((\d+)\)/i, /\bCut\s*[:\-]\s*(\d+)/i]);
+  const watch = findCount([/\bWatch\s*\((\d+)\)/i, /\bWatch\s*[:\-]\s*(\d+)/i]);
+
+  if ([keep, cut, watch].every(count => Number.isFinite(count))) {
+    return [
+      { label: 'Keep', value: keep, color: '#3d7a6a' },
+      { label: 'Cut/End', value: cut, color: '#c13d2e' },
+      { label: 'Watch', value: watch, color: '#c8a84b' }
+    ];
+  }
+  return null;
+}
+
+function buildCommitmentStatusChart(rawText) {
+  const data = extractCommitmentStatusCounts(rawText);
+  if (!data) return '';
+
+  const maxValue = Math.max(...data.map(item => item.value), 1);
+  const bars = data.map((item, index) => {
+    const x = 92 + index * 118;
+    const barHeight = Math.round((item.value / maxValue) * 138);
+    const y = 208 - barHeight;
+    return `
+      <rect x="${x}" y="${y}" width="68" height="${barHeight}" fill="${item.color}"/>
+      <text x="${x + 34}" y="${Math.max(52, y - 8)}" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">${item.value}</text>
+      <text x="${x + 34}" y="232" text-anchor="middle" font-size="12" fill="#1a1a1a">${item.label}</text>
+    `;
+  }).join('');
+
+  return `
+    <div class="auto-chart" aria-label="Commitment status chart">
+      <svg width="100%" height="270" viewBox="0 0 500 270" role="img" aria-label="Commitment Status Breakdown" style="font-family:'Syne',sans-serif; background:#faf8f3;">
+        <title>Commitment Status Breakdown</title>
+        <text x="250" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">Commitment Status Breakdown</text>
+        <line x1="58" y1="70" x2="460" y2="70" stroke="#d0cdc8" stroke-width="1" opacity="0.55"/>
+        <line x1="58" y1="116" x2="460" y2="116" stroke="#d0cdc8" stroke-width="1" opacity="0.55"/>
+        <line x1="58" y1="162" x2="460" y2="162" stroke="#d0cdc8" stroke-width="1" opacity="0.55"/>
+        <line x1="58" y1="208" x2="460" y2="208" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="58" y1="50" x2="58" y2="208" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="22" y="132" transform="rotate(-90 22 132)" text-anchor="middle" font-size="11" fill="#1a1a1a">Roles</text>
+        ${bars}
+      </svg>
+    </div>
+  `;
+}
+
+// Render formatted markdown inside the message
+function renderAnimatedText(container, rawText) {
+  // Format markdown using the robust parser
+  let html = parseMarkdown(rawText);
+  const hasVisual = /<svg[\s>]/i.test(html);
+  if (!hasVisual) {
+    html = buildCommitmentStatusChart(rawText) + html;
+  }
+  container.innerHTML = html;
+  decorateAssistantMessage(container, rawText);
+}
+
+function decorateAssistantMessage(container, rawText) {
+  container.dataset.rawMarkdown = rawText || '';
+  addMessageActions(container, rawText || '');
+  addChartActions(container);
+}
+
+function addMessageActions(container, rawText) {
+  const actions = document.createElement('div');
+  actions.className = 'message-actions';
+  actions.innerHTML = `
+    <button class="message-action-btn" onclick="copyResponse(this)">Copy</button>
+    <button class="message-action-btn" onclick="downloadResponseMarkdown(this)">MD</button>
+    <button class="message-action-btn" onclick="printResponsePdf(this)">PDF</button>
+  `;
+  container.appendChild(actions);
+}
+
+function addChartActions(container) {
+  container.querySelectorAll('svg').forEach((svg, idx) => {
+    if (svg.nextElementSibling?.classList?.contains('chart-actions')) return;
+    const actions = document.createElement('div');
+    actions.className = 'chart-actions';
+    actions.innerHTML = `
+      <button class="chart-action-btn" onclick="copyChartPng(this)">Copy PNG</button>
+      <button class="chart-action-btn" onclick="copyChartSvg(this)">Copy SVG</button>
+      <button class="chart-action-btn" onclick="downloadChartSvg(this, ${idx})">SVG</button>
+      <button class="chart-action-btn" onclick="downloadChartPng(this, ${idx})">PNG</button>
+    `;
+    svg.insertAdjacentElement('afterend', actions);
+  });
+}
+
+async function copyResponse(btn) {
+  const msg = btn.closest('.message');
+  await navigator.clipboard.writeText(msg?.dataset.rawMarkdown || msg?.innerText || '');
+  flashAction(btn, 'Copied');
+}
+
+function downloadResponseMarkdown(btn) {
+  const msg = btn.closest('.message');
+  const markdown = msg?.dataset.rawMarkdown || msg?.innerText || '';
+  downloadBlob(markdown, `scout-response-${Date.now()}.md`, 'text/markdown');
+}
+
+function printResponsePdf(btn) {
+  const msg = btn.closest('.message');
+  const clone = msg?.cloneNode(true);
+  clone?.querySelectorAll('.message-actions,.chart-actions').forEach(el => el.remove());
+  const printable = window.open('', '_blank', 'width=760,height=900');
+  if (!printable) return;
+  printable.document.write(`
+    <html><head><title>Scout Response</title>
+    <style>body{font-family:Arial,sans-serif;line-height:1.55;color:#1a1814;padding:32px;} svg{max-width:100%;height:auto;} pre{white-space:pre-wrap;background:#f2eee5;padding:12px;}</style>
+    </head><body>${clone?.innerHTML || ''}</body></html>
+  `);
+  printable.document.close();
+  printable.focus();
+  printable.print();
+}
+
+async function copyChartSvg(btn) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  await navigator.clipboard.writeText(serializeSvg(svg));
+  flashAction(btn, 'Copied');
+}
+
+async function copyChartPng(btn) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  try {
+    const pngBlob = await svgToPngBlob(svg);
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
+      flashAction(btn, 'Copied');
+    } else {
+      downloadBlob(pngBlob, `scout-chart-${Date.now()}.png`, 'image/png');
+      flashAction(btn, 'Downloaded');
+    }
+  } catch (e) {
+    console.error('Copy PNG failed:', e);
+    flashAction(btn, 'Failed');
   }
 }
 
-// Toggle Pre-Sem Tasks
-function togglePreSemTask(wIdx, tId) {
-  const task = semesterData.pre_semester[wIdx].tasks.find(t => t.id === tId);
-  if (task) {
-    task.done = !task.done;
-    renderDashboard();
-    saveUserData();
+function downloadChartSvg(btn, idx) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  downloadBlob(serializeSvg(svg), `scout-chart-${idx + 1}-${Date.now()}.svg`, 'image/svg+xml');
+}
+
+async function downloadChartPng(btn, idx) {
+  const svg = btn.closest('.chart-actions')?.previousElementSibling;
+  if (!svg) return;
+  try {
+    const pngBlob = await svgToPngBlob(svg);
+    downloadBlob(pngBlob, `scout-chart-${idx + 1}-${Date.now()}.png`, 'image/png');
+  } catch (e) {
+    console.error('Download PNG failed:', e);
+    flashAction(btn, 'Failed');
   }
 }
 
-// On Load Initializer
-window.addEventListener('DOMContentLoaded', initFirebaseApp);
+function serializeSvg(svg) {
+  const clone = prepareSvgForExport(svg);
+  return new XMLSerializer().serializeToString(clone);
+}
+
+function prepareSvgForExport(svg) {
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+  const box = getSvgExportBox(svg);
+  clone.setAttribute('width', String(box.width));
+  clone.setAttribute('height', String(box.height));
+  clone.setAttribute('viewBox', `${box.x} ${box.y} ${box.width} ${box.height}`);
+  clone.querySelectorAll('script, foreignObject').forEach(node => node.remove());
+
+  const bgColor = getSvgBackground(svg);
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('x', String(box.x));
+  bg.setAttribute('y', String(box.y));
+  bg.setAttribute('width', String(box.width));
+  bg.setAttribute('height', String(box.height));
+  bg.setAttribute('fill', bgColor);
+  clone.insertBefore(bg, clone.firstChild);
+  return clone;
+}
+
+function getSvgExportBox(svg) {
+  const viewBox = svg.getAttribute('viewBox');
+  if (viewBox) {
+    const nums = viewBox.trim().split(/[\s,]+/).map(Number);
+    if (nums.length === 4 && nums.every(Number.isFinite) && nums[2] > 0 && nums[3] > 0) {
+      return { x: nums[0], y: nums[1], width: nums[2], height: nums[3] };
+    }
+  }
+  const widthAttr = parseFloat(svg.getAttribute('width'));
+  const heightAttr = parseFloat(svg.getAttribute('height'));
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: 0,
+    y: 0,
+    width: Math.max(1, Math.round(widthAttr || rect.width || 500)),
+    height: Math.max(1, Math.round(heightAttr || rect.height || 300))
+  };
+}
+
+function getSvgBackground(svg) {
+  const styleBg = svg.style?.background || '';
+  const computedBg = window.getComputedStyle ? window.getComputedStyle(svg).backgroundColor : '';
+  return styleBg && styleBg !== 'none' ? styleBg : (computedBg && computedBg !== 'rgba(0, 0, 0, 0)' ? computedBg : '#faf8f3');
+}
+
+function svgToPngBlob(svg) {
+  return new Promise((resolve, reject) => {
+    const box = getSvgExportBox(svg);
+    const svgText = serializeSvg(svg);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(box.width));
+      canvas.height = Math.max(1, Math.round(box.height));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = getSvgBackground(svg);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('Canvas PNG export returned empty blob.'));
+      }, 'image/png');
+    };
+    img.onerror = () => reject(new Error('Browser could not rasterize this SVG.'));
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
+  });
+}
+
+function downloadBlob(content, filename, type) {
+  const blob = content instanceof Blob ? content : new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function flashAction(btn, label) {
+  const original = btn.textContent;
+  btn.textContent = label;
+  setTimeout(() => { btn.textContent = original; }, 900);
+}
+
+function getCommitmentCounts(data = semesterData) {
+  const commitments = data?.commitments || [];
+  return {
+    keep: commitments.filter(c => c.category === 'keep').length,
+    cut: commitments.filter(c => c.category === 'cut').length,
+    watch: commitments.filter(c => c.category === 'watch').length
+  };
+}
+
+function ensureWeeklyCommitmentSnapshot() {
+  if (!semesterData) return;
+  const counts = getCommitmentCounts();
+  const today = new Date();
+  const weekKey = `${today.getFullYear()}-W${getWeekNumber(today)}`;
+  if (!semesterData.commitment_snapshots) semesterData.commitment_snapshots = [];
+  const existing = semesterData.commitment_snapshots.find(s => s.week === weekKey);
+  if (existing) {
+    existing.counts = counts;
+    existing.updated_at = today.toISOString();
+  } else {
+    semesterData.commitment_snapshots.push({ week: weekKey, counts, updated_at: today.toISOString() });
+  }
+  semesterData.commitment_snapshots = semesterData.commitment_snapshots.slice(-12);
+}
+
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7).toString().padStart(2, '0');
+}
+
+function getDeadlineLoad() {
+  const calendarDeadlines = latestCalendarEvents.filter(e => /deadline|exam|cie|presentation|submission|due/i.test(`${e.summary || ''} ${e.description || ''}`)).length;
+  const classroomDeadlines = (semesterData?.classroom_assignments || []).filter(a => a.due_date && a.due_date !== 'No due date' && a.status !== 'TURNED_IN').length;
+  return calendarDeadlines + classroomDeadlines;
+}
+
+function buildScopeWarnings() {
+  const counts = getCommitmentCounts();
+  const activeRoles = counts.keep + counts.watch;
+  const deadlineLoad = getDeadlineLoad();
+  const calendarLoad = latestCalendarEvents.length;
+  const warnings = [];
+
+  warnings.push({
+    level: activeRoles >= 10 ? 'high' : activeRoles >= 7 ? 'medium' : 'low',
+    text: `${activeRoles} active roles. ${activeRoles >= 7 ? 'Subtract before adding anything new.' : 'Role count is contained.'}`
+  });
+  warnings.push({
+    level: counts.watch >= 4 ? 'high' : counts.watch >= 2 ? 'medium' : 'low',
+    text: `${counts.watch} watch roles. Watch-list items need weekly hour caps.`
+  });
+  warnings.push({
+    level: deadlineLoad >= 5 ? 'high' : deadlineLoad >= 3 ? 'medium' : 'low',
+    text: `${deadlineLoad} known deadline signals from Classroom/Calendar.`
+  });
+  warnings.push({
+    level: calendarLoad >= 8 ? 'high' : calendarLoad >= 4 ? 'medium' : 'low',
+    text: `${calendarLoad} upcoming calendar events currently loaded in chat.`
+  });
+  return warnings;
+}
+
+function buildCommitmentTrendSvg() {
+  const snapshots = (semesterData?.commitment_snapshots || []).slice(-8);
+  const counts = getCommitmentCounts();
+  const data = snapshots.length ? snapshots : [{ week: 'Now', counts }];
+  const max = Math.max(1, ...data.flatMap(s => [s.counts.keep || 0, s.counts.cut || 0, s.counts.watch || 0]));
+  const series = [
+    { key: 'keep', color: '#3d7a6a', label: 'Keep' },
+    { key: 'cut', color: '#c13d2e', label: 'Cut' },
+    { key: 'watch', color: '#c8a84b', label: 'Watch' }
+  ];
+  const pointsFor = key => data.map((s, idx) => {
+    const x = data.length === 1 ? 250 : 55 + idx * (390 / (data.length - 1));
+    const y = 210 - ((s.counts[key] || 0) / max) * 145;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const labels = data.map((s, idx) => {
+    const x = data.length === 1 ? 250 : 55 + idx * (390 / (data.length - 1));
+    return `<text x="${x}" y="235" text-anchor="middle" font-size="9" fill="#1a1a1a">${s.week}</text>`;
+  }).join('');
+  const lines = series.map(item => `<polyline points="${pointsFor(item.key)}" fill="none" stroke="${item.color}" stroke-width="3"/><text x="${360}" y="${40 + series.indexOf(item) * 16}" font-size="10" fill="${item.color}">${item.label}</text>`).join('');
+  return `
+    <svg width="100%" height="260" viewBox="0 0 500 260" role="img" aria-label="Keep Cut Watch trend chart" style="font-family:'Syne',sans-serif; background:#faf8f3;">
+      <title>Keep Cut Watch Trend</title>
+      <text x="250" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a1a">Keep / Cut / Watch Trends</text>
+      <line x1="45" y1="210" x2="455" y2="210" stroke="#1a1a1a"/>
+      <line x1="45" y1="55" x2="45" y2="210" stroke="#1a1a1a"/>
+      <line x1="45" y1="132" x2="455" y2="132" stroke="#d0cdc8"/>
+      ${lines}
+      ${labels}
+    </svg>
+  `;
+}
+
+function openCommitmentDashboard() {
+  document.getElementById('editor-pane-container').style.display = 'none';
+  document.getElementById('quiz-pane-container').style.display = 'none';
+  document.getElementById('visualizer-pane-container').style.display = 'none';
+  document.getElementById('commitment-dashboard-container').style.display = 'flex';
+  renderCommitmentDashboard();
+}
+
+function closeCommitmentDashboard() {
+  document.getElementById('commitment-dashboard-container').style.display = 'none';
+}
+
+function renderCommitmentDashboard() {
+  const el = document.getElementById('commitment-dashboard-content');
+  if (!el) return;
+  if (!semesterData) {
+    el.innerHTML = '<div class="chart-fallback">No semester data loaded yet.</div>';
+    return;
+  }
+  ensureWeeklyCommitmentSnapshot();
+  const counts = getCommitmentCounts();
+  const warnings = buildScopeWarnings();
+  const plannerCards = buildWeeklyPlanningCards();
+  el.innerHTML = `
+    <div class="dashboard-grid">
+      <div class="dashboard-stat"><div class="num">${counts.keep}</div><div class="lbl">Keep</div></div>
+      <div class="dashboard-stat"><div class="num">${counts.cut}</div><div class="lbl">Cut / End</div></div>
+      <div class="dashboard-stat"><div class="num">${counts.watch}</div><div class="lbl">Watch</div></div>
+    </div>
+    <div>${buildCommitmentTrendSvg()}</div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${warnings.map(w => `<div class="warning-badge ${w.level}">${w.text}</div>`).join('')}
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <h4 style="font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--ink);">Weekly Planning Agent</h4>
+      ${plannerCards.map(card => `<div class="planner-card"><b>${card.title}</b><br>${card.reason}</div>`).join('')}
+    </div>
+  `;
+  addChartActions(el);
+}
+
+function buildWeeklyPlanningCards() {
+  const commitments = semesterData?.commitments || [];
+  const cards = [];
+  commitments.filter(c => c.category === 'cut').slice(0, 2).forEach(c => {
+    cards.push({ title: `Cut: ${c.title}`, reason: c.description || 'Finish the exit/handoff so the role stops occupying attention.' });
+  });
+  commitments.filter(c => c.category === 'watch').slice(0, 3).forEach(c => {
+    cards.push({ title: `Watch: ${c.title}`, reason: 'Keep only with a named weekly hour cap and a clear stop condition.' });
+  });
+  commitments.filter(c => c.category === 'keep').slice(0, 2).forEach(c => {
+    cards.push({ title: `Keep: ${c.title}`, reason: 'Protect this only if it serves a core technical, creative, financial, or identity pillar.' });
+  });
+  return cards.length ? cards : [{ title: 'No planning items found', reason: 'Load or initialize commitments to generate weekly recommendations.' }];
+}
+
+// Appending message to window
+function appendMessage(role, text, isSystem = false) {
+  // System logs just update the thinking bar — no new DOM rows
+  if (isSystem) {
+    setThinking(text);
+    return;
+  }
+
+  const container = document.getElementById('chat-messages-container');
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+
+  const msg = document.createElement('div');
+  msg.className = 'message';
+
+  if (role === 'assistant') {
+    renderAnimatedText(msg, text);
+  } else {
+    msg.textContent = text;
+  }
+
+  row.appendChild(msg);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+// User text triggers
+function handleKeyPress(e) {
+  if (e.key === 'Enter') sendMessage();
+}
+
+function sendPrompt(text) {
+  document.getElementById('message-input').value = text;
+  sendMessage();
+}
+
+function quickAction(type) {
+  if (type === 'weekly') sendPrompt('Summarize my weekly schedule and progress from the database.');
+  else if (type === 'gmail') sendPrompt('Scan my Gmail for classroom announcements and deadlines.');
+  else if (type === 'calendar') sendPrompt('What is on my calendar this week?');
+}
+
+// Main send — routes to correct provider
+function toggleInterviewMode() {
+  isInterviewMode = !isInterviewMode;
+  const btn = document.getElementById('toggle-interview-mode-btn');
+  const editor = document.getElementById('editor-pane-container');
+  
+  if (isInterviewMode) {
+    btn.innerHTML = `
+      <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      Exit Interview Mode
+    `;
+    btn.classList.add('btn-red');
+    editor.style.display = 'flex';
+    appendMessage('system-log', 'Mock Interview Mode started. The interviewer is waiting.');
+    sendPrompt('GREET_AS_INTERVIEWER');
+  } else {
+    btn.innerHTML = `
+      <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+      Start Interview Mode
+    `;
+    btn.classList.remove('btn-red');
+    editor.style.display = 'none';
+    document.getElementById('quiz-pane-container').style.display = 'none';
+    appendMessage('system-log', 'Mock Interview Mode ended.');
+  }
+}
+
+async function submitCodeForReview(forceSubmit = false) {
+  const code = document.getElementById('code-editor-textarea').value.trim();
+  const lang = document.getElementById('code-lang-selector').value;
+  if (!code && !forceSubmit) {
+    alert("Please write some code in the editor first!");
+    return;
+  }
+  
+  // Handle pressure mode cleanup
+  let speedContext = "";
+  const pmToggle = document.getElementById('pressure-mode-toggle');
+  if (pmToggle && pmToggle.checked) {
+    clearInterval(pressureTimerInterval);
+    pmToggle.checked = false;
+    document.getElementById('pressure-timer-display').style.display = 'none';
+    const mins = Math.floor(pressureTimeElapsed / 60);
+    const secs = pressureTimeElapsed % 60;
+    speedContext = `\n[Pressure Mode active. Time taken: ${mins} minutes, ${secs} seconds against a 30m limit. Analyze my speed and efficiency under this constraint.]`;
+  }
+  
+  const promptText = `Please review my ${lang} code. Here is my current implementation:\n\n\`\`\`${lang}\n${code}\n\`\`\`${speedContext}`;
+  
+  appendMessage('user', `[Submitting ${lang} code for review...]`);
+  
+  if (activeProvider === 'openai') {
+    openaiHistory.push({ role: 'user', content: promptText });
+    saveChatHistory();
+    await callOpenAIApi();
+  } else {
+    conversationHistory.push({ role: 'user', parts: [{ text: promptText }] });
+    saveChatHistory();
+    await callGeminiApi();
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('message-input');
+  let text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  
+  if (text === 'GREET_AS_INTERVIEWER') {
+    appendMessage('user', 'I am ready for the mock interview.');
+    text = "Hello! I am ready for the mock interview. Please introduce yourself as my technical interviewer, choose a topic or company, and give me a question to solve.";
+  } else {
+    appendMessage('user', text);
+  }
+
+  if (activeProvider === 'openai') {
+    if (!openaiKey) {
+      appendMessage('assistant', 'No OpenAI API key set. Add it on the Setup page.');
+      return;
+    }
+    openaiHistory.push({ role: 'user', content: text });
+    saveChatHistory();
+    await callOpenAIApi();
+  } else {
+    if (!geminiKey) {
+      appendMessage('assistant', 'No Gemini API key set. Add it on the Setup page.');
+      return;
+    }
+    conversationHistory.push({ role: 'user', parts: [{ text }] });
+    saveChatHistory();
+    await callGeminiApi();
+  }
+}
+
+// Gemini API Invocation
+async function callGeminiApi() {
+  setThinking('Thinking...');
+
+  const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " IST";
+  const systemInstruction = buildSystemPrompt(now);
+  const modelName = 'gemini-3.1-flash-lite';
+
+  try {
+    const response = await sendGeminiRequest(modelName, systemInstruction);
+    await handleGeminiResponse(response, systemInstruction);
+  } catch (e) {
+    console.error(e);
+    clearThinking();
+    appendMessage('assistant', 'Gemini error: ' + e.message);
+  }
+}
+
+// ── OpenAI ───────────────────────────────────────────────────────────────────
+
+// OpenAI conversation history (different format from Gemini)
+let openaiHistory = [];
+
+// Convert Gemini tool declarations → OpenAI tools format
+const OPENAI_TOOLS = GEMINI_TOOLS[0].function_declarations.map(fn => ({
+  type: 'function',
+  function: {
+    name: fn.name,
+    description: fn.description,
+    parameters: fn.parameters
+  }
+}));
+
+async function callOpenAIApi() {
+  setThinking('Thinking...');
+  const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " IST";
+  const systemPrompt = buildSystemPrompt(now);
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...openaiHistory
+  ];
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-5.4-nano',
+        messages,
+        tools: OPENAI_TOOLS,
+        tool_choice: 'auto'
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    await handleOpenAIResponse(data);
+  } catch (e) {
+    console.error(e);
+    clearThinking();
+    appendMessage('assistant', 'GPT error: ' + e.message);
+  }
+}
+
+async function handleOpenAIResponse(data) {
+  const choice = data.choices?.[0];
+  const msg = choice?.message;
+  if (!msg) { clearThinking(); return; }
+
+  // Push assistant message into history
+  openaiHistory.push(msg);
+  saveChatHistory();
+
+  if (msg.tool_calls && msg.tool_calls.length > 0) {
+    // Execute all tool calls sequentially
+    for (const tc of msg.tool_calls) {
+      const name = tc.function.name;
+      const args = JSON.parse(tc.function.arguments || '{}');
+
+      setThinking(TOOL_LABELS[name] || `Running ${name}...`);
+
+      let result;
+      try {
+        result = await executeTool(name, args);
+        setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name}`);
+      } catch(e) {
+        result = { error: e.message };
+        setThinking(`Error: ${name} failed — ${e.message}`);
+      }
+
+      // OpenAI tool result format
+      openaiHistory.push({
+        role: 'tool',
+        tool_call_id: tc.id,
+        content: JSON.stringify(Array.isArray(result) ? { items: result } : result)
+      });
+      saveChatHistory();
+    }
+    // Continue the agentic loop
+    await callOpenAIApi();
+  } else {
+    clearThinking();
+    const text = msg.content || 'No response.';
+    appendMessage('assistant', text);
+    
+    // Check for Quiz trigger
+    if (text.includes('```json-quiz')) {
+      const jsonStr = text.split('```json-quiz')[1].split('```')[0].trim();
+      try {
+        const quizData = JSON.parse(jsonStr);
+        loadQuizIntoPane(quizData);
+      } catch(e) {
+        console.error("Failed to parse MCQ quiz data:", e);
+      }
+    }
+    
+    // Check for Visualizer trigger
+    if (text.includes('```json-visualizer')) {
+      const jsonStr = text.split('```json-visualizer')[1].split('```')[0].trim();
+      try {
+        const visData = JSON.parse(jsonStr);
+        loadVisualizerIntoPane(visData);
+      } catch(e) {
+        console.error("Failed to parse visualizer data:", e);
+      }
+    }
+  }
+}
+
+// Shared system prompt builder
+function buildSystemPrompt(now) {
+  let prompt = `You are Scout — a sharp, agentic personal academic assistant for a single user.
+Current datetime (IST): ${now}
+
+Here is the user's complete semester plan database from Firestore:
+${JSON.stringify(semesterData, null, 2)}
+`;
+
+  if (isInterviewMode) {
+    prompt += `
+== MOCK INTERVIEW MODE ACTIVE ==
+Your primary task is to act as a strict, helpful, and realistic technical interviewer (for DSA, System Design, or coding placements).
+1. Ask clear, structured coding questions or follow-up questions.
+2. The user has access to a live code editor. They will write code in Javascript, Python, Java, or C++. When they submit code, analyze it for correctness, time/space complexity, edge cases, and cleanliness.
+3. Suggest optimizations rather than just giving the answers immediately. Keep the conversation dynamic, encouraging, yet rigorous.
+4. Output detailed code review feedback using tables, lists, code snippets, and bold text.
+`;
+  }
+  
+  prompt += `
+== GITHUB & LEETCODE SYNCHRONIZED PROGRESS DATA ==
+The user's GitHub commits activity and LeetCode solved problems are periodically crawled and saved directly in the Firestore database document.
+- GitHub username is in config.github_username
+- LeetCode username is in config.leetcode_username
+- GitHub weekly commit goal is in config.github_commit_goal
+- LeetCode weekly solve goal is in config.leetcode_solved_goal
+- Current week commits is in github_commits_this_week
+- Current week solved count is in leetcode_solved_this_week
+- Any active warnings about falling behind these targets are listed under prep_warnings.
+*Fallback Rules:* If github_commits_this_week is undefined or missing in the JSON plan, assume it is 0. If config.github_commit_goal is undefined or missing, assume the weekly goal is 5 commits. If config.leetcode_solved_goal is undefined or missing, assume the weekly goal is 3 solved problems.
+If the user asks "check if i reached my weekly commit goal for github?" or "how am I doing on coding target?", read these fields from the database and report the results immediately instead of saying you cannot access GitHub or trying to read calendar/Gmail.
+
+== MEMORY-AWARE COACHING RULES ==
+Use these rules whenever giving planning, commitment, workload, or career advice:
+1. Subtract before you add: no new recurring commitment should be recommended unless an existing one is cut, ended, delegated, or explicitly time-boxed.
+2. Energy budget: every recommendation must account for weekly hours, switching cost, recovery time, and the user's active academic load.
+3. Deadline pressure: treat exams, submissions, presentations, CIEs, placement prep goals, GitHub/LeetCode targets, and calendar events as real constraints.
+4. Watch roles are not replacements for cut roles. They require boundaries: owner, weekly cap, stop condition, and next review date.
+5. When the user asks for a weekly planning agent, produce Keep / Cut / Watch recommendations with reasons, risks, and one concrete next action per item.
+
+== PUBLIC WEB RESEARCH ==
+You may use web_search and scrape_webpage for current public information, including Google-dork style public search operators like site:, filetype:, intitle:, inurl:, and quoted phrases.
+Safety boundary: only research public information. Do not use search operators to find private data, credentials, exposed secrets, personal documents, paywalled content, or anything requiring login/bypass. If current facts may have changed, use web_search before answering.
+
+== MCQ ASSESSMENTS & QUIZ MODE ==
+If requested to test the user's knowledge, start a quiz, or test placement topics, generate exactly 10 questions (MCQs, fill in the blanks, or short sentence answers) in a single code block marked with \`json-quiz\`.
+Format each item inside the JSON array exactly like this (do not write any other text or characters inside the json-quiz code block):
+\`\`\`json-quiz
+[
+  {
+    "type": "mcq",
+    "question": "Which sorting algorithm has O(N log N) worst-case time complexity?",
+    "options": ["Bubble Sort", "Merge Sort", "Quick Sort", "Selection Sort"],
+    "correct": 1
+  },
+  {
+    "type": "fib",
+    "question": "The data structure that operates on FIFO (First In First Out) queue discipline is called a ____.",
+    "correct": "Queue"
+  }
+]
+\`\`\`
+
+== VISUAL CHARTS, GRAPHS & SVG MINDMAPS ==
+CRITICAL RULES FOR ALL CHART AND GRAPH OUTPUT:
+1. When the user asks for a chart, graph, pie chart, or bar chart, you MUST use the custom <pie-chart> or <bar-chart> tags. DO NOT output raw <svg> code or paths, as raw SVG code has coordinate math errors and is deprecated.
+2. Pie Chart tag syntax:
+   <pie-chart title="Placement DSA/DAA Study Priorities">
+     <slice label="Arrays" value="40" color="#c13d2e"></slice>
+     <slice label="Trees" value="30" color="#3d7a6a"></slice>
+     <slice label="Graphs" value="30" color="#c8a84b"></slice>
+   </pie-chart>
+3. Bar Chart tag syntax:
+   <bar-chart title="Placement DSA/DAA Study Priorities" y-label="Hours">
+     <bar label="Arrays" value="12" color="#c13d2e"></bar>
+     <bar label="Trees" value="8" color="#3d7a6a"></bar>
+     <bar label="Graphs" value="15" color="#c8a84b"></bar>
+   </bar-chart>
+4. Colors: Use #c13d2e (Red), #3d7a6a (Teal), #c8a84b (Amber), #5d4d7a (Purple).
+5. Always ensure values are positive numbers. Never output empty tags or missing values.
+6. The client will parse these tags automatically and draw the SVGs with high contrast and perfect coordinates. Do not explain these tags to the user, just output them inside your text response whenever visuals are needed.
+
+Example of a correct bar chart SVG output format:
+\`\`\`xml
+<svg width="500" height="280" viewBox="0 0 500 280" style="font-family: 'Syne', sans-serif; background: #faf8f3;">
+  <text x="250" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="#1a1a1a">Chart Title</text>
+  <line x1="60" y1="220" x2="460" y2="220" stroke="#d0cdc8" stroke-width="1"/>
+  <rect x="80" y="80" width="70" height="140" fill="#c13d2e"/>
+  <text x="115" y="75" text-anchor="middle" font-size="12" fill="#1a1a1a">Value A</text>
+  <text x="115" y="240" text-anchor="middle" font-size="11" fill="#1a1a1a">Label A</text>
+  <rect x="200" y="120" width="70" height="100" fill="#3d7a6a"/>
+  <text x="235" y="115" text-anchor="middle" font-size="12" fill="#1a1a1a">Value B</text>
+  <text x="235" y="240" text-anchor="middle" font-size="11" fill="#1a1a1a">Label B</text>
+</svg>
+\`\`\`
+
+
+== ALGORITHM SLIDESHOWS & VISUALIZERS ==
+If you are explaining a step-by-step algorithm partition or structural dry run (like BST insertion, QuickSort partitioning, Dijkstra, etc.), output a slideshow visualizer block marked with language \`json-visualizer\` like this (do not write any other text or characters inside the json-visualizer code block):
+\`\`\`json-visualizer
+{
+  "title": "Topic Name Here",
+  "steps": [
+    {
+      "label": "Step description text",
+      "svg": "<svg ...> SVG drawings representing this state </svg>"
+    },
+    {
+      "label": "Next step description text",
+      "svg": "<svg ...> SVG drawings representing this next state </svg>"
+    }
+  ]
+}
+\`\`\`
+The client will automatically load this array into an interactive slideshow visualizer with Prev/Next buttons in the split-pane area.
+
+== STAR BEHAVIORAL INTERVIEW ROUNDS ==
+If the user requests a "Behavioral Prep" or "HR round", adopt the persona of a senior behavioral interviewer:
+1. Ask questions targeting key competencies (conflict, leadership, deadlines).
+2. Evaluate the user's responses specifically against the STAR method metrics: Situation (S), Task (T), Action (A), Result (R).
+3. Rate their answer in a structured markdown table from 1-10 for each dimension, explain gaps, and coach them on phrasing.
+
+== PRESSURE MODE INTERVIEWS ==
+Inform the user that they can activate a live 30-minute ticking timer in the Interactive Editor by checking the "Pressure Mode" toggle. If they submit under Pressure Mode, critique their coding speed, elapsed time, and stress efficiency.
+`;
+
+  prompt += `
+== AGENTIC BEHAVIOR RULES ==
+1. PLAN FIRST: Form a silent numbered plan before acting on multi-step requests.
+2. EXECUTE SEQUENTIALLY: Call tools one at a time in order.
+3. CHAIN WITHOUT ASKING: After each tool result, immediately proceed to the next step — never ask "should I continue?".
+4. REPORT AT THE END: Send one final text summary after all steps complete.
+5. HANDLE ERRORS: Never give up silently — try alternatives or report the specific blocker.
+
+== RESPONSE STYLE ==
+- Direct, dense, no filler
+- **Bold** for key info, bullets for lists
+- Match the retro-minimalist aesthetic of the interface
+
+== TOOLS ==
+- read_semester_schedule: Read fresh data from Firestore
+- update_semester_schedule: Write back to Firestore
+- list_calendar_events: Next 7 days of Google Calendar
+- create_calendar_event: Add an event to Google Calendar
+- list_recent_emails: Search Gmail for academic emails
+- web_search: Search current public web with normal queries or public dorks
+- scrape_webpage: Read a public webpage as text`;
+
+  return prompt;
+}
+async function sendGeminiRequest(model, systemInstruction) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+  const body = {
+    "contents": conversationHistory,
+    "tools": GEMINI_TOOLS,
+    "systemInstruction": {
+      "parts": [{ "text": systemInstruction }]
+    }
+  };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const errData = await res.json();
+    throw new Error(errData.error?.message || `HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+// Tool display names for the thinking bar
+const TOOL_LABELS = {
+  list_calendar_events:   'Reading Google Calendar...',
+  create_calendar_event:  'Adding event to Calendar...',
+  list_recent_emails:       'Scanning Gmail...',
+  read_semester_schedule:   'Reading Firestore database...',
+  update_semester_schedule: 'Updating Firestore database...',
+  send_email:               'Sending email via Brevo...',
+  web_search:               'Searching public web...',
+  scrape_webpage:           'Reading public webpage...'
+};
+
+// Handle response + tool loops
+async function handleGeminiResponse(data, systemInstruction) {
+  const candidate = data.candidates?.[0];
+  const message = candidate?.content;
+  if (!message) {
+    clearThinking();
+    appendMessage('assistant', 'I received an empty response from Gemini.');
+    return;
+  }
+
+  conversationHistory.push(message);
+  saveChatHistory();
+
+  const part = message.parts?.[0];
+  if (part && part.functionCall) {
+    const call = part.functionCall;
+    const name = call.name;
+    const args = call.args;
+
+    // Update the single thinking bar
+    setThinking(TOOL_LABELS[name] || `Running ${name}...`);
+
+    let result = null;
+    try {
+      result = await executeTool(name, args);
+      setThinking(`Done — ${TOOL_LABELS[name]?.replace('...','') || name}`);
+    } catch(e) {
+      console.error(e);
+      result = { error: e.message };
+      setThinking(`Error: ${name} failed — ${e.message}`);
+    }
+
+    // Gemini API requires functionResponse.response to be an object, never an array
+    const safeResult = Array.isArray(result)
+      ? { items: result, count: result.length }
+      : (result && typeof result === 'object' ? result : { value: result });
+
+    conversationHistory.push({
+      role: 'function',
+      parts: [{ functionResponse: { name, response: safeResult } }]
+    });
+    saveChatHistory();
+
+    // Chain immediately — agentic loop
+    await callGeminiApi();
+  } else {
+    clearThinking();
+    const text = part?.text || 'No response text.';
+    appendMessage('assistant', text);
+    
+    // Check for Quiz trigger
+    if (text.includes('```json-quiz')) {
+      const jsonStr = text.split('```json-quiz')[1].split('```')[0].trim();
+      try {
+        const quizData = JSON.parse(jsonStr);
+        loadQuizIntoPane(quizData);
+      } catch(e) {
+        console.error("Failed to parse MCQ quiz data:", e);
+      }
+    }
+
+    // Check for Visualizer trigger
+    if (text.includes('```json-visualizer')) {
+      const jsonStr = text.split('```json-visualizer')[1].split('```')[0].trim();
+      try {
+        const visData = JSON.parse(jsonStr);
+        loadVisualizerIntoPane(visData);
+      } catch(e) {
+        console.error("Failed to parse visualizer data:", e);
+      }
+    }
+  }
+}
+
+// Tool Implementation Registry
+async function executeTool(name, args) {
+  if (!googleToken && (name === 'list_calendar_events' || name === 'create_calendar_event' || name === 'list_recent_emails')) {
+    throw new Error("Google access token missing. Please authorize Google on the Setup page.");
+  }
+  
+  switch(name) {
+    case 'list_calendar_events':
+      return await fetchGoogleCalendar();
+    case 'create_calendar_event':
+      return await createGoogleCalendarEvent(args.title, args.start_time, args.end_time, args.description || '');
+    case 'list_recent_emails':
+      return await fetchGmailMessages(args.query || 'classroom');
+    case 'read_semester_schedule':
+      return semesterData || { error: "Local schedule data not loaded" };
+    case 'update_semester_schedule':
+      return await updateSemesterDataInFirestore(args.updates);
+    case 'send_email':
+      return await sendEmailViaBrevo(args.subject, args.body);
+    case 'web_search':
+      return await webSearch(args.query);
+    case 'scrape_webpage':
+      return await scrapeWebpage(args.url);
+    default:
+      throw new Error("Unknown tool: " + name);
+  }
+}
+
+async function webSearch(query) {
+  if (!query || !query.trim()) throw new Error('Search query is required.');
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  const readerUrl = `https://r.jina.ai/http://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  try {
+    const res = await fetch(readerUrl);
+    if (res.ok) {
+      const text = await res.text();
+      return {
+        query,
+        search_url: searchUrl,
+        reader_source: readerUrl,
+        results_text: text.slice(0, 6000)
+      };
+    }
+  } catch (e) {
+    console.warn('Reader search failed:', e);
+  }
+  return {
+    query,
+    search_url: searchUrl,
+    note: 'Search reader could not fetch results from this browser. Use the search_url, then scrape specific public result URLs.'
+  };
+}
+
+async function scrapeWebpage(url) {
+  if (!/^https?:\/\//i.test(url || '')) throw new Error('A public http(s) URL is required.');
+  const candidates = getReaderUrls(url);
+  let text = '';
+  let readerUrl = candidates[0];
+  let lastStatus = '';
+  for (const candidate of candidates) {
+    try {
+      const res = await fetch(candidate);
+      lastStatus = `HTTP ${res.status}`;
+      if (res.ok) {
+        text = await res.text();
+        readerUrl = candidate;
+        break;
+      }
+    } catch (e) {
+      lastStatus = e.message;
+    }
+  }
+  if (!text) throw new Error(`Webpage reader failed (${lastStatus})`);
+  return {
+    url,
+    reader_url: readerUrl,
+    content: text.slice(0, 12000),
+    truncated: text.length > 12000
+  };
+}
+
+function getReaderUrls(url) {
+  const noScheme = url.replace(/^https?:\/\//i, '');
+  return [
+    `https://r.jina.ai/http://${noScheme}`,
+    `https://r.jina.ai/http://${url}`,
+    `https://r.jina.ai/http://r.jina.ai/http://${url}`
+  ];
+}
+
+// Helper to parse markdown and format inline HTML style for email client compatibility
+function formatEmailBody(markdownText) {
+  let parsedHtml = markdownText.trim();
+  
+  // If it does not start with HTML markup, parse it as markdown and apply inline style conversion
+  if (!parsedHtml.startsWith('<')) {
+    parsedHtml = parseMarkdown(markdownText);
+    
+    // Transform standard tags to styled inline versions for email clients (Gmail, Outlook, etc.)
+    parsedHtml = parsedHtml
+      .replace(/<table>/gi, '<table cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #dcd7ca; font-family: sans-serif; font-size: 13px; background: #faf8f3; color: #3d3a33;">')
+      .replace(/<thead>/gi, '<thead style="background: #f2eee5;">')
+      .replace(/<th>/gi, '<th style="border: 1px solid #dcd7ca; font-weight: bold; text-align: left; padding: 10px; color: #1a1814;">')
+      .replace(/<td>/gi, '<td style="border: 1px solid #dcd7ca; padding: 10px; color: #3d3a33; line-height: 1.5;">')
+      .replace(/<h1>/gi, '<h1 style="font-family: sans-serif; font-size: 20px; font-weight: bold; color: #1a1814; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #dcd7ca; padding-bottom: 8px;">')
+      .replace(/<h2>/gi, '<h2 style="font-family: sans-serif; font-size: 16px; font-weight: bold; color: #1a1814; margin-top: 20px; margin-bottom: 10px;">')
+      .replace(/<h3>/gi, '<h3 style="font-family: sans-serif; font-size: 14px; font-weight: bold; color: #1a1814; margin-top: 16px; margin-bottom: 8px;">')
+      .replace(/<p>/gi, '<p style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; margin: 12px 0;">')
+      .replace(/<ul>/gi, '<ul style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
+      .replace(/<ol>/gi, '<ol style="font-family: sans-serif; font-size: 14px; color: #3d3a33; padding-left: 20px; margin: 12px 0;">')
+      .replace(/<li>/gi, '<li style="margin-bottom: 6px; line-height: 1.5;">')
+      .replace(/<blockquote>/gi, '<blockquote style="border-left: 4px solid #c13d2e; margin: 16px 0; padding-left: 16px; font-style: italic; color: #706a5e; background: #fdfcf9; padding: 10px 16px;">')
+      .replace(/<hr>/gi, '<hr style="border: 0; border-top: 1px solid #dcd7ca; margin: 24px 0;">');
+  }
+
+  // Wrap in our premium styled email card
+  return `
+    <div style="background-color: #faf8f3; padding: 32px 24px; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #3d3a33; max-width: 600px; margin: 0 auto; border: 1px solid #dcd7ca; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+      <div style="margin-bottom: 24px; border-bottom: 2px solid #1a1814; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-collapse: collapse;">
+        <span style="font-family: sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.05em; color: #1a1814;">SCOUT</span>
+        <span style="font-family: monospace; font-size: 10px; color: #8c8573; border: 1px solid #dcd7ca; padding: 4px 8px; border-radius: 2px; text-transform: uppercase;">Academic Update</span>
+      </div>
+      
+      <div style="min-height: 200px;">
+        ${parsedHtml}
+      </div>
+      
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #dcd7ca; text-align: center;">
+        <p style="font-family: monospace; font-size: 10px; color: #8c8573; margin: 0; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold;">
+          SCOUT — YOUR AUTONOMOUS ACADEMIC ASSISTANT
+        </p>
+        <p style="font-family: monospace; font-size: 8px; color: #b5ad9e; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">
+          POWERED BY SINGULR.TECH • CONNECTION SECURE
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// Send email via Brevo HTTP API — recipient locked to user's own email only
+async function sendEmailViaBrevo(subject, body) {
+  // Reload in case it was saved after page load
+  brevoKey  = localStorage.getItem('brevo_api_key')   || brevoKey;
+  userEmail = localStorage.getItem('user_email_target') || userEmail;
+
+  if (!brevoKey)  throw new Error('Brevo API key not set. Add it on the Setup page.');
+  if (!userEmail) throw new Error('Target email not set. Add it on the Setup page.');
+
+  // Parse markdown and build formatted HTML body
+  const htmlBody = formatEmailBody(body);
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
+      to:          [{ email: userEmail }],   // ← ONLY ever sends to your own email
+      subject,
+      htmlContent: htmlBody
+    })
+  });
+
+  if (res.status === 201) {
+    return { status: 'sent', to: userEmail, subject };
+  } else {
+    const err = await res.json();
+    throw new Error(err.message || `Brevo error ${res.status}`);
+  }
+}
+
+// Auto-refresh Google Access Token using client-side keys and refresh token
+async function refreshGoogleAccessToken() {
+  const clientId = localStorage.getItem('oauth_client_id');
+  const clientSecret = localStorage.getItem('oauth_client_secret');
+  const refreshToken = localStorage.getItem('google_refresh_token');
+  
+  if (!clientId || !clientSecret || !refreshToken) {
+    console.warn("Auto-token refresh skipped: credentials or refresh token missing.");
+    return null;
+  }
+  
+  console.log("Access token expired. Refreshing Google OAuth access token...");
+  try {
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token'
+      })
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.access_token) {
+        localStorage.setItem('google_access_token', data.access_token);
+        googleToken = data.access_token;
+        console.log("Google access token successfully refreshed.");
+        return data.access_token;
+      }
+    } else {
+      const err = await res.text();
+      console.error("Token refresh request failed:", err);
+    }
+  } catch (e) {
+    console.error("Error refreshing Google token:", e);
+  }
+  return null;
+}
+
+// Wrapper to transparently handle token expiration with auto-retry
+async function fetchWithTokenRefresh(url, options = {}) {
+  options.headers = options.headers || {};
+  options.headers['Authorization'] = `Bearer ${googleToken}`;
+  
+  let res = await fetch(url, options);
+  if (res.status === 401) {
+    const newToken = await refreshGoogleAccessToken();
+    if (newToken) {
+      options.headers['Authorization'] = `Bearer ${newToken}`;
+      res = await fetch(url, options);
+    }
+  }
+  return res;
+}
+
+// 1. Fetch Calendar Events
+async function fetchGoogleCalendar() {
+  const timeMin = new Date().toISOString();
+  const res = await fetchWithTokenRefresh(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=10&orderBy=startTime&singleEvents=true`);
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Google Calendar listing failed");
+  }
+  const data = await res.json();
+  latestCalendarEvents = (data.items || []).map(item => ({
+    id: item.id,
+    summary: item.summary,
+    start: item.start.dateTime || item.start.date,
+    end: item.end.dateTime || item.end.date,
+    description: item.description || ''
+  }));
+  if (document.getElementById('commitment-dashboard-container')?.style.display === 'flex') {
+    renderCommitmentDashboard();
+  }
+  return latestCalendarEvents;
+}
+
+// 2. Create Calendar Event
+async function createGoogleCalendarEvent(title, start, end, desc) {
+  const res = await fetchWithTokenRefresh(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      summary: title,
+      description: desc,
+      start: { dateTime: start },
+      end: { dateTime: end }
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Google Calendar create event failed");
+  }
+  return await res.json();
+}
+
+// 3. Scan Gmail
+async function fetchGmailMessages(query) {
+  const searchUrl = `https://www.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=5`;
+  const res = await fetchWithTokenRefresh(searchUrl);
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Gmail listing failed");
+  }
+  const data = await res.json();
+  if (!data.messages) return { messages: [], note: "No messages matched query" };
+  
+  const details = await Promise.all(data.messages.map(async (m) => {
+    const detailRes = await fetchWithTokenRefresh(`https://www.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=minimal`);
+    if (detailRes.ok) {
+      const detailData = await detailRes.json();
+      return {
+        id: detailData.id,
+        snippet: detailData.snippet
+      };
+    }
+    return { id: m.id, error: "Failed to load snippet" };
+  }));
+  return details;
+}
+
+// 4. Update Firestore user document
+async function updateSemesterDataInFirestore(newJsonString) {
+  if (!db || !currentUid) {
+    throw new Error("Firestore connection missing or user signed out.");
+  }
+  
+  let parsed = null;
+  try {
+    parsed = JSON.parse(newJsonString);
+  } catch(e) {
+    throw new Error("Invalid JSON update string: " + e.message);
+  }
+  
+  parsed.last_updated = new Date().toISOString();
+  await db.collection('users').doc(currentUid).set(parsed, { merge: true });
+  semesterData = { ...semesterData, ...parsed };
+  return { status: "success", message: "semester_data successfully updated in Cloud Firestore" };
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', initFirebase);
 </script>
 </body>
 </html>

@@ -683,8 +683,7 @@ dialog#jd-overlay::backdrop {
     <span>Scout</span>
   </div>
   <div class="nav-links">
-    <a href="index.html">Plan</a>
-    <a href="assistant.html">Chat</a>
+    <a href="index.html">Chat</a>
     <a href="placements.html">Placements</a>
     <a href="simulator.html" class="active">Simulator</a>
     <a href="settings.html">Settings</a>
@@ -848,7 +847,7 @@ dialog#jd-overlay::backdrop {
 
       <!-- Control group -->
       <div style="display:flex; align-items:center; gap:16px;">
-        <button class="disco-ai-btn" id="disco-ai-btn" onclick="getDiscoAiHelp()">🪩 Disco AI</button>
+        <button class="disco-ai-btn" id="disco-ai-btn" onclick="getDiscoAiHelp()">Disco AI</button>
         <button class="close-btn" onclick="terminateSimulation()" style="font-size:24px; border:none; background:transparent; color:var(--canvas); cursor:pointer; line-height:1;">&times;</button>
       </div>
     </div>
@@ -856,7 +855,7 @@ dialog#jd-overlay::backdrop {
       <!-- Disco AI Helper Speech Bubble -->
       <div class="disco-ai-bubble" id="disco-ai-helper-bubble">
         <h5>
-          <span>🪩 Disco AI Helper</span>
+          <span>Disco AI Helper</span>
           <button class="disco-ai-bubble-close" onclick="document.getElementById('disco-ai-helper-bubble').classList.remove('active')">&times;</button>
         </h5>
         <div class="disco-ai-bubble-content" id="disco-ai-bubble-content">
@@ -1330,7 +1329,7 @@ async function getDiscoAiHelp() {
   }
   
   bubble.classList.add('active');
-  bubbleContent.innerHTML = `<span style="color: var(--mute);">Calling Disco AI helper... 🪩✨</span>`;
+  bubbleContent.innerHTML = `<span style="color: var(--mute);">Calling Disco AI helper...</span>`;
   
   const roundNames = [
     "Group Discussion (GD)",
@@ -1351,7 +1350,7 @@ ${historyLog}
 
 Your task is to generate a helpful, encouraging, and colorful hint (under 3 paragraphs) that guides the applicant on how to formulate the perfect response to the last interviewer statement or question.
 Keep the tone friendly, positive, soft, and bright! Highlight key technical or soft skills they should mention. Avoid writing the exact response, but provide solid guidance/suggestions!
-Also add some fun disco emojis like 🪩, ✨, 🌈.`;
+Do not include any emojis in your response.`;
 
   try {
     const hint = await callGeminiSimApi(systemPrompt);
