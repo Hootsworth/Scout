@@ -246,6 +246,10 @@ footer {
 @media(max-width:900px){
   .board-container{grid-template-columns:1fr; gap:16px;}
 }
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
 </style>
 </head>
 <body>
@@ -282,6 +286,12 @@ footer {
     </button>
     <button id="btn-tab-add" onclick="switchPlacementsTab('add')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
       Add Opportunity
+    </button>
+    <button id="btn-tab-oa" onclick="switchPlacementsTab('oa')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
+      Mock OA Arena
+    </button>
+    <button id="btn-tab-resume" onclick="switchPlacementsTab('resume')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
+      Resume &amp; ATS Optimizer
     </button>
   </div>
 
@@ -375,6 +385,164 @@ footer {
         </div>
         <button type="submit" class="btn btn-primary">Save Company Entry</button>
       </form>
+    </div>
+  </section>
+
+  </section>
+
+  <!-- SECTION: RESUME & ATS OPTIMIZER -->
+  <section id="resume-analyzer" style="display: none; border-bottom: none;">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Resume &amp; ATS Optimizer</h2></div>
+    <p class="section-desc">Critique your resume against target roles and calculate your ATS (Applicant Tracking System) matching score.</p>
+    
+    <div class="grid-cols-2">
+      <!-- Left Column: Input Form -->
+      <div class="setup-card" style="margin-bottom:0;">
+        <h3>Your Resume &amp; Target</h3>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Target Job Opening</label>
+            <select id="resume-target-select" style="width:100%; min-height:40px; padding:8px 12px; font-size:14px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink);">
+              <option value="">-- Select target opening --</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Resume Content (Markdown / Text)</label>
+            <textarea id="resume-textarea-input" placeholder="Paste your resume contents here... Include experience, projects, skills, education." style="width:100%; height:280px; padding:12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="analyzeResumeATS()" style="width:100%; height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            Analyze Resume &amp; Optimize
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Results Pane -->
+      <div class="setup-card" id="resume-result-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:400px; text-align:center; position:relative;">
+        <div id="resume-placeholder-text">
+          <svg style="width:48px; height:48px; color:var(--mute); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <p style="color:var(--mute); font-size:14.5px; max-width:280px; margin:0 auto;">Paste your resume and select a target placement opening to run ATS match optimization.</p>
+        </div>
+        
+        <div id="resume-loading" style="display:none;">
+          <div class="thinking-dots" style="display:inline-flex; gap:6px; margin-bottom:12px;">
+            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0s;"></span>
+            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.2s;"></span>
+            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.4s;"></span>
+          </div>
+          <p style="color:var(--body); font-size:14px; margin:0;">Recruiter AI is analyzing resume syntax...</p>
+        </div>
+        
+        <div id="resume-results" style="display:none; text-align:left; width:100%; height:100%;">
+          <div style="display:flex; align-items:center; gap:24px; border-bottom:1px solid var(--hairline); padding-bottom:20px; margin-bottom:20px;">
+            <!-- ATS Score Badge -->
+            <div style="width:88px; height:88px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; border:6px solid var(--hairline); flex-shrink:0;" id="ats-score-container">
+              <span style="font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--ink);" id="ats-score-value">0%</span>
+              <span style="font-size:9px; color:var(--mute); font-weight:700; text-transform:uppercase; margin-top:-2px;">ATS Score</span>
+            </div>
+            <div>
+              <h3 style="border:none; padding:0; margin:0; font-size:18px;" id="ats-result-title">ATS Match Status</h3>
+              <p style="font-size:13px; color:var(--mute); margin:4px 0 0 0;" id="ats-result-summary">Ready to export optimization fixes.</p>
+            </div>
+          </div>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+            <div>
+              <h4 style="font-size:12px; text-transform:uppercase; color:#1e7e2c; margin-bottom:10px; font-weight:700; display:flex; align-items:center; gap:6px;">
+                <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Matched Keywords
+              </h4>
+              <ul id="ats-matched-keywords" style="font-size:13px; color:var(--body); padding-left:16px; margin:0;"></ul>
+            </div>
+            <div>
+              <h4 style="font-size:12px; text-transform:uppercase; color:#b52c24; margin-bottom:10px; font-weight:700; display:flex; align-items:center; gap:6px;">
+                <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Missing Keywords
+              </h4>
+              <ul id="ats-missing-keywords" style="font-size:13px; color:var(--body); padding-left:16px; margin:0;"></ul>
+            </div>
+          </div>
+          
+          <div>
+            <h4 style="font-size:12px; text-transform:uppercase; color:var(--ink); margin-bottom:8px; font-weight:700;">Recruiter Feedback &amp; Improvements</h4>
+            <div id="ats-feedback-content" style="font-size:13.5px; color:var(--body); line-height:1.5; overflow-y:auto; max-height:220px; border:1px solid var(--hairline); padding:12px; border-radius:8px; background:var(--surface-soft); white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: MOCK OA ARENA -->
+  <section id="oa-arena" style="display: none; border-bottom: none;">
+    <div class="section-label"><span class="section-num">04</span><h2 class="section-title">Competitive Mock OA Arena</h2></div>
+    <p class="section-desc">Test your programming and algorithmic skills under a realistic, timed Online Assessment (OA) console.</p>
+    
+    <!-- Assessment Configuration Panel -->
+    <div class="setup-card" id="oa-config-card" style="max-width:600px; margin:0 auto;">
+      <h3>Configure Mock OA</h3>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <label style="display:block; font-size:12px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Target Placement Drive</label>
+          <select id="oa-target-select" style="width:100%; min-height:40px; padding:8px 12px; font-size:14px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink);">
+            <option value="">-- Select drive opening --</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:12px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Programming Language</label>
+          <select id="oa-lang-select" style="width:100%; min-height:40px; padding:8px 12px; font-size:14px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink);">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="startMockOa()" style="height:44px;">
+          Start Online Assessment
+        </button>
+      </div>
+    </div>
+    
+    <!-- Timer & Active Assessment Dashboard -->
+    <div id="oa-active-dashboard" style="display:none; flex-direction:column; gap:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-soft); padding:12px 20px; border-radius:8px; border:1px solid var(--hairline);">
+        <div>
+          <strong style="font-family:'Syne',sans-serif; color:var(--ink);" id="oa-active-title">Assessment</strong>
+          <span style="font-size:12px; color:var(--mute); margin-left:12px;" id="oa-active-lang">Language</span>
+        </div>
+        <div style="font-family:ui-monospace, monospace; font-weight:700; color:#b52c24; font-size:16px; display:flex; align-items:center; gap:6px;">
+          <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span id="oa-timer">45:00</span>
+        </div>
+      </div>
+      
+      <div class="grid-cols-2" style="margin-top:0;">
+        <!-- Left: Problem Description -->
+        <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; min-height:500px;">
+          <h3>Problem Statement</h3>
+          <div id="oa-problem-desc" style="font-size:14px; line-height:1.6; color:var(--body); overflow-y:auto; flex:1; padding-right:8px; white-space:pre-wrap;">
+            Generating algorithmic problem details...
+          </div>
+        </div>
+        
+        <!-- Right: Coding Editor Console -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="setup-card" style="margin-bottom:0; flex:1; display:flex; flex-direction:column; padding:16px;">
+            <h3 style="margin-bottom:12px;">Solution Code</h3>
+            <textarea id="oa-code-input" style="width:100%; flex:1; min-height:300px; padding:14px; font-family:ui-monospace, monospace; font-size:13px; background:var(--ink); color:var(--canvas); border-radius:8px; border:none; resize:none; line-height:1.5; outline:none;" placeholder="// Write your solution code here..."></textarea>
+            
+            <div style="display:flex; gap:12px; margin-top:12px; justify-content:flex-end;">
+              <button class="btn btn-outline" onclick="submitOaSolution(true)" style="height:36px; font-size:12px;">Run Tests</button>
+              <button class="btn btn-primary" onclick="submitOaSolution(false)" style="height:36px; font-size:12px;">Submit Assessment</button>
+            </div>
+          </div>
+          
+          <!-- Bottom Console logs -->
+          <div class="setup-card" style="margin-bottom:0; height:160px; display:flex; flex-direction:column; padding:12px;">
+            <h4 style="margin:0 0 8px 0; font-size:11px; text-transform:uppercase; color:var(--mute); letter-spacing:0.04em;">Output Console</h4>
+            <div id="oa-console-output" style="flex:1; overflow-y:auto; font-family:ui-monospace, monospace; font-size:12px; color:var(--body); background:var(--surface-soft); padding:8px; border-radius:6px; border:1px solid var(--hairline); white-space:pre-wrap;">Console ready. Click Run Tests to compile sample inputs.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -557,38 +725,404 @@ function renderBoard() {
   
   document.getElementById('on-campus-badge').textContent = `${onCampusCount} Job(s)`;
   document.getElementById('off-campus-badge').textContent = `${offCampusCount} Job(s)`;
+
+  // Populate dropdowns for Resume and OA target selectors
+  const resumeSelect = document.getElementById('resume-target-select');
+  const oaSelect = document.getElementById('oa-target-select');
+  if (resumeSelect && oaSelect) {
+    const prevResumeVal = resumeSelect.value;
+    const prevOaVal = oaSelect.value;
+    
+    resumeSelect.innerHTML = '<option value="">-- Select target opening --</option>';
+    oaSelect.innerHTML = '<option value="">-- Select drive opening --</option>';
+    
+    placements.forEach(job => {
+      const optText = `${job.name} - ${job.title} (${job.ctc})`;
+      
+      const opt1 = document.createElement('option');
+      opt1.value = job.id;
+      opt1.textContent = optText;
+      resumeSelect.appendChild(opt1);
+      
+      const opt2 = document.createElement('option');
+      opt2.value = job.id;
+      opt2.textContent = optText;
+      oaSelect.appendChild(opt2);
+    });
+    
+    resumeSelect.value = prevResumeVal;
+    oaSelect.value = prevOaVal;
+  }
 }
 
 function switchPlacementsTab(tabId) {
   const btnOverview = document.getElementById('btn-tab-overview');
   const btnAdd = document.getElementById('btn-tab-add');
+  const btnOa = document.getElementById('btn-tab-oa');
+  const btnResume = document.getElementById('btn-tab-resume');
+  
   const secStats = document.getElementById('stats');
   const secApps = document.getElementById('applications');
   const secAdd = document.getElementById('add-drive');
+  const secOa = document.getElementById('oa-arena');
+  const secResume = document.getElementById('resume-analyzer');
+  
+  // Set all button borders to transparent & colors to mute
+  [btnOverview, btnAdd, btnOa, btnResume].forEach(btn => {
+    if (btn) {
+      btn.style.borderBottomColor = 'transparent';
+      btn.style.color = 'var(--mute)';
+    }
+  });
+  
+  // Hide all sections
+  [secStats, secApps, secAdd, secOa, secResume].forEach(sec => {
+    if (sec) sec.style.display = 'none';
+  });
   
   if (tabId === 'overview') {
-    btnOverview.style.borderBottomColor = 'var(--primary)';
-    btnOverview.style.color = 'var(--ink)';
-    btnAdd.style.borderBottomColor = 'transparent';
-    btnAdd.style.color = 'var(--mute)';
-    secStats.style.display = 'block';
-    secApps.style.display = 'block';
-    secAdd.style.display = 'none';
-  } else {
-    btnOverview.style.borderBottomColor = 'transparent';
-    btnOverview.style.color = 'var(--mute)';
-    btnAdd.style.borderBottomColor = 'var(--primary)';
-    btnAdd.style.color = 'var(--ink)';
-    secStats.style.display = 'none';
-    secApps.style.display = 'none';
-    secAdd.style.display = 'block';
+    if (btnOverview) {
+      btnOverview.style.borderBottomColor = 'var(--primary)';
+      btnOverview.style.color = 'var(--ink)';
+    }
+    if (secStats) secStats.style.display = 'block';
+    if (secApps) secApps.style.display = 'block';
+  } else if (tabId === 'add') {
+    if (btnAdd) {
+      btnAdd.style.borderBottomColor = 'var(--primary)';
+      btnAdd.style.color = 'var(--ink)';
+    }
+    if (secAdd) secAdd.style.display = 'block';
+  } else if (tabId === 'oa') {
+    if (btnOa) {
+      btnOa.style.borderBottomColor = 'var(--primary)';
+      btnOa.style.color = 'var(--ink)';
+    }
+    if (secOa) secOa.style.display = 'block';
+  } else if (tabId === 'resume') {
+    if (btnResume) {
+      btnResume.style.borderBottomColor = 'var(--primary)';
+      btnResume.style.color = 'var(--ink)';
+    }
+    if (secResume) secResume.style.display = 'block';
   }
 }
 
 // Set default view on load
 switchPlacementsTab('overview');
 
-// End of placement tracking board script
+// Mock OA and Resume Analyzer State Variables and API Logic
+let activeOa = null;
+let oaTimerInterval = null;
+let oaSecondsRemaining = 2700; // 45 minutes
+
+async function callGeminiApi(systemPrompt, userPrompt) {
+  const geminiKey = localStorage.getItem('gemini_api_key');
+  if (!geminiKey) throw new Error("No Gemini API key found. Add it on the Settings page.");
+  
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [
+        { role: 'user', parts: [{ text: `${systemPrompt}\n\nUser Input:\n${userPrompt}` }] }
+      ]
+    })
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+  }
+  
+  const json = await response.json();
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Received empty response from Gemini API.");
+  return text;
+}
+
+function extractJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch (err) {
+        throw new Error("Could not parse JSON response: " + err.message);
+      }
+    }
+    throw new Error("No valid JSON structure found in AI response.");
+  }
+}
+
+function analyzeResumeATS() {
+  const select = document.getElementById('resume-target-select');
+  const resumeText = document.getElementById('resume-textarea-input').value.trim();
+  const jobId = select.value;
+  
+  if (!jobId) {
+    alert("Please select a target placement opening first!");
+    return;
+  }
+  if (!resumeText) {
+    alert("Please paste your resume content first!");
+    return;
+  }
+  
+  const job = placements.find(j => j.id === jobId);
+  if (!job) return;
+  
+  // Show loading
+  document.getElementById('resume-placeholder-text').style.display = 'none';
+  document.getElementById('resume-results').style.display = 'none';
+  document.getElementById('resume-loading').style.display = 'block';
+  
+  const systemPrompt = `You are a strict, top-tier corporate recruiter and resume evaluation system.
+Your goal is to parse the user's resume against a specific job designation description and output an optimization report strictly in JSON format.
+
+Designation details:
+Company: ${job.name}
+Role: ${job.title}
+Requirements: ${job.jd || "Backend systems development, clean coding, algorithm optimization."}
+
+You must return a valid JSON object matching the following structure:
+{
+  "score": <Integer between 0 and 100 representing the ATS matching percentage>,
+  "status": "<Short status string, e.g., 'Excellent Match', 'Fair Match', 'Needs Work'>",
+  "summary": "<A 1-2 sentence overall fit summary>",
+  "matched": [<Array of matching keywords found in the resume>],
+  "missing": [<Array of missing key skills or keywords expected for this role designation>],
+  "feedback": "<Detailed bulleted suggestions on how the user can edit their resume to stand out. Output in clean text (no markdown, use newlines for list formatting).>"
+}`;
+
+  callGeminiApi(systemPrompt, resumeText)
+    .then(text => {
+      const data = extractJson(text);
+      
+      document.getElementById('resume-loading').style.display = 'none';
+      document.getElementById('resume-results').style.display = 'block';
+      
+      document.getElementById('ats-score-value').textContent = `${data.score}%`;
+      document.getElementById('ats-result-title').textContent = data.status || "Match Analysis";
+      document.getElementById('ats-result-summary').textContent = data.summary || "";
+      
+      const scoreCircle = document.getElementById('ats-score-container');
+      if (data.score >= 80) {
+        scoreCircle.style.borderColor = '#1e7e2c';
+      } else if (data.score >= 60) {
+        scoreCircle.style.borderColor = 'var(--amber)';
+      } else {
+        scoreCircle.style.borderColor = '#b52c24';
+      }
+      
+      const matchedUl = document.getElementById('ats-matched-keywords');
+      matchedUl.innerHTML = '';
+      if (data.matched && data.matched.length) {
+        data.matched.forEach(kw => {
+          const li = document.createElement('li');
+          li.textContent = kw;
+          matchedUl.appendChild(li);
+        });
+      } else {
+        matchedUl.innerHTML = '<li>None</li>';
+      }
+      
+      const missingUl = document.getElementById('ats-missing-keywords');
+      missingUl.innerHTML = '';
+      if (data.missing && data.missing.length) {
+        data.missing.forEach(kw => {
+          const li = document.createElement('li');
+          li.textContent = kw;
+          missingUl.appendChild(li);
+        });
+      } else {
+        missingUl.innerHTML = '<li>None</li>';
+      }
+      
+      document.getElementById('ats-feedback-content').textContent = data.feedback || "No feedback generated.";
+    })
+    .catch(err => {
+      document.getElementById('resume-loading').style.display = 'none';
+      document.getElementById('resume-placeholder-text').style.display = 'block';
+      alert("Error analyzing resume: " + err.message);
+    });
+}
+
+function startMockOa() {
+  const select = document.getElementById('oa-target-select');
+  const lang = document.getElementById('oa-lang-select').value;
+  const jobId = select.value;
+  if (!jobId) {
+    alert("Please select a target placement drive first!");
+    return;
+  }
+  const job = placements.find(j => j.id === jobId);
+  if (!job) return;
+  
+  document.getElementById('oa-config-card').style.display = 'none';
+  document.getElementById('oa-active-dashboard').style.display = 'flex';
+  document.getElementById('oa-problem-desc').textContent = "Recruiter AI is creating a custom OA coding challenge for " + job.name + "... Please wait.";
+  document.getElementById('oa-code-input').value = "";
+  document.getElementById('oa-console-output').textContent = "Console ready. Waiting for problem download...";
+  document.getElementById('oa-active-title').textContent = `Assessment for ${job.name} — ${job.title}`;
+  document.getElementById('oa-active-lang').textContent = `Language: ${lang.toUpperCase()}`;
+  
+  const systemPrompt = `You are a technical Online Assessment (OA) compiler system.
+Your job is to generate a highly realistic, challenging algorithmic programming question tailored to the target company and role.
+
+Target details:
+Company: ${job.name}
+Role: ${job.title}
+Difficulty: Medium-Hard
+
+Respond strictly with a valid JSON object matching this structure:
+{
+  "title": "<The coding problem title>",
+  "difficulty": "<Medium | Hard>",
+  "description": "<A clear description of the problem, background story, and requirements.>",
+  "inputs": "<Details on function input parameters and formats>",
+  "outputs": "<Details on output return types and formats>",
+  "constraints": "<Computational constraints, e.g., Time Limit: 2s, Space: 256MB, N <= 10^5>",
+  "template": "<A starter code template matching the chosen language (${lang})>",
+  "sampleInput": "<Sample input console description>",
+  "sampleOutput": "<Expected sample output description>"
+}`;
+
+  callGeminiApi(systemPrompt, "Generate OA question.")
+    .then(text => {
+      const data = extractJson(text);
+      activeOa = {
+        jobId: job.id,
+        lang: lang,
+        title: data.title,
+        description: data.description,
+        constraints: data.constraints,
+        template: data.template
+      };
+      
+      document.getElementById('oa-problem-desc').innerHTML = `
+        <h4 style="margin:0 0 10px 0; color:var(--ink); font-size:16px;">${data.title} (${data.difficulty})</h4>
+        <p>${data.description}</p>
+        <h5 style="margin:16px 0 6px 0;">Inputs</h5>
+        <p style="font-size:13px; color:var(--body);">${data.inputs}</p>
+        <h5 style="margin:16px 0 6px 0;">Outputs</h5>
+        <p style="font-size:13px; color:var(--body);">${data.outputs}</p>
+        <h5 style="margin:16px 0 6px 0;">Constraints</h5>
+        <p style="font-size:13px; color:var(--body);">${data.constraints}</p>
+        <h5 style="margin:16px 0 6px 0;">Sample Input</h5>
+        <pre style="background:var(--surface-soft); padding:8px; border-radius:4px; font-size:12px;">${data.sampleInput}</pre>
+        <h5 style="margin:16px 0 6px 0;">Sample Output</h5>
+        <pre style="background:var(--surface-soft); padding:8px; border-radius:4px; font-size:12px;">${data.sampleOutput}</pre>
+      `;
+      
+      document.getElementById('oa-code-input').value = data.template || "";
+      document.getElementById('oa-console-output').textContent = "Challenge downloaded successfully. Start writing your solution.";
+      
+      oaSecondsRemaining = 2700;
+      updateOaTimerDisplay();
+      if (oaTimerInterval) clearInterval(oaTimerInterval);
+      oaTimerInterval = setInterval(() => {
+        oaSecondsRemaining--;
+        updateOaTimerDisplay();
+        if (oaSecondsRemaining <= 0) {
+          clearInterval(oaTimerInterval);
+          alert("Time is up! Your solution is being automatically submitted for scoring.");
+          submitOaSolution(false);
+        }
+      }, 1000);
+    })
+    .catch(err => {
+      document.getElementById('oa-problem-desc').textContent = "Failed to load challenge: " + err.message;
+      document.getElementById('oa-config-card').style.display = 'block';
+      document.getElementById('oa-active-dashboard').style.display = 'none';
+    });
+}
+
+function updateOaTimerDisplay() {
+  const min = Math.floor(oaSecondsRemaining / 60);
+  const sec = oaSecondsRemaining % 60;
+  document.getElementById('oa-timer').textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+function submitOaSolution(isDryRun = false) {
+  if (!activeOa) return;
+  const code = document.getElementById('oa-code-input').value;
+  const consoleOutput = document.getElementById('oa-console-output');
+  
+  consoleOutput.textContent = isDryRun 
+    ? "Compiling and running sample test cases... Please wait." 
+    : "Submitting final code for automated proctor scoring... Please wait.";
+    
+  const systemPrompt = `You are an automated code runner and grading proctor for a competitive programming platform.
+Your job is to grade the student's solution template against test cases for the problem description.
+
+Problem Details:
+Title: ${activeOa.title}
+Description: ${activeOa.description}
+Constraints: ${activeOa.constraints}
+
+Student Code Language: ${activeOa.lang}
+Student Code Solution:
+${code}
+
+You must output a grading evaluation strictly as a valid JSON object:
+{
+  "score": <Integer between 0 and 100 representing the execution success and correctness>,
+  "testCases": "<e.g., '10/10 passed' or '6/10 passed, 4 failed (Time Limit Exceeded)'>",
+  "timeComplexity": "<e.g., 'O(N log N)'>",
+  "spaceComplexity": "<e.g., 'O(N)'>",
+  "review": "<Constructive critique on coding style, edge cases they missed, algorithm optimization opportunities, or why they failed. Output in clean plain text.>"
+}`;
+
+  callGeminiApi(systemPrompt, isDryRun ? "Dry run test cases." : "Submit code.")
+    .then(text => {
+      const data = extractJson(text);
+      if (isDryRun) {
+        consoleOutput.textContent = `[SAMPLE RUN RESULTS]
+Test Cases: ${data.testCases}
+Score: ${data.score}/100
+Complexity: Time: ${data.timeComplexity} | Space: ${data.spaceComplexity}
+
+Recruiter AI Code Review:
+${data.review}`;
+      } else {
+        if (oaTimerInterval) clearInterval(oaTimerInterval);
+        
+        consoleOutput.textContent = `[FINAL SUBMISSION COMPLETED]
+Test Cases: ${data.testCases}
+Final Score: ${data.score}/100
+Complexity: Time: ${data.timeComplexity} | Space: ${data.spaceComplexity}
+
+Evaluation Summary:
+${data.review}`;
+        
+        const job = placements.find(j => j.id === activeOa.jobId);
+        if (job) {
+          const oldStatus = job.status;
+          job.status = data.score >= 70 ? 'technical' : 'test';
+          job.notes = (job.notes || "") + `\n\n[Mock OA Results - Score: ${data.score}/100]\nTime: ${data.timeComplexity} | Space: ${data.spaceComplexity}\nReview: ${data.review}`;
+          
+          savePlacements().then(() => {
+            alert(`Mock OA Completed!\nScore: ${data.score}/100.\nStatus updated from ${oldStatus} to ${job.status}.`);
+          });
+        }
+        
+        setTimeout(() => {
+          if (confirm("Would you like to return to the OA configuration screen?")) {
+            document.getElementById('oa-config-card').style.display = 'block';
+            document.getElementById('oa-active-dashboard').style.display = 'none';
+            activeOa = null;
+          }
+        }, 3000);
+      }
+    })
+    .catch(err => {
+      consoleOutput.textContent = "Error running evaluation: " + err.message;
+    });
+}
 </script>
 </body>
 </html>

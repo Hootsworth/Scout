@@ -742,6 +742,59 @@ dialog#jd-overlay::backdrop {
     </div>
   </section>
 
+  <!-- SECTION 3: BEHAVIORAL STAR SANDBOX -->
+  <section id="star-sandbox">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Behavioral STAR Playground</h2></div>
+    <p class="section-desc">Practice leadership, teamwork, and behavioral interview questions. The AI proctor will critique your answers strictly using the STAR format (Situation, Task, Action, Result).</p>
+    
+    <div class="grid-cols-2" style="margin-top:20px;">
+      <!-- Sandbox Config -->
+      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between; min-height:280px;">
+        <div>
+          <h3>Choose Practice Theme</h3>
+          <p style="font-size:13.5px; color:var(--mute); margin-bottom:16px;">Select a core behavioral competency to practice with the proctor.</p>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <label class="btn-outline" style="display:flex; align-items:center; gap:10px; padding:12px; border-radius:8px; cursor:pointer;">
+              <input type="radio" name="star-theme" value="teamwork" checked style="accent-color:var(--primary);">
+              <div>
+                <strong style="display:block; font-size:14px;">Teamwork &amp; Collaboration</strong>
+                <span style="font-size:12px; color:var(--mute);">Conflict resolution, peer support, group dynamics.</span>
+              </div>
+            </label>
+            <label class="btn-outline" style="display:flex; align-items:center; gap:10px; padding:12px; border-radius:8px; cursor:pointer;">
+              <input type="radio" name="star-theme" value="failure" style="accent-color:var(--primary);">
+              <div>
+                <strong style="display:block; font-size:14px;">Handling Failure &amp; Resilience</strong>
+                <span style="font-size:12px; color:var(--mute);">Overcoming setbacks, learning from mistakes, pivot logic.</span>
+              </div>
+            </label>
+            <label class="btn-outline" style="display:flex; align-items:center; gap:10px; padding:12px; border-radius:8px; cursor:pointer;">
+              <input type="radio" name="star-theme" value="leadership" style="accent-color:var(--primary);">
+              <div>
+                <strong style="display:block; font-size:14px;">Leadership &amp; Initiative</strong>
+                <span style="font-size:12px; color:var(--mute);">Taking ownership, mentoring, driving technical decisions.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="startStarPlayground()" style="width:100%; height:44px; margin-top:20px;">
+          Start Practice Interview
+        </button>
+      </div>
+      
+      <!-- Sandbox Info/Rules -->
+      <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:32px;">
+        <svg style="width:48px; height:48px; color:var(--primary); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <h3>Proctor STAR Metrics</h3>
+        <p style="font-size:14px; color:var(--body); max-width:320px; line-height:1.5; margin:8px auto 0 auto;">
+          The proctor expects your response to clearly cover:<br>
+          <strong>S</strong>ituation &bull; <strong>T</strong>ask &bull; <strong>A</strong>ction &bull; <strong>R</strong>esult.<br><br>
+          Quantifiable results (e.g. "improved speed by 25%") will score extra compliance points!
+        </p>
+      </div>
+    </div>
+  </section>
+
   <!-- SECTION 2: OPENINGS BOARD -->
   <section id="sim-openings">
     <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Active Openings</h2></div>
@@ -1247,6 +1300,11 @@ function aiRotatesOpenings() {
   currentList.push(newCompany);
   mockCompanies = currentList;
   localStorage.setItem('custom_mock_companies', JSON.stringify(mockCompanies));
+  
+  // Sync to calendar & dispatch simulated email alert
+  syncOaDeadlineToCalendar(newCompany.name, newCompany.title);
+  sendSimOpeningEmail(newCompany);
+  
   renderSimOpenings();
 }
 
@@ -1316,6 +1374,17 @@ function applyToSimOpening(companyId) {
 function updateSidebarStats() {
   const sim = activeSim;
   if (!sim) return;
+  
+  if (sim.isStarPlayground) {
+    document.getElementById('sim-sidebar-pool').textContent = "Not Applicable";
+    document.getElementById('sim-sidebar-round').textContent = `Round ${sim.roundIndex + 1} of 3`;
+    document.getElementById('sim-sidebar-applicants').innerHTML = `
+      <div style="font-size: 13px; color: var(--mute); line-height: 1.5; padding: 12px; border: 1px dashed var(--hairline-strong); border-radius: 8px; text-align: center;">
+        Practice Mode Sandbox. No candidate eliminations. Focus on STAR compliance!
+      </div>
+    `;
+    return;
+  }
   
   const roundNames = [
     "Round 1: Group Discussion (GD)",
@@ -1511,6 +1580,20 @@ async function initiateRound() {
   
   updateSidebarStats();
   
+  if (sim.isStarPlayground) {
+    appendSimChat("SYSTEM", `Initiating STAR Practice Round ${sim.roundIndex + 1}...`, false, true);
+    
+    const proctorPrompt = `You are a professional behavioral interviewer and STAR method evaluator.
+Current competency theme: ${sim.themeTitle} (Round ${sim.roundIndex + 1} of 3).
+Ask the candidate a direct, challenging behavioral question targeting this theme (e.g. "Tell me about a time when...").
+Keep your response professional and ask a single direct question. Do not include evaluation XML, just ask the question.`;
+    
+    appendSimChat("SYSTEM", "AI Proctor is generating behavioral question...", false, true);
+    let questionText = await callGeminiSimApi(proctorPrompt);
+    appendSimChat("STAR Evaluator", questionText, false);
+    return;
+  }
+  
   const roundTitles = [
     "Group Discussion (GD) Opening Statement",
     "Coding Assessment (OA) Challenge Brief",
@@ -1559,6 +1642,114 @@ async function submitSimulationAnswer() {
   btn.disabled = true;
   btn.textContent = "Evaluating...";
   
+  if (sim.isStarPlayground) {
+    let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
+    const isFinalRound = sim.roundIndex >= 2;
+    
+    const proctorPrompt = `You are a professional behavioral interviewer proctor.
+You are evaluating the candidate's last answer in a mock interview on "${sim.themeTitle}".
+Current Round: ${sim.roundIndex + 1} of 3.
+You must grade their answer strictly on the STAR format:
+- Situation (S): Did they set context?
+- Task (T): Did they explain their goal?
+- Action (A): Did they describe their specific contributions?
+- Result (R): Did they mention outcomes (preferably quantified, e.g. "improved latency by 15%")?
+
+Here is the round conversation logs:
+${conversationHistoryStr}
+
+You MUST evaluate the candidate response and reply strictly in this XML structure:
+<evaluation>
+  <s_score>Score from 0 to 10</s_score>
+  <t_score>Score from 0 to 10</t_score>
+  <a_score>Score from 0 to 10</a_score>
+  <r_score>Score from 0 to 10</r_score>
+  <message>${isFinalRound ? 'Final summary critique of their STAR performance and constructive feedback' : 'Short metric breakdown feedback and a challenging follow-up question related to their answer'}</message>
+  <is_final>${isFinalRound ? 'true' : 'false'}</is_final>
+</evaluation>`;
+
+    appendSimChat("SYSTEM", "AI Proctor is evaluating STAR compliance...", false, true);
+    const evaluationXml = await callGeminiSimApi(proctorPrompt);
+    
+    btn.disabled = false;
+    btn.textContent = "Submit Response";
+    
+    let s_score = 0, t_score = 0, a_score = 0, r_score = 0;
+    let feedback = "";
+    let isFinal = "false";
+    
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(evaluationXml, "text/xml");
+      s_score = parseInt(xmlDoc.getElementsByTagName("s_score")[0]?.textContent || '0', 10);
+      t_score = parseInt(xmlDoc.getElementsByTagName("t_score")[0]?.textContent || '0', 10);
+      a_score = parseInt(xmlDoc.getElementsByTagName("a_score")[0]?.textContent || '0', 10);
+      r_score = parseInt(xmlDoc.getElementsByTagName("r_score")[0]?.textContent || '0', 10);
+      feedback = xmlDoc.getElementsByTagName("message")[0]?.textContent || "STAR evaluation complete.";
+      isFinal = xmlDoc.getElementsByTagName("is_final")[0]?.textContent || "false";
+    } catch (e) {
+      console.error(e);
+      feedback = evaluationXml;
+    }
+    
+    const summaryText = `
+**STAR Compliance Metrics:**
+- **S**ituation: ${s_score}/10
+- **T**ask: ${t_score}/10
+- **A**ction: ${a_score}/10
+- **R**esult: ${r_score}/10
+
+${feedback}
+    `.trim();
+    
+    appendSimChat("STAR Evaluator", summaryText, false);
+    
+    if (isFinal === 'true') {
+      appendSimChat("SYSTEM", "STAR practice session completed successfully.", false, true);
+      
+      const continueBtn = document.createElement('button');
+      continueBtn.className = 'btn btn-outline';
+      continueBtn.style.margin = '20px auto';
+      continueBtn.style.display = 'block';
+      continueBtn.textContent = `Exit STAR Sandbox`;
+      continueBtn.onclick = () => {
+        continueBtn.remove();
+        terminateSimulation();
+      };
+      
+      const chat = document.getElementById('sim-chat-container');
+      const thinkingIndicator = document.getElementById('sim-thinking-indicator');
+      if (thinkingIndicator) {
+        chat.insertBefore(continueBtn, thinkingIndicator);
+      } else {
+        chat.appendChild(continueBtn);
+      }
+      chat.scrollTop = chat.scrollHeight;
+    } else {
+      sim.roundIndex++;
+      
+      const continueBtn = document.createElement('button');
+      continueBtn.className = 'btn btn-primary';
+      continueBtn.style.margin = '20px auto';
+      continueBtn.style.display = 'block';
+      continueBtn.textContent = `Continue to Question ${sim.roundIndex + 1}`;
+      continueBtn.onclick = () => {
+        continueBtn.remove();
+        initiateRound();
+      };
+      
+      const chat = document.getElementById('sim-chat-container');
+      const thinkingIndicator = document.getElementById('sim-thinking-indicator');
+      if (thinkingIndicator) {
+        chat.insertBefore(continueBtn, thinkingIndicator);
+      } else {
+        chat.appendChild(continueBtn);
+      }
+      chat.scrollTop = chat.scrollHeight;
+    }
+    return;
+  }
+
   let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
   
   const proctorPrompt = `You are the recruitment proctor at ${sim.company.name} evaluating round ${sim.roundIndex + 1} (of 5).
@@ -1909,6 +2100,200 @@ function terminateSimulation() {
     const overlay = document.getElementById('simulation-overlay');
     overlay.close();
     activeSim = null;
+    exitFullscreenProctor();
+  }
+}
+
+// Fullscreen Anti-Cheat Proctoring Rules
+function requestFullscreenProctor() {
+  const sim = activeSim;
+  if (!sim || sim.isStarPlayground) return;
+  
+  const docEl = document.documentElement;
+  if (docEl.requestFullscreen) {
+    docEl.requestFullscreen().catch(err => {
+      console.warn("Fullscreen request denied: ", err);
+    });
+  }
+}
+
+function exitFullscreenProctor() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(err => {
+      console.warn("Exit fullscreen failed: ", err);
+    });
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  const sim = activeSim;
+  if (!sim || sim.isStarPlayground) return;
+  
+  if (!document.fullscreenElement) {
+    appendSimChat("SYSTEM", "⚠️ anti-cheat alert: Fullscreen mode deactivated!", false, true);
+    appendSimChat("Recruitment Proctor", "Compliance Infraction: You have exited the proctored screen state. The recruitment drive has been terminated due to a strict security violation.", false);
+    
+    addSimPlacementToBoard(sim.company, 'rejected');
+    activeSim = null;
+    
+    alert("Proctor Compliance Violation: You exited full screen. The recruitment drive has been terminated.");
+    document.querySelectorAll('#sim-chat-container button').forEach(btn => btn.remove());
+  }
+});
+
+window.addEventListener('blur', () => {
+  const sim = activeSim;
+  if (!sim || sim.isStarPlayground) return;
+  
+  appendSimChat("SYSTEM", "⚠️ anti-cheat alert: Window focus lost!", false, true);
+  appendSimChat("Recruitment Proctor", "Compliance Infraction: Tab switching or window blur detected. The recruitment drive has been terminated.", false);
+  
+  addSimPlacementToBoard(sim.company, 'rejected');
+  activeSim = null;
+  
+  alert("Proctor Compliance Violation: Tab switching or window blur detected. The drive has been terminated.");
+  document.querySelectorAll('#sim-chat-container button').forEach(btn => btn.remove());
+  exitFullscreenProctor();
+});
+
+// STAR Playground and Automated Deadlines Sync
+function startStarPlayground() {
+  const chosenThemeRadio = document.querySelector('input[name="star-theme"]:checked');
+  const chosenTheme = chosenThemeRadio ? chosenThemeRadio.value : 'teamwork';
+  
+  const themeTitles = {
+    'teamwork': 'Teamwork & Collaboration',
+    'failure': 'Handling Failure & Resilience',
+    'leadership': 'Leadership & Initiative'
+  };
+  
+  activeSim = {
+    isStarPlayground: true,
+    theme: chosenTheme,
+    themeTitle: themeTitles[chosenTheme],
+    roundIndex: 0,
+    company: { name: "STAR Sandbox", title: "Practice Mode", ctc: "0" },
+    messageHistory: []
+  };
+  
+  const overlay = document.getElementById('simulation-overlay');
+  overlay.showModal();
+  document.getElementById('disco-ai-helper-bubble').classList.remove('active');
+  
+  document.getElementById('sim-modal-title').textContent = `Behavioral STAR Playground`;
+  document.getElementById('sim-sidebar-title').textContent = activeSim.themeTitle;
+  document.getElementById('sim-sidebar-ctc').textContent = `Theme: ${chosenTheme.toUpperCase()}`;
+  
+  const chatContainer = document.getElementById('sim-chat-container');
+  chatContainer.innerHTML = '';
+  
+  const thinkingRow = document.createElement('div');
+  thinkingRow.id = 'sim-thinking-indicator';
+  thinkingRow.className = 'bubble-row interviewer';
+  thinkingRow.style.display = 'none';
+  thinkingRow.style.marginBottom = '12px';
+  thinkingRow.style.gap = '12px';
+  thinkingRow.innerHTML = `
+    <div class="bubble-avatar">
+      <img id="sim-thinking-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Recruitment%20Proctor" alt="Proctor">
+    </div>
+    <div class="bubble-content" style="background: transparent; border: none; padding: 0;">
+      <span class="bubble-speaker" id="sim-thinking-speaker">STAR Evaluator</span>
+      <span style="font-style: italic; color: var(--mute); font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px;">
+        <span id="sim-thinking-text">Proctor is thinking...</span>
+        <span class="thinking-dots" style="display: inline-flex; gap: 3px;">
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0s;"></span>
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0.2s;"></span>
+          <span class="dot" style="width: 5px; height: 5px; background: var(--mute); border-radius: 50%; animation: pulseDot 1.4s infinite 0.4s;"></span>
+        </span>
+      </span>
+    </div>
+  `;
+  chatContainer.appendChild(thinkingRow);
+  
+  simMessages = [];
+  initiateRound();
+}
+
+async function syncOaDeadlineToCalendar(companyName, jobTitle) {
+  if (!db || !currentUid) return;
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      const commitments = data.commitments || [];
+      
+      const title = `Deadline: Apply to ${companyName} (${jobTitle})`;
+      if (commitments.some(c => c.title === title)) return;
+      
+      const deadlineDay = elapsedDays + 3;
+      commitments.push({
+        title: title,
+        category: 'calendar',
+        description: `Simulated deadline target for ${companyName} - ${jobTitle}. Opening will rotate out by Day ${deadlineDay}.`,
+        done: false,
+        due_date: `Day ${deadlineDay}`
+      });
+      
+      await docRef.set({ commitments: commitments }, { merge: true });
+      console.log("Synced simulated drive deadline to commitments calendar:", title);
+    }
+  } catch (e) {
+    console.error("Failed to sync simulated deadline to commitments calendar:", e);
+  }
+}
+
+async function sendSimOpeningEmail(company) {
+  if (!db || !currentUid) return;
+  try {
+    const docRef = db.collection('users').doc(currentUid);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) return;
+    const data = docSnap.data();
+    
+    const brevoKey = data.config?.brevo_api_key;
+    const userEmail = data.config?.user_email || firebase.auth().currentUser?.email;
+    if (!brevoKey || !userEmail) {
+      console.warn("Skipping email dispatch: Brevo key or user email missing in settings.");
+      return;
+    }
+    
+    const deadlineDay = elapsedDays + 3;
+    const subject = `[Scout Placements Alert] New Drive Opening: ${company.name} (${company.title})`;
+    const emailBody = `
+      <div style="font-family: sans-serif; padding: 24px; color: #1a1814; background-color: #faf8f5;">
+        <h2 style="color: #b52c24; border-bottom: 1px solid #dcd7ca; padding-bottom: 8px;">PLACEMENT DRIVE ALERT</h2>
+        <p>A new recruitment opportunity has been announced at the placement cell:</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 0; font-weight: bold; width: 140px;">Company</td><td style="padding: 8px 0;">${company.name}</td></tr>
+          <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 0; font-weight: bold;">Designation</td><td style="padding: 8px 0;">${company.title}</td></tr>
+          <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 0; font-weight: bold;">CTC Offered</td><td style="padding: 8px 0;">${company.ctc} LPA</td></tr>
+          <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 0; font-weight: bold;">Eligibility CGPA</td><td style="padding: 8px 0;">${company.cgpa}</td></tr>
+          <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 0; font-weight: bold;">Active Backlogs Max</td><td style="padding: 8px 0;">${company.backlogs}</td></tr>
+          <tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px 0; font-weight: bold;">Application Deadline</td><td style="padding: 8px 0; font-weight: bold; color: #b52c24;">Day ${deadlineDay}</td></tr>
+        </table>
+        <p style="font-size: 13.5px; line-height: 1.5; color: #5c5850;">
+          Explore this opening directly in your Scout Placement Simulator. Eligibility requirements will be checked against your profile details.
+        </p>
+      </div>
+    `;
+    
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': brevoKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender:      { name: 'Scout', email: 'noreply@singulr.tech' },
+        to:          [{ email: userEmail }],
+        subject,
+        htmlContent: emailBody
+      })
+    });
+  } catch(e) {
+    console.error("Failed to send simulated email alert:", e);
   }
 }
 
@@ -1990,6 +2375,13 @@ function animateWords(container, wordDelayMs = 25) {
 window.addEventListener('DOMContentLoaded', () => {
   initSimulator();
 });
+
+// Hook fullscreen triggers to regular recruitment entry
+const originalApplyToSimOpening = applyToSimOpening;
+applyToSimOpening = function(companyId) {
+  originalApplyToSimOpening(companyId);
+  setTimeout(requestFullscreenProctor, 100);
+};
 </script>
 </body>
 </html>
