@@ -715,7 +715,7 @@ function playCastleClearedSound() {
 // API Call utility
 async function callGeminiApi(prompt, contextDesc = "") {
   // Read apiKey from localStorage
-  const apiKey = localStorage.getItem('google_gemini_api_key');
+  const apiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('google_gemini_api_key');
   if (!apiKey) {
     throw new Error("Gemini API key missing. Please configure in Settings page.");
   }
