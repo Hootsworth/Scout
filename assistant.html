@@ -91,6 +91,7 @@ body {
 .message-row {
   display: flex;
   width: 100%;
+  position: relative;
 }
 .message-row.user {
   justify-content: flex-end;
@@ -313,14 +314,12 @@ body {
   height: 38px;
 }
 
-.message-actions,
 .chart-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
 }
-.message-action-btn,
 .chart-action-btn {
   border: 1px solid var(--hairline);
   background: var(--surface-soft);
@@ -331,11 +330,48 @@ body {
   font-weight: 500;
   cursor: pointer;
 }
-.message-action-btn:hover,
 .chart-action-btn:hover {
   color: var(--ink);
   border-color: var(--ink);
   background: var(--canvas);
+}
+
+.message-actions {
+  display: flex;
+  gap: 4px;
+  position: absolute;
+  right: 12px;
+  bottom: 0px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(2px);
+  z-index: 10;
+}
+.message-row:hover .message-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.message-action-btn {
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  color: var(--body);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+.message-action-btn:hover {
+  background: var(--canvas);
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .dashboard-grid {
@@ -2089,6 +2125,7 @@ function addMessageActions(container, rawText) {
 
 function addChartActions(container) {
   container.querySelectorAll('svg').forEach((svg, idx) => {
+    if (svg.closest('.message-actions')) return;
     if (svg.nextElementSibling?.classList?.contains('chart-actions')) return;
     const actions = document.createElement('div');
     actions.className = 'chart-actions';
