@@ -389,6 +389,7 @@ body {
   <div class="nav-links" id="actions-group-links">
     <a href="index.html" class="active">Chat</a>
     <a href="placements.html">Placements</a>
+    <a href="study.html">Self-Study</a>
     <a href="simulator.html">Simulator</a>
     <a href="settings.html">Settings</a>
   </div>
@@ -2694,7 +2695,7 @@ The user's GitHub commits activity and LeetCode solved problems are periodically
 *Fallback Rules:* If github_commits_this_week is undefined or missing in the JSON plan, assume it is 0. If config.github_commit_goal is undefined or missing, assume the weekly goal is 5 commits. If config.leetcode_solved_goal is undefined or missing, assume the weekly goal is 3 solved problems.
 If the user asks "check if i reached my weekly commit goal for github?" or "how am I doing on coding target?", read these fields from the database and report the results immediately instead of saying you cannot access GitHub or trying to read calendar/Gmail.
 
-== AUTONOMOUS GAMIFIED STUDIES SYSTEM ==
+== AUTONOMOUS SELF-STUDY SYSTEM ==
 When the user asks to learn a topic today, study a subject, or requests study courses/material (e.g., "I want to learn Dynamic Programming today", "help me learn git", "give me course material for system design"):
 1. You MUST search the web (web_search) to locate high-quality free online courses or YouTube playlists. Make multiple query cycles if needed to explore deep/niche topics.
 2. You MUST output your recommendations using the custom <study-recommendations> tags.
@@ -3286,7 +3287,7 @@ function renderStudyRecommendations(topic, courses, idx) {
   let html = `
     <div class="study-widget" style="background:var(--surface-soft); border:1.5px solid var(--hairline-strong); border-radius:12px; padding:20px; margin:20px 0; box-shadow:var(--shadow); text-align:left;">
       <h3 style="margin-top:0; border:none; padding:0; font-family:'Syne',sans-serif; font-size:18px; color:var(--ink); display:flex; align-items:center; gap:8px;">
-        🎓 Gamified Study Path: ${topic}
+        🎓 Self-Study Path: ${topic}
       </h3>
       <p style="font-size:13px; color:var(--mute); margin:4px 0 16px 0;">Scout AI scraped the web and generated these courses & quizzes for you today.</p>
       
@@ -3337,13 +3338,13 @@ function addCourseToSelfStudy(title, platform, url, duration, xp, difficulty) {
   }
   
   if (localCourses.some(lc => lc.title === title)) {
-    alert("This course is already added to your Gamified Self-Study tab!");
+    alert("This course is already added to your Self-Study track!");
     return;
   }
   
   localCourses.push({ title, platform, url, duration, xp, difficulty });
   localStorage.setItem('local_courses', JSON.stringify(localCourses));
-  alert(`"${title}" has been successfully added to your Gamified Self-Study tab in Placements!`);
+  alert(`"${title}" has been successfully added to your Self-Study track! You can launch and clear this level from the Self-Study screen.`);
 }
 
 function launchStudyWidgetQuiz(quizKey, courseXp, courseTitle) {

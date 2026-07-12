@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="logo.png">
+<title>Scout - Self-Study NES</title>
+<!-- Retro Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ollama.css">
+<style>
+:root {
+  --nes-sky: #5c94fc;
+  --nes-brick: #c84c0c;
+  --nes-ground: #fcb83c;
+  --nes-grass: #00a800;
+  --mario-red: #e52521;
+  --luigi-green: #43b047;
+  --coin-yellow: #fcd800;
+  --retro-dark: #0f380f;
+  --retro-light: #8bac0f;
+}
+
+body {
+  background-color: var(--nes-sky);
+  font-family: 'Press Start 2P', monospace;
+  color: #fff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* NES Style Container Overrides */
+.nes-container {
+  border: 4px solid #000;
+  background-color: #000;
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+  padding: 16px;
+  position: relative;
+  image-rendering: pixelated;
+}
+.nes-container::after {
+  content: '';
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border: 4px solid #000;
+  pointer-events: none;
+}
+
+/* 8-bit Header */
+.retro-header-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background-color: #000;
+  border-bottom: 6px solid #000;
+  font-size: 11px;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+.retro-header-bar span {
+  color: var(--coin-yellow);
+}
+.retro-header-bar div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Retro map layout */
+.map-container {
+  background-color: var(--nes-sky);
+  border: 6px solid #000;
+  margin: 20px auto;
+  width: 95%;
+  max-width: 1000px;
+  height: 240px;
+  position: relative;
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 16px 16px;
+  overflow: hidden;
+}
+
+/* Hills & Clouds pixel decoration */
+.decor-cloud {
+  position: absolute;
+  background: #fff;
+  width: 64px;
+  height: 24px;
+  border: 4px solid #000;
+  border-radius: 12px;
+  top: 30px;
+}
+.decor-cloud::after {
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 16px;
+  background: #fff;
+  border-radius: 8px;
+  top: -12px;
+  left: 16px;
+}
+
+.decor-hill {
+  position: absolute;
+  bottom: 0;
+  width: 120px;
+  height: 60px;
+  background: var(--nes-grass);
+  border-top: 4px solid #000;
+  border-left: 4px solid #000;
+  border-right: 4px solid #000;
+  border-radius: 60px 60px 0 0;
+}
+
+/* Level pathway */
+.level-path {
+  position: absolute;
+  bottom: 40px;
+  left: 5%;
+  right: 5%;
+  height: 12px;
+  background: repeating-linear-gradient(90deg, #000, #000 12px, transparent 12px, transparent 24px);
+}
+
+/* Level nodes */
+.level-node {
+  position: absolute;
+  bottom: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.1s;
+}
+.level-node:hover {
+  transform: scale(1.1);
+}
+.level-node.completed {
+  background: var(--luigi-green);
+}
+.level-node.active {
+  background: var(--mario-red);
+}
+.level-node.locked {
+  background: #888;
+  cursor: not-allowed;
+}
+.level-node-num {
+  font-size: 14px;
+  color: #000;
+  font-weight: bold;
+}
+.level-node.completed .level-node-num {
+  color: #fff;
+}
+
+/* Bowser Castle Node */
+.castle-node {
+  background: #3a3a3a !important;
+  border-radius: 8px !important;
+}
+
+/* Avatar Sprite */
+.avatar-sprite {
+  position: absolute;
+  bottom: 64px;
+  width: 32px;
+  height: 32px;
+  background-color: var(--mario-red);
+  border: 3px solid #000;
+  z-index: 15;
+  transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+.avatar-sprite::before {
+  content: 'M';
+  font-weight: 800;
+  color: #fff;
+  font-size: 12px;
+}
+
+/* Panel segment */
+.retro-dialog-box {
+  width: 95%;
+  max-width: 1000px;
+  margin: 0 auto 30px auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.retro-title {
+  color: var(--coin-yellow);
+  font-size: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Retro Buttons */
+.retro-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  padding: 12px 18px;
+  background-color: var(--nes-brick);
+  color: #fff;
+  border: 4px solid #000;
+  box-shadow: 4px 4px 0 #000;
+  cursor: pointer;
+  image-rendering: pixelated;
+  text-transform: uppercase;
+  margin-top: 10px;
+  outline: none;
+}
+.retro-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 #000;
+}
+.retro-btn-green {
+  background-color: var(--luigi-green);
+}
+.retro-btn-disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+  box-shadow: 2px 2px 0 #000;
+}
+.retro-btn-disabled:active {
+  transform: none;
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* Form Styles */
+.retro-input {
+  background-color: #000;
+  border: 4px solid #fff;
+  color: #39ff14; /* retro green */
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  padding: 10px;
+  width: 95%;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+/* Level Up / Victory Overlay */
+#victory-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.95);
+  z-index: 10000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION BAR -->
+<nav class="primary-nav">
+  <div class="logo-area">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+      <path d="M10 20v-6h4v6M18 10a4 4 0 0 0-8 0v4H6a2 2 0 0 0-2 2v2M20 20v-4a4 4 0 0 0-4-4h-2V6a2 2 0 0 0-4 0v4H9"></path>
+      <circle cx="14" cy="5" r="0.5"></circle>
+    </svg>
+    <span>Scout</span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Chat</a>
+    <a href="placements.html">Placements</a>
+    <a href="study.html" class="active">Self-Study</a>
+    <a href="simulator.html">Simulator</a>
+    <a href="settings.html">Settings</a>
+  </div>
+</nav>
+
+<div style="margin-top: 56px;"></div>
+
+<!-- 8-BIT RETRO STATUS BAR -->
+<div class="retro-header-bar">
+  <div>
+    <span>Player</span>
+    <strong>Aditya</strong>
+  </div>
+  <div>
+    <span>World XP</span>
+    <strong id="header-xp">00000</strong>
+  </div>
+  <div>
+    <span>Level</span>
+    <strong id="header-level">L01</strong>
+  </div>
+  <div>
+    <span>Completed</span>
+    <strong id="header-coins">x00</strong>
+  </div>
+  <div>
+    <span>World</span>
+    <strong>1-1</strong>
+  </div>
+</div>
+
+<!-- THE LEVEL SELECTOR MAP -->
+<div class="map-container">
+  <div class="decor-cloud" style="left: 15%; top: 20px;"></div>
+  <div class="decor-cloud" style="left: 60%; top: 40px;"></div>
+  <div class="decor-hill" style="left: 25%;"></div>
+  <div class="decor-hill" style="left: 70%; height: 40px; width: 80px;"></div>
+  
+  <div class="level-path"></div>
+  
+  <!-- Active Player sprite -->
+  <div class="avatar-sprite" id="player-avatar" style="left: 4%;"></div>
+  
+  <!-- Dynamic World Nodes -->
+  <div id="nodes-container">
+    <!-- Rendered dynamically -->
+  </div>
+</div>
+
+<!-- DETAILED DIALOG / CONTROL BOX -->
+<div class="retro-dialog-box">
+  <div class="nes-container" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+    <div id="details-view">
+      <div class="retro-title">
+        <span>▶</span> <span id="course-details-title">Select a World Level</span>
+      </div>
+      <div id="course-details-body" style="font-family:'VT323', monospace; font-size: 20px; line-height: 1.6; color:#a0a0a0; white-space:pre-wrap;">
+Click on any unlocked World Node above to view your study path guidelines, launching links, and validation exams. Complete all levels to challenge Bowser's Castle!
+      </div>
+    </div>
+    
+    <!-- Action controllers -->
+    <div id="course-actions" style="margin-top: 20px; display: none; gap: 12px; flex-wrap: wrap;">
+      <a id="launch-course-btn" href="#" target="_blank" class="retro-btn" onclick="playJumpSound()">Launch Level URL</a>
+      <button id="claim-course-btn" class="retro-btn retro-btn-green" onclick="claimSelectedCourse()">Mark Level Complete</button>
+      <button id="exam-course-btn" class="retro-btn" style="background:#000; border-color:var(--coin-yellow); color:var(--coin-yellow);" onclick="openCourseExam()">Take Course Exam</button>
+    </div>
+  </div>
+</div>
+
+<!-- RETRO EXAM MODAL (8-BIT DIALOG) -->
+<dialog id="retro-exam-modal" style="border:6px solid #fff; background-color:#000; padding:24px; max-width:540px; width:90%; font-family:'Press Start 2P', monospace; color:#fff; outline:none; image-rendering:pixelated; margin:auto;">
+  <h3 style="color:var(--coin-yellow); font-size:12px; margin-top:0; border-bottom:4px solid #fff; padding-bottom:12px; text-transform:uppercase;" id="exam-modal-title">Level Exam</h3>
+  
+  <div id="exam-modal-questions" style="font-family:'VT323', monospace; font-size:18px; color:#39ff14; max-height:280px; overflow-y:auto; margin:16px 0; display:flex; flex-direction:column; gap:16px; text-align:left;">
+    <!-- Rendered dynamically -->
+  </div>
+  
+  <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+    <button class="retro-btn" style="background-color:#555;" onclick="document.getElementById('retro-exam-modal').close()">Exit</button>
+    <button class="retro-btn retro-btn-green" id="exam-modal-submit-btn">Submit</button>
+  </div>
+</dialog>
+
+<!-- BOWSER CASTLE FINAL ASSIGNMENT MODAL -->
+<dialog id="bowser-castle-modal" style="border:8px solid var(--nes-brick); background-color:#000; padding:32px; max-width:640px; width:90%; font-family:'Press Start 2P', monospace; color:#fff; outline:none; image-rendering:pixelated; margin:auto; text-align:center;">
+  <div style="font-size:36px; margin-bottom:16px;">👹</div>
+  <h2 style="color:var(--mario-red); font-size:16px; margin:0 0 12px 0;">BOWSER'S FINAL CASTLE</h2>
+  <p style="font-family:'VT323', monospace; font-size:18px; color:#aaa; line-height:1.5; margin-bottom:20px;">
+    Mwahaha! You completed all coursework. But do you have what it takes to beat the Final Placement Boss? Answer these challenges correctly to clear the game!
+  </p>
+  
+  <div id="bowser-exam-content" style="font-family:'VT323', monospace; font-size:19px; color:#39ff14; max-height:300px; overflow-y:auto; margin-bottom:24px; text-align:left; display:flex; flex-direction:column; gap:20px; padding-right:8px;">
+    <!-- Q1 (MCQ) -->
+    <div style="border-bottom: 2px solid var(--nes-brick); padding-bottom:16px;">
+      <div style="font-weight:bold; margin-bottom:8px; color:#fff;">Q1. What is the time complexity of building a heap of size N?</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq1" value="0"> O(N log N)</label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq1" value="1"> O(N)</label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq1" value="2"> O(log N)</label>
+      </div>
+    </div>
+    <!-- Q2 (Fill-In) -->
+    <div style="border-bottom: 2px solid var(--nes-brick); padding-bottom:16px;">
+      <div style="font-weight:bold; margin-bottom:8px; color:#fff;">Q2. Fill in the blank: The ________ theorem is used to determine the asymptotic complexity of divide-and-conquer recurrence relations.</div>
+      <input type="text" id="bq2-input" class="retro-input" style="width:100%; border-color:var(--nes-brick);" placeholder="Your answer (case-insensitive)...">
+    </div>
+    <!-- Q3 (Coding MCQ) -->
+    <div>
+      <div style="font-weight:bold; margin-bottom:8px; color:#fff;">Q3. Consider recursive fibonacci function. What programming technique is specifically used to cache previous results and prevent exponential growth?</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq3" value="0"> Iteration</label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq3" value="1"> Memoization</label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq3" value="2"> Graph Traversal</label>
+      </div>
+    </div>
+  </div>
+  
+  <div style="display:flex; justify-content:center; gap:16px;">
+    <button class="retro-btn" style="background:#444;" onclick="document.getElementById('bowser-castle-modal').close()">Retreat</button>
+    <button class="retro-btn" style="background:var(--mario-red);" onclick="submitFinalBossExam()">Submit &amp; Fight</button>
+  </div>
+</dialog>
+
+<!-- VICTORY CELEBRATION CONGRATS SCREEN -->
+<div id="victory-overlay">
+  <div class="nes-container" style="border-color:var(--coin-yellow); max-width:600px; width:90%; padding:40px 24px;">
+    <div style="font-size:48px; margin-bottom:20px; animation: bounce 1s infinite alternate;">👑</div>
+    <h1 style="font-family:'Press Start 2P', monospace; font-size:20px; color:var(--coin-yellow); margin-bottom:24px; text-transform:uppercase;">GAME CLEAR!</h1>
+    
+    <p style="font-family:'VT323', monospace; font-size:24px; color:#39ff14; line-height:1.6; margin-bottom:24px; white-space:pre-line;" id="victory-card-text">
+      THANK YOU ADITYA!
+      BUT OUR PRINCIPAL SDE RANK
+      IS IN ANOTHER CASTLE!
+      
+      You have successfully cleared all courses and defeated the Placement Boss. You are SDE Ready!
+    </p>
+    
+    <button class="retro-btn retro-btn-green" onclick="closeVictoryScreen()">Return to Map</button>
+  </div>
+</div>
+
+<!-- JS Retro Logic -->
+<script>
+// State Management
+let courses = [];
+let completedTitles = [];
+let selectedIndex = -1;
+
+function getCoursesList() {
+  try {
+    return JSON.parse(localStorage.getItem('local_courses') || '[]');
+  } catch(e) {
+    return [];
+  }
+}
+
+function getCompletedTitles() {
+  try {
+    return JSON.parse(localStorage.getItem('completed_courses') || '[]');
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveCompletedTitles(list) {
+  localStorage.setItem('completed_courses', JSON.stringify(list));
+}
+
+function renderWorldMap() {
+  courses = getCoursesList();
+  completedTitles = getCompletedTitles();
+  
+  const container = document.getElementById('nodes-container');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  // Update header stats
+  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+  let level = Math.floor(xp / 200) + 1;
+  document.getElementById('header-xp').textContent = String(xp).padStart(5, '0');
+  document.getElementById('header-level').textContent = `L${String(level).padStart(2, '0')}`;
+  document.getElementById('header-coins').textContent = `x${String(completedTitles.length).padStart(2, '0')}`;
+  
+  // Calculate horizontal offsets for layout dynamically
+  const count = courses.length;
+  const totalNodes = count + 1;
+  
+  courses.forEach((c, idx) => {
+    const leftPct = 5 + (idx / totalNodes) * 80;
+    
+    const node = document.createElement('div');
+    node.className = 'level-node';
+    
+    const isCompleted = completedTitles.includes(c.title);
+    if (isCompleted) {
+      node.classList.add('completed');
+    }
+    
+    if (idx === selectedIndex) {
+      node.classList.add('active');
+    }
+    
+    node.style.left = `${leftPct}%`;
+    node.onclick = () => selectLevel(idx);
+    
+    node.innerHTML = `
+      <span class="level-node-num">${idx + 1}</span>
+    `;
+    container.appendChild(node);
+  });
+  
+  // Render Bowser Node
+  const finalLeftPct = 5 + (count / totalNodes) * 80;
+  const bowserNode = document.createElement('div');
+  bowserNode.className = 'level-node castle-node';
+  bowserNode.style.left = `${finalLeftPct}%`;
+  
+  const isBowserUnlocked = courses.length > 0 && courses.every(c => completedTitles.includes(c.title));
+  if (!isBowserUnlocked) {
+    bowserNode.classList.add('locked');
+  }
+  if (selectedIndex === count) {
+    bowserNode.classList.add('active');
+  }
+  
+  bowserNode.onclick = () => {
+    if (!isBowserUnlocked) {
+      playDamageSound();
+      alert("Bowser's Castle is locked! Complete all preceding World Levels first!");
+      return;
+    }
+    selectLevel(count);
+  };
+  
+  bowserNode.innerHTML = `
+    <span class="level-node-num" style="color:#fff;">👹</span>
+  `;
+  container.appendChild(bowserNode);
+  
+  // Position player avatar sprite over current selected level
+  const avatar = document.getElementById('player-avatar');
+  if (avatar) {
+    const currentLeft = 4 + (Math.max(0, selectedIndex) / totalNodes) * 80;
+    avatar.style.left = `${currentLeft}%`;
+  }
+}
+
+function selectLevel(idx) {
+  selectedIndex = idx;
+  playJumpSound();
+  renderWorldMap();
+  
+  const detailsTitle = document.getElementById('course-details-title');
+  const detailsBody = document.getElementById('course-details-body');
+  const actionsDiv = document.getElementById('course-actions');
+  
+  if (idx === courses.length) {
+    detailsTitle.textContent = "👹 World 1-Castle: Final Boss";
+    detailsBody.textContent = `You have reached the final castle! Challenge Bowser to test your complete technical understanding. Passing this final exam wins the game!\n\nStatus: Unlocked! Click 'Take Course Exam' to begin the battle.`;
+    actionsDiv.style.display = 'flex';
+    document.getElementById('launch-course-btn').style.display = 'none';
+    document.getElementById('claim-course-btn').style.display = 'none';
+    document.getElementById('exam-course-btn').style.display = 'inline-block';
+    return;
+  }
+  
+  const c = courses[idx];
+  const isCompleted = completedTitles.includes(c.title);
+  
+  detailsTitle.textContent = `World 1-${idx + 1}: ${c.title}`;
+  detailsBody.textContent = `Platform: ${c.platform}\nDifficulty: ${c.difficulty}\nDuration: ${c.duration}\nXP Value: ${c.xp} XP\n\nStatus: ${isCompleted ? '✓ LEVEL COMPLETED!' : '▶ In Progress'}\n\nStudy Description:\nLearn to solve issues related to ${c.title}. Use the launch link below to view course materials, then mark as complete or take the quiz review!`;
+  
+  actionsDiv.style.display = 'flex';
+  document.getElementById('launch-course-btn').style.display = 'inline-block';
+  document.getElementById('launch-course-btn').href = c.url;
+  
+  const claimBtn = document.getElementById('claim-course-btn');
+  if (isCompleted) {
+    claimBtn.textContent = "Level Cleared";
+    claimBtn.disabled = true;
+    claimBtn.className = "retro-btn retro-btn-disabled";
+  } else {
+    claimBtn.textContent = "Mark Level Complete";
+    claimBtn.disabled = false;
+    claimBtn.className = "retro-btn retro-btn-green";
+  }
+  
+  const examBtn = document.getElementById('exam-course-btn');
+  if (c.quiz && c.quiz.length > 0) {
+    examBtn.style.display = 'inline-block';
+    examBtn.textContent = "Take Level Quiz";
+  } else {
+    examBtn.style.display = 'none';
+  }
+}
+
+function claimSelectedCourse() {
+  if (selectedIndex < 0 || selectedIndex >= courses.length) return;
+  const c = courses[selectedIndex];
+  
+  if (completedTitles.includes(c.title)) return;
+  
+  completedTitles.push(c.title);
+  saveCompletedTitles(completedTitles);
+  
+  // Award XP
+  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+  let newXp = xp + c.xp;
+  localStorage.setItem('study_xp', newXp);
+  
+  playPowerUpSound();
+  alert(`Level Cleared! You claimed +${c.xp} XP!`);
+  
+  renderWorldMap();
+  selectLevel(selectedIndex);
+}
+
+function openCourseExam() {
+  if (selectedIndex < 0) return;
+  
+  if (selectedIndex === courses.length) {
+    playCastleTheme();
+    document.getElementById('bowser-castle-modal').showModal();
+    return;
+  }
+  
+  const c = courses[selectedIndex];
+  const modal = document.getElementById('retro-exam-modal');
+  const title = document.getElementById('exam-modal-title');
+  const qContainer = document.getElementById('exam-modal-questions');
+  const submitBtn = document.getElementById('exam-modal-submit-btn');
+  
+  if (!modal || !title || !qContainer || !submitBtn) return;
+  
+  title.textContent = `Exam: World 1-${selectedIndex + 1}`;
+  qContainer.innerHTML = '';
+  
+  c.quiz.forEach((q, qIdx) => {
+    const qDiv = document.createElement('div');
+    qDiv.innerHTML = `
+      <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Q${qIdx + 1}. ${q.question}</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        ${q.options.map((opt, oIdx) => `
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="eq_${qIdx}" value="${oIdx}" style="accent-color:var(--luigi-green);">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+    qContainer.appendChild(qDiv);
+  });
+  
+  submitBtn.onclick = () => {
+    let allCorrect = true;
+    let answeredAll = true;
+    
+    c.quiz.forEach((q, qIdx) => {
+      const selected = document.querySelector(`input[name="eq_${qIdx}"]:checked`);
+      if (!selected) {
+        answeredAll = false;
+        return;
+      }
+      if (parseInt(selected.value, 10) !== q.correct) {
+        allCorrect = false;
+      }
+    });
+    
+    if (!answeredAll) {
+      playDamageSound();
+      alert("Answer all questions!");
+      return;
+    }
+    
+    modal.close();
+    
+    if (allCorrect) {
+      playPowerUpSound();
+      alert("PERFECT! You answered all questions correctly! Marking level as complete.");
+      claimSelectedCourse();
+    } else {
+      playDamageSound();
+      alert("EXAM FAILED! Some answers were incorrect. Try studying again!");
+    }
+  };
+  
+  modal.showModal();
+}
+
+function submitFinalBossExam() {
+  const bq1 = document.querySelector('input[name="bq1"]:checked');
+  const bq2 = document.getElementById('bq2-input').value.trim().toLowerCase();
+  const bq3 = document.querySelector('input[name="bq3"]:checked');
+  
+  if (!bq1 || !bq2 || !bq3) {
+    playDamageSound();
+    alert("Bowser roars: ANSWER ALL CHALLENGES!");
+    return;
+  }
+  
+  const isQ1Correct = bq1.value === "1"; 
+  const isQ2Correct = bq2 === "master"; 
+  const isQ3Correct = bq3.value === "1"; 
+  
+  document.getElementById('bowser-castle-modal').close();
+  
+  if (isQ1Correct && isQ2Correct && isQ3Correct) {
+    playCastleClearedSound();
+    
+    let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+    localStorage.setItem('study_xp', xp + 200);
+    
+    const overlay = document.getElementById('victory-overlay');
+    overlay.style.display = 'flex';
+  } else {
+    playDamageSound();
+    alert("BOWSER DEFEATS YOU! Your code crumpled. Re-examine the constraints and try again!");
+  }
+}
+
+function closeVictoryScreen() {
+  document.getElementById('victory-overlay').style.display = 'none';
+  renderWorldMap();
+  selectLevel(courses.length);
+}
+
+// Web Audio Synthesizer chimes
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+}
+
+function playJumpSound() {
+  initAudio();
+  if (!audioCtx) return;
+  
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.15);
+  
+  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+  
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.15);
+}
+
+function playPowerUpSound() {
+  initAudio();
+  if (!audioCtx) return;
+  
+  const notes = [330, 392, 659, 523, 587, 784];
+  notes.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = 'sine';
+    osc.frequency.value = f;
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+    
+    osc.start(audioCtx.currentTime + (i * 0.08));
+    osc.stop(audioCtx.currentTime + (i * 0.08) + 0.4);
+  });
+}
+
+function playDamageSound() {
+  initAudio();
+  if (!audioCtx) return;
+  
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+  osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.3);
+  
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+  
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.3);
+}
+
+function playCastleTheme() {
+  initAudio();
+  if (!audioCtx) return;
+  
+  const notes = [110, 98, 87];
+  notes.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = 'sawtooth';
+    osc.frequency.value = f;
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+    
+    osc.start(audioCtx.currentTime + (i * 0.15));
+    osc.stop(audioCtx.currentTime + (i * 0.15) + 0.6);
+  });
+}
+
+function playCastleClearedSound() {
+  initAudio();
+  if (!audioCtx) return;
+  
+  const notes = [261, 329, 392, 523, 659, 784, 1046];
+  notes.forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = 'square';
+    osc.frequency.value = f;
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+    
+    osc.start(audioCtx.currentTime + (i * 0.12));
+    osc.stop(audioCtx.currentTime + (i * 0.12) + 0.8);
+  });
+}
+
+// Initialise page on load
+window.addEventListener('DOMContentLoaded', () => {
+  renderWorldMap();
+  if (getCoursesList().length > 0) {
+    selectLevel(0);
+  }
+});
+</script>
+</body>
+</html>

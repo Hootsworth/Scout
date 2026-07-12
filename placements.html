@@ -265,6 +265,7 @@ footer {
   <div class="nav-links">
     <a href="index.html">Chat</a>
     <a href="placements.html" class="active">Placements</a>
+    <a href="study.html">Self-Study</a>
     <a href="simulator.html">Simulator</a>
     <a href="settings.html">Settings</a>
   </div>
@@ -292,9 +293,6 @@ footer {
     </button>
     <button id="btn-tab-resume" onclick="switchPlacementsTab('resume')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
       Resume &amp; ATS Optimizer
-    </button>
-    <button id="btn-tab-studies" onclick="switchPlacementsTab('studies')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
-      Gamified Self-Study
     </button>
   </div>
 
@@ -549,90 +547,6 @@ footer {
     </div>
   </section>
 
-  <!-- SECTION: GAMIFIED SELF-STUDY -->
-  <section id="studies" style="display: none; border-bottom: none;">
-    <div class="section-label"><span class="section-num">05</span><h2 class="section-title">Gamified Self-Study</h2></div>
-    <p class="section-desc">Search for topics you want to master, find recommended free courses and YouTube videos, and earn XP to level up your engineering skills.</p>
-    
-    <div class="grid-cols-3" style="margin-bottom: 24px;">
-      <!-- Stats / Rank box -->
-      <div class="stat-box" style="display: flex; align-items: center; gap: 16px; padding: 20px;">
-        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #3d7a6a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 20px; box-shadow: var(--shadow);" id="study-level-badge">
-          L1
-        </div>
-        <div>
-          <div style="font-size: 12px; color: var(--mute); text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Current Rank</div>
-          <div style="font-weight: 800; font-size: 18px; color: var(--ink);" id="study-rank-title">Novice Engineer</div>
-        </div>
-      </div>
-      
-      <!-- XP Progress -->
-      <div class="stat-box" style="display: flex; flex-direction: column; justify-content: center; padding: 20px; grid-column: span 2;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 8px;">
-          <span style="color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em;">XP Progress</span>
-          <span style="color: var(--ink);" id="study-xp-ratio">0 / 200 XP</span>
-        </div>
-        <div style="width: 100%; height: 12px; background: var(--hairline-strong); border-radius: 6px; overflow: hidden; position: relative;">
-          <div id="study-xp-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #3d7a6a 100%); border-radius: 6px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid-cols-3">
-      <!-- Left side: search console -->
-      <div class="setup-card" style="margin-bottom:0; height: fit-content;">
-        <h3>Search Study Topic</h3>
-        <p style="font-size:13.5px; color:var(--mute); margin-bottom:16px;">What topic would you like to master today? Scout will scan high-quality free repositories, Coursera, edX, and YouTube playlists.</p>
-        
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div class="form-group" style="margin: 0;">
-            <label for="study-search-input">Search Query</label>
-            <input type="text" id="study-search-input" placeholder="e.g. Dynamic Programming, System Design, Git..." style="width:100%; height:40px; padding:8px 12px; font-size:14px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink);">
-          </div>
-          <button class="btn btn-primary" onclick="searchStudyMaterial()" style="width:100%; height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
-            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            Find Free Courses &amp; Videos
-          </button>
-        </div>
-      </div>
-      
-      <!-- Right side: results grid -->
-      <div class="setup-card" id="study-results-card" style="grid-column: span 2; margin-bottom: 0; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
-        <div id="study-placeholder">
-          <svg style="width:48px; height:48px; color:var(--mute); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          <p style="color:var(--mute); font-size:14.5px; max-width:320px; text-align: center; margin:0 auto;">Type a study topic on the left to pull curated, free educational courses and video links.</p>
-        </div>
-        
-        <div id="study-loading" style="display:none; text-align: center;">
-          <div class="thinking-dots" style="display:inline-flex; gap:6px; margin-bottom:12px;">
-            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0s;"></span>
-            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.2s;"></span>
-            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.4s;"></span>
-          </div>
-          <p style="color:var(--body); font-size:14px; margin:0;">Scout AI is scanning public course indexes and playlists...</p>
-        </div>
-        
-        <div id="study-courses-list" style="display:none; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 16px;">
-          <!-- Course cards populated dynamically -->
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CELEBRATION CONGRATS OVERLAY -->
-  <div id="study-celebration-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;">
-    <div style="background: linear-gradient(135deg, #171717 0%, #262626 100%); padding: 48px; border-radius: 20px; border: 2px solid var(--primary); box-shadow: 0 0 32px rgba(181, 44, 36, 0.6); max-width: 480px; width: 90%; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; gap: 20px;" id="study-celebration-card">
-      <div id="study-celebration-badge" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #b52c24 0%, #ff5f56 100%); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 800; animation: discoPulse 2s infinite; box-shadow: 0 0 20px rgba(181, 44, 36, 0.6);">
-        🏆
-      </div>
-      <h2 style="font-family:'Syne',sans-serif; font-size: 32px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; background: linear-gradient(45deg, #ff007f, #00f0ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">LEVEL UP!</h2>
-      <p id="study-celebration-text" style="font-size: 16px; color: rgba(255,255,255,0.8); line-height: 1.6; margin: 0;">You crossed the XP threshold and leveled up your placement readiness index!</p>
-      <div style="width: 100%; height: 16px; background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; margin-top: 10px;">
-        <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #ff007f, #00f0ff); border-radius: 8px; animation: fillBar 1.5s ease forwards;"></div>
-      </div>
-      <button class="btn btn-primary" onclick="closeStudyCelebration()" style="margin-top: 12px; height: 44px; padding: 0 32px;">Awesome, Continue!</button>
-    </div>
-  </div>
 
   <!-- UNIVERSAL FOOTER -->
   <footer>
@@ -895,19 +809,11 @@ function switchPlacementsTab(tabId) {
       btnResume.style.color = 'var(--ink)';
     }
     if (secResume) secResume.style.display = 'block';
-  } else if (tabId === 'studies') {
-    if (btnStudies) {
-      btnStudies.style.borderBottomColor = 'var(--primary)';
-      btnStudies.style.color = 'var(--ink)';
-    }
-    if (secStudies) secStudies.style.display = 'block';
-    initStudiesTab();
   }
 }
 
 // Set default view on load
 switchPlacementsTab('overview');
-initStudiesTab();
 
 // Mock OA and Resume Analyzer State Variables and API Logic
 let activeOa = null;
@@ -1232,275 +1138,6 @@ ${data.review}`;
       consoleOutput.textContent = "Error running evaluation: " + err.message;
     });
 }
-
-// Gamified Self-Study Logic
-function initStudiesTab() {
-  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
-  let level = Math.floor(xp / 200) + 1;
-  localStorage.setItem('study_level', level);
-  
-  const xpInLevel = xp % 200;
-  const pct = (xpInLevel / 200) * 100;
-  
-  const badge = document.getElementById('study-level-badge');
-  const ratio = document.getElementById('study-xp-ratio');
-  const bar = document.getElementById('study-xp-progress-bar');
-  const title = document.getElementById('study-rank-title');
-  
-  if (badge) badge.textContent = `L${level}`;
-  if (ratio) ratio.textContent = `${xpInLevel} / 200 XP (Total: ${xp} XP)`;
-  if (bar) bar.style.width = `${pct}%`;
-  
-  const ranks = ["Novice Engineer", "Apprentice Developer", "Skillful Coder", "Advanced SDE", "Systems Architect", "Principal Tech Lead"];
-  if (title) title.textContent = ranks[Math.min(level - 1, ranks.length - 1)];
-
-  renderSavedStudyCourses();
-}
-
-function renderSavedStudyCourses() {
-  const container = document.getElementById('study-courses-list');
-  if (!container) return;
-  
-  let localCourses = [];
-  try {
-    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
-  } catch(e) {
-    localCourses = [];
-  }
-  
-  if (localCourses.length === 0) {
-    return;
-  }
-  
-  container.style.display = 'flex';
-  document.getElementById('study-placeholder').style.display = 'none';
-  
-  container.innerHTML = `
-    <h3 style="margin: 0 0 4px 0; border: none; padding: 0; text-align: left; font-size: 16px; color:var(--ink);">Active Study Inventory</h3>
-    <p style="font-size:12.5px; color:var(--mute); text-align: left; margin:0 0 10px 0;">Courses added from your conversations with Scout. Claim them on completion!</p>
-  `;
-  
-  localCourses.forEach((c, idx) => {
-    const card = document.createElement('div');
-    card.style.background = 'var(--canvas)';
-    card.style.border = '1px solid var(--hairline)';
-    card.style.borderRadius = '10px';
-    card.style.padding = '16px 20px';
-    card.style.display = 'flex';
-    card.style.justifyContent = 'space-between';
-    card.style.alignItems = 'center';
-    card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
-    card.style.transition = 'transform 0.2s, border-color 0.2s';
-    card.style.width = '100%';
-    
-    card.onmouseenter = () => { card.style.borderColor = 'var(--primary)'; card.style.transform = 'translateY(-2px)'; };
-    card.onmouseleave = () => { card.style.borderColor = 'var(--hairline)'; card.style.transform = 'translateY(0)'; };
-    
-    card.innerHTML = `
-      <div style="flex:1; text-align:left; padding-right:20px;">
-        <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #3d7a6a; letter-spacing: 0.04em;">${c.platform} &bull; ${c.difficulty}</div>
-        <h4 style="margin: 4px 0; border: none; padding: 0; font-size: 15px; color: var(--ink);">${c.title}</h4>
-        <div style="font-size: 13px; color: var(--mute); display: flex; gap: 12px; margin-top: 4px;">
-          <span>Duration: ${c.duration}</span>
-          <span style="color: #b52c24; font-weight: bold;">+${c.xp} XP reward</span>
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-        <a href="${c.url}" target="_blank" class="btn btn-outline" style="height: 36px; padding: 0 16px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">Study Now</a>
-        <button class="btn btn-primary" onclick="claimSavedCourseXP(${idx}, ${c.xp}, '${c.title.replace(/'/g, "\\'")}')" style="height: 36px; font-size: 12px;">Complete &amp; Claim</button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
-
-function claimSavedCourseXP(idx, xp, title) {
-  let localCourses = [];
-  try {
-    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
-  } catch(e) {
-    localCourses = [];
-  }
-  
-  completeCourse(xp, title);
-  
-  localCourses.splice(idx, 1);
-  localStorage.setItem('local_courses', JSON.stringify(localCourses));
-  
-  initStudiesTab();
-}
-
-async function searchStudyMaterial() {
-  const queryInput = document.getElementById('study-search-input');
-  const query = queryInput.value.trim();
-  if (!query) {
-    alert("Please type a topic to search!");
-    return;
-  }
-  
-  const placeholder = document.getElementById('study-placeholder');
-  const loader = document.getElementById('study-loading');
-  const list = document.getElementById('study-courses-list');
-  
-  if (placeholder) placeholder.style.display = 'none';
-  if (loader) loader.style.display = 'block';
-  if (list) list.style.display = 'none';
-  
-  const focusStack = localStorage.getItem('personal_techstack') || 'Not specified';
-  
-  const prompt = `You are Scout's Academic Search agent.
-The user wants to find free high-quality online courses, articles, or YouTube video playlists to master this topic: "${query}".
-User Tech Stack Preference: ${focusStack}
-
-Research the topic online and fetch the absolute best free resources (Coursera, edX, MIT OCW, freeCodeCamp, high-quality YouTube channels like Abdul Bari, William Fiset, freeCodeCamp.org).
-Generate exactly 3 recommendation items. For each item, award a reasonable XP reward (50 XP for single videos/short courses, 100 XP for large comprehensive courses).
-You must return your output strictly in this JSON format (do not include any other markdown text or tags outside the json codeblock):
-\`\`\`json
-{
-  "courses": [
-    {
-      "title": "Clean, highly specific course/video title",
-      "platform": "YouTube / freeCodeCamp / MIT OCW / Coursera",
-      "url": "A realistic direct URL link to study this",
-      "duration": "e.g. 8 hours / 4 episodes / 12 articles",
-      "xp": 50,
-      "difficulty": "Beginner | Intermediate | Advanced"
-    }
-  ]
-}
-\`\`\``;
-
-  try {
-    const rawResult = await callGeminiApi(prompt, "Find free study materials.");
-    const data = extractJson(rawResult);
-    
-    if (loader) loader.style.display = 'none';
-    if (!data || !data.courses || data.courses.length === 0) {
-      if (placeholder) placeholder.style.display = 'block';
-      alert("No courses could be retrieved for this topic. Please try again.");
-      return;
-    }
-    
-    if (list) {
-      list.innerHTML = '';
-      list.style.display = 'flex';
-      
-      data.courses.forEach(c => {
-        const card = document.createElement('div');
-        card.style.background = 'var(--canvas)';
-        card.style.border = '1px solid var(--hairline)';
-        card.style.borderRadius = '10px';
-        card.style.padding = '16px 20px';
-        card.style.display = 'flex';
-        card.style.justifyContent = 'space-between';
-        card.style.alignItems = 'center';
-        card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
-        card.style.transition = 'transform 0.2s, border-color 0.2s';
-        
-        card.onmouseenter = () => { card.style.borderColor = 'var(--primary)'; card.style.transform = 'translateY(-2px)'; };
-        card.onmouseleave = () => { card.style.borderColor = 'var(--hairline)'; card.style.transform = 'translateY(0)'; };
-        
-        card.innerHTML = `
-          <div style="flex:1; text-align:left; padding-right:20px;">
-            <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #3d7a6a; letter-spacing: 0.04em;">${c.platform} &bull; ${c.difficulty}</div>
-            <h4 style="margin: 4px 0; border: none; padding: 0; font-size: 15px; color: var(--ink);">${c.title}</h4>
-            <div style="font-size: 13px; color: var(--mute); display: flex; gap: 12px; margin-top: 4px;">
-              <span>Duration: ${c.duration}</span>
-              <span style="color: #b52c24; font-weight: bold;">+${c.xp} XP reward</span>
-            </div>
-          </div>
-          <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-            <a href="${c.url}" target="_blank" class="btn btn-outline" style="height: 36px; padding: 0 16px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">Study Now</a>
-            <button class="btn btn-primary" onclick="completeCourse(${c.xp}, '${c.title.replace(/'/g, "\\'")}')" style="height: 36px; font-size: 12px;">Complete &amp; Claim</button>
-          </div>
-        `;
-        list.appendChild(card);
-      });
-    }
-  } catch (err) {
-    console.error(err);
-    if (loader) loader.style.display = 'none';
-    if (placeholder) placeholder.style.display = 'block';
-    alert("Error searching courses: " + err.message);
-  }
-}
-
-function completeCourse(xpAwarded, courseTitle) {
-  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
-  let oldLevel = Math.floor(xp / 200) + 1;
-  
-  let newXp = xp + xpAwarded;
-  let newLevel = Math.floor(newXp / 200) + 1;
-  
-  localStorage.setItem('study_xp', newXp);
-  localStorage.setItem('study_level', newLevel);
-  
-  initStudiesTab();
-  playLevelUpChime(newLevel > oldLevel);
-  
-  if (newLevel > oldLevel) {
-    const overlay = document.getElementById('study-celebration-overlay');
-    const card = document.getElementById('study-celebration-card');
-    const text = document.getElementById('study-celebration-text');
-    
-    if (overlay && card && text) {
-      text.textContent = `Congratulations! By completing "${courseTitle}", you earned +${xpAwarded} XP and leveled up to L${newLevel} (${document.getElementById('study-rank-title').textContent})!`;
-      overlay.style.display = 'flex';
-      setTimeout(() => {
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'auto';
-        card.style.transform = 'scale(1)';
-      }, 50);
-    }
-  } else {
-    alert(`Course Completed! You gained +${xpAwarded} XP towards Level ${newLevel}!`);
-  }
-}
-
-function playLevelUpChime(isLevelUp) {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-  const ctx = new AudioContext();
-  
-  if (isLevelUp) {
-    const freqs = [261.63, 329.63, 392.00, 523.25, 659.25, 1046.50];
-    freqs.forEach((f, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = f;
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-      osc.start(ctx.currentTime + (i * 0.1));
-      osc.stop(ctx.currentTime + (i * 0.1) + 0.8);
-    });
-  } else {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 523.25;
-    osc.type = 'triangle';
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.3);
-  }
-}
-
-function closeStudyCelebration() {
-  const overlay = document.getElementById('study-celebration-overlay');
-  const card = document.getElementById('study-celebration-card');
-  if (overlay && card) {
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    card.style.transform = 'scale(0.9)';
-    setTimeout(() => {
-      overlay.style.display = 'none';
-    }, 400);
-  }
 }
 </script>
 </body>
