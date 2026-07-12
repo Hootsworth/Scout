@@ -407,26 +407,21 @@ body {
 <!-- CHAT INTERFACE (HIDDEN UNTIL AUTHENTICATED) -->
 <div class="main-chat-container" id="chat-interface-container" style="display: none;">
   <!-- HEADER -->
-  <div class="chat-header">
-    <h1>SCOUT <span class="outline">AI ASSISTANT</span></h1>
-    <div style="display:flex; align-items:center; gap:16px;">
-      <!-- Toggle Sidebar Button -->
-      <button id="toggle-sidebar-btn" class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="toggleChatsSidebar()">
-        <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-        Chats List
-      </button>
+  <div class="chat-header" style="display:flex; justify-content:space-between; align-items:center; width:100%; padding: 12px 24px; min-height: 56px;">
+    <!-- Toggle Sidebar Button (Left aligned, icon-only) -->
+    <button id="toggle-sidebar-btn" class="btn btn-outline" style="padding: 8px; border-radius:50%; min-width: 36px; height: 36px; display:inline-flex; align-items:center; justify-content:center;" onclick="toggleChatsSidebar()" title="Chats List">
+      <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+    </button>
 
-      <button class="btn btn-outline" style="padding: 6px 12px; font-size:11px; display:inline-flex; align-items:center; gap:6px;" onclick="openCommitmentDashboard()">
+    <!-- Right Controls -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button class="btn btn-outline" style="padding: 6px 12px; font-size:11px;" onclick="openCommitmentDashboard()">
         Dashboard
       </button>
       <!-- Model toggle -->
       <div class="model-toggle">
         <button id="btn-gemini" class="active" onclick="setProvider('gemini')">Gemini</button>
         <button id="btn-openai" onclick="setProvider('openai')">GPT</button>
-      </div>
-      <div class="status-indicator">
-        <div class="status-dot" id="agent-status-dot"></div>
-        <span id="agent-status-text">Disconnected</span>
       </div>
     </div>
   </div>
@@ -590,11 +585,11 @@ function setProvider(p) {
   document.getElementById('btn-openai').classList.toggle('active', p === 'openai');
   const key = p === 'gemini' ? geminiKey : openaiKey;
   if (key) {
-    statusDot.classList.add('active');
-    statusText.textContent = p === 'gemini' ? 'Gemini Ready' : 'GPT Ready';
+    if (statusDot) statusDot.classList.add('active');
+    if (statusText) statusText.textContent = p === 'gemini' ? 'Gemini Ready' : 'GPT Ready';
   } else {
-    statusDot.classList.remove('active');
-    statusText.textContent = p === 'gemini' ? 'No Gemini Key' : 'No OpenAI Key';
+    if (statusDot) statusDot.classList.remove('active');
+    if (statusText) statusText.textContent = p === 'gemini' ? 'No Gemini Key' : 'No OpenAI Key';
   }
   renderLoadedMessages();
 }
@@ -604,11 +599,11 @@ const statusDot  = document.getElementById('agent-status-dot');
 const statusText = document.getElementById('agent-status-text');
 
 if (geminiKey) {
-  statusDot.classList.add('active');
-  statusText.textContent = "Gemini Ready";
+  if (statusDot) statusDot.classList.add('active');
+  if (statusText) statusText.textContent = "Gemini Ready";
 } else {
-  statusDot.classList.remove('active');
-  statusText.textContent = "No Gemini Key";
+  if (statusDot) statusDot.classList.remove('active');
+  if (statusText) statusText.textContent = "No Gemini Key";
 }
 
 const DEFAULT_FIREBASE_CONFIG = {
@@ -2148,9 +2143,15 @@ function addMessageActions(container, rawText) {
   const actions = document.createElement('div');
   actions.className = 'message-actions';
   actions.innerHTML = `
-    <button class="message-action-btn" onclick="copyResponse(this)">Copy</button>
-    <button class="message-action-btn" onclick="downloadResponseMarkdown(this)">MD</button>
-    <button class="message-action-btn" onclick="printResponsePdf(this)">PDF</button>
+    <button class="message-action-btn" onclick="copyResponse(this)" title="Copy Response">
+      <svg style="width:13px; height:13px; display:block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    </button>
+    <button class="message-action-btn" onclick="downloadResponseMarkdown(this)" title="Download Markdown">
+      <svg style="width:13px; height:13px; display:block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+    </button>
+    <button class="message-action-btn" onclick="printResponsePdf(this)" title="Print PDF">
+      <svg style="width:13px; height:13px; display:block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+    </button>
   `;
   container.appendChild(actions);
 }
