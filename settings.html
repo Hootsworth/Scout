@@ -208,6 +208,10 @@ code.block {
           <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 9.5A9 9 0 1 0 20.49 15m-.49-5.5h-5m5 0V4"></path></svg>
           <span>Offline Auth Tokens</span>
         </button>
+        <button class="settings-tab-btn" onclick="switchSettingsTab('personalization', this)">
+          <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Personalization</span>
+        </button>
       </nav>
     </aside>
 
@@ -437,6 +441,52 @@ code.block {
           </div>
         </div>
       </section>
+
+      <!-- PANEL 5: PERSONALIZATION -->
+      <section id="personalization" class="settings-panel" style="padding:0; border-bottom:none;">
+        <div class="section-label"><span class="section-num">05</span><h2 class="section-title">Personalization Profile</h2></div>
+        <p class="section-desc">Provide detailed background information about your academic interests, preferred stack, DSA comfort level, and target companies. Scout's AI engines read this context to personalize study suggestions, review codes, and tailor simulator questions.</p>
+        
+        <div class="setup-card">
+          <h3>Your AI Memory Context</h3>
+          
+          <div class="grid-cols-2" style="margin-top: 16px;">
+            <div>
+              <div class="form-group">
+                <label for="personal-focus">Academic Focus &amp; Coursework</label>
+                <textarea id="personal-focus" placeholder="e.g. Favorite subjects, specific electives like Distributed Systems, Cryptography, Database Design..." style="width:100%; height:90px; padding:10px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="personal-techstack">Preferred Tech Stack &amp; Languages</label>
+                <textarea id="personal-techstack" placeholder="e.g. Python (FastAPI, PyTorch), Javascript (React, Next.js), Golang (gRPC, concurrency patterns)..." style="width:100%; height:90px; padding:10px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="personal-career">Career Aspirations &amp; Target Roles</label>
+                <textarea id="personal-career" placeholder="e.g. SDE Intern, Backend Engineer at early-stage AI startup, Quant Developer at HFT, or research engineer..." style="width:100%; height:90px; padding:10px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
+            </div>
+            
+            <div>
+              <div class="form-group">
+                <label for="personal-dsa">Strongest DSA &amp; Computer Science Areas</label>
+                <textarea id="personal-dsa" placeholder="e.g. Comfortable with Trees and Dynamic Programming, good understanding of Database Indexing and Operating Systems..." style="width:100%; height:90px; padding:10px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="personal-growth">Areas of Improvement / Growth Goals</label>
+                <textarea id="personal-growth" placeholder="e.g. Need to improve coding speed, get better at System Design scalability details, public speaking and verbal confidence..." style="width:100%; height:90px; padding:10px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="personal-extra">Projects, Hobbies &amp; Passion Domains</label>
+                <textarea id="personal-extra" placeholder="e.g. Built a custom compiler, participate in local hackathons, passionate about web3 scalability or large language models..." style="width:100%; height:90px; padding:10px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px; border-top: 1px solid var(--hairline); padding-top: 20px;">
+            <button class="btn btn-red" onclick="savePersonalization()">Save Personalization Profile</button>
+          </div>
+        </div>
+      </section>
       <footer style="margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 13px; color: var(--mute);">
         <span>Scout Academic Planner © 2026</span>
         <span>Powered by Singulr.tech</span>
@@ -504,6 +554,12 @@ document.getElementById('discord-channel-id').value = localStorage.getItem('disc
 document.getElementById('elevenlabs-key').value = localStorage.getItem('elevenlabs_api_key') || '';
 document.getElementById('elevenlabs-voice-id').value = localStorage.getItem('elevenlabs_voice_id') || '';
 document.getElementById('elevenlabs-personality').value = localStorage.getItem('elevenlabs_personality') || '';
+document.getElementById('personal-focus').value = localStorage.getItem('personal_focus') || '';
+document.getElementById('personal-techstack').value = localStorage.getItem('personal_techstack') || '';
+document.getElementById('personal-career').value = localStorage.getItem('personal_career') || '';
+document.getElementById('personal-dsa').value = localStorage.getItem('personal_dsa') || '';
+document.getElementById('personal-growth').value = localStorage.getItem('personal_growth') || '';
+document.getElementById('personal-extra').value = localStorage.getItem('personal_extra') || '';
 
 // Initialize Firebase if config exists
 let firebaseAuth = null;
@@ -676,6 +732,16 @@ function saveApiKeys() {
   localStorage.setItem('elevenlabs_voice_id', document.getElementById('elevenlabs-voice-id').value.trim());
   localStorage.setItem('elevenlabs_personality', document.getElementById('elevenlabs-personality').value.trim());
   alert("Credentials and placement configuration saved locally!");
+}
+
+function savePersonalization() {
+  localStorage.setItem('personal_focus', document.getElementById('personal-focus').value.trim());
+  localStorage.setItem('personal_techstack', document.getElementById('personal-techstack').value.trim());
+  localStorage.setItem('personal_career', document.getElementById('personal-career').value.trim());
+  localStorage.setItem('personal_dsa', document.getElementById('personal-dsa').value.trim());
+  localStorage.setItem('personal_growth', document.getElementById('personal-growth').value.trim());
+  localStorage.setItem('personal_extra', document.getElementById('personal-extra').value.trim());
+  alert("Personalization profile saved locally! Scout AI will now adapt to this context.");
 }
 
 // Start Google OAuth Refresh Token Flow

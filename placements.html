@@ -970,6 +970,10 @@ function startMockOa() {
   document.getElementById('oa-active-title').textContent = `Assessment for ${job.name} — ${job.title}`;
   document.getElementById('oa-active-lang').textContent = `Language: ${lang.toUpperCase()}`;
   
+  const focusStack = localStorage.getItem('personal_techstack') || 'Not specified';
+  const growthDSA = localStorage.getItem('personal_growth') || '';
+  const strongDSA = localStorage.getItem('personal_dsa') || '';
+
   const systemPrompt = `You are a technical Online Assessment (OA) compiler system.
 Your job is to generate a highly realistic, challenging algorithmic programming question tailored to the target company and role.
 
@@ -977,6 +981,13 @@ Target details:
 Company: ${job.name}
 Role: ${job.title}
 Difficulty: Medium-Hard
+
+User Context:
+- Tech Stack: ${focusStack}
+- DSA Strengths: ${strongDSA}
+- Development Needs / Improvement Areas: ${growthDSA}
+
+Tailor the coding question style or topic to challenge the candidate on their stated language (${lang}) and balance it with their improvement areas if relevant (e.g., if they want to get better at dynamic programming or graphs, prioritize those algorithmic topics).
 
 Respond strictly with a valid JSON object matching this structure:
 {

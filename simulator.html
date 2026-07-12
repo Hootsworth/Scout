@@ -1721,6 +1721,10 @@ Keep your response professional, firm, and state the topic clearly, asking the c
   const proctorPrompt = `You are a recruitment proctor/evaluator at ${sim.company.name}. 
 Current Stage: ${roundTitles[sim.roundIndex]} (Round ${sim.roundIndex + 1} of 5).
 The user is applying for ${sim.company.title} (${sim.company.ctc} LPA).
+
+Candidate Background & Personalization Context:
+${getPersonalizationContextStr()}
+
 Start the round by presenting a realistic prompt or challenge.
 - GD: Initiate a debate topic related to tech or business. Introduce a candidate prompt.
 - Coding: Present a medium-hard Leetcode style coding question (descriptions, examples, constraints).
@@ -1729,6 +1733,7 @@ Start the round by presenting a realistic prompt or challenge.
 - HR Interview: Ask a behavioral question regarding culture fit, work ethic, or CTC expectations.
 
 Keep your response professional, firm, and fully in character. Speak directly.
+For Tech and HR Interview rounds, you should tailor your questions to probe their stated tech stack, DSA strengths, and areas of growth to make it a highly realistic, resume-based interview.
 ${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('elevenlabs_personality') || 'A strict, professional HR director'}. You are in a voice interview round, so keep your questions clear, direct, conversational, and voice-friendly. Do not include coding formatting or markdown tables.` : ''}`;
 
   appendSimChat("SYSTEM", "Proctor is generating challenge...", false, true);
@@ -1976,6 +1981,9 @@ ${feedback}
 Role: ${sim.company.title} (${sim.company.ctc} LPA)
 Candidate: Aditya Dixit (CGPA: ${localStorage.getItem('user_cgpa') || '8.5'}, Backlogs: ${localStorage.getItem('user_backlogs') || '0'})
 Reality Mode is active: ${isRealityMode}. If reality mode is active, your grading standards are extremely severe.
+
+Candidate Background & Personalization Context:
+${getPersonalizationContextStr()}
 
 Here is the conversation log for this round:
 ---
@@ -2751,6 +2759,25 @@ function updateMicButtonUI() {
       <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
     `;
   }
+}
+
+function getPersonalizationContextStr() {
+  const focus = localStorage.getItem('personal_focus') || 'Not specified';
+  const stack = localStorage.getItem('personal_techstack') || 'Not specified';
+  const career = localStorage.getItem('personal_career') || 'Not specified';
+  const dsa = localStorage.getItem('personal_dsa') || 'Not specified';
+  const growth = localStorage.getItem('personal_growth') || 'Not specified';
+  const extra = localStorage.getItem('personal_extra') || 'Not specified';
+  
+  return `
+Candidate Personalization Details:
+- Academic Focus / Fav Subjects: ${focus}
+- Preferred Tech Stack & Languages: ${stack}
+- Career Target Roles: ${career}
+- DSA & CS Strengths: ${dsa}
+- Development Needs / Growth Areas: ${growth}
+- Projects & Passion Domains: ${extra}
+  `.trim();
 }
 
 // Standalone Voice HR Interview Sandbox Launcher
