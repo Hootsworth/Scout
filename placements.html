@@ -1253,6 +1253,81 @@ function initStudiesTab() {
   
   const ranks = ["Novice Engineer", "Apprentice Developer", "Skillful Coder", "Advanced SDE", "Systems Architect", "Principal Tech Lead"];
   if (title) title.textContent = ranks[Math.min(level - 1, ranks.length - 1)];
+
+  renderSavedStudyCourses();
+}
+
+function renderSavedStudyCourses() {
+  const container = document.getElementById('study-courses-list');
+  if (!container) return;
+  
+  let localCourses = [];
+  try {
+    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
+  } catch(e) {
+    localCourses = [];
+  }
+  
+  if (localCourses.length === 0) {
+    return;
+  }
+  
+  container.style.display = 'flex';
+  document.getElementById('study-placeholder').style.display = 'none';
+  
+  container.innerHTML = `
+    <h3 style="margin: 0 0 4px 0; border: none; padding: 0; text-align: left; font-size: 16px; color:var(--ink);">Active Study Inventory</h3>
+    <p style="font-size:12.5px; color:var(--mute); text-align: left; margin:0 0 10px 0;">Courses added from your conversations with Scout. Claim them on completion!</p>
+  `;
+  
+  localCourses.forEach((c, idx) => {
+    const card = document.createElement('div');
+    card.style.background = 'var(--canvas)';
+    card.style.border = '1px solid var(--hairline)';
+    card.style.borderRadius = '10px';
+    card.style.padding = '16px 20px';
+    card.style.display = 'flex';
+    card.style.justifyContent = 'space-between';
+    card.style.alignItems = 'center';
+    card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+    card.style.transition = 'transform 0.2s, border-color 0.2s';
+    card.style.width = '100%';
+    
+    card.onmouseenter = () => { card.style.borderColor = 'var(--primary)'; card.style.transform = 'translateY(-2px)'; };
+    card.onmouseleave = () => { card.style.borderColor = 'var(--hairline)'; card.style.transform = 'translateY(0)'; };
+    
+    card.innerHTML = `
+      <div style="flex:1; text-align:left; padding-right:20px;">
+        <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #3d7a6a; letter-spacing: 0.04em;">${c.platform} &bull; ${c.difficulty}</div>
+        <h4 style="margin: 4px 0; border: none; padding: 0; font-size: 15px; color: var(--ink);">${c.title}</h4>
+        <div style="font-size: 13px; color: var(--mute); display: flex; gap: 12px; margin-top: 4px;">
+          <span>Duration: ${c.duration}</span>
+          <span style="color: #b52c24; font-weight: bold;">+${c.xp} XP reward</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+        <a href="${c.url}" target="_blank" class="btn btn-outline" style="height: 36px; padding: 0 16px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">Study Now</a>
+        <button class="btn btn-primary" onclick="claimSavedCourseXP(${idx}, ${c.xp}, '${c.title.replace(/'/g, "\\'")}')" style="height: 36px; font-size: 12px;">Complete &amp; Claim</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function claimSavedCourseXP(idx, xp, title) {
+  let localCourses = [];
+  try {
+    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
+  } catch(e) {
+    localCourses = [];
+  }
+  
+  completeCourse(xp, title);
+  
+  localCourses.splice(idx, 1);
+  localStorage.setItem('local_courses', JSON.stringify(localCourses));
+  
+  initStudiesTab();
 }
 
 async function searchStudyMaterial() {

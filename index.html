@@ -1622,8 +1622,16 @@ function renderBarChartTag(title, yLabel, bars) {
 function parseMarkdown(md) {
   md = normalizeEscapedMarkdownText(md);
 
+  const studyRecs = [];
   const pieCharts = [];
   const barCharts = [];
+
+  // Parse custom <study-recommendations> tags before HTML escaping
+  md = md.replace(/<study-recommendations\b[^>]*>([\s\S]*?)<\/study-recommendations>/gi, (match) => {
+    const id = `%%STUDYREC${studyRecs.length}%%`;
+    studyRecs.push(match);
+    return id;
+  });
 
   // Parse custom <pie-chart> tags before HTML escaping and replace with placeholders
   md = md.replace(/<pie-chart\b[^>]*>([\s\S]*?)<\/pie-chart>/gi, (match) => {
@@ -1893,6 +1901,38 @@ function parseMarkdown(md) {
     } catch(e) {
       console.error("Bar Chart restoration error:", e);
       html = html.replace(`%%BARCHART${idx}%%`, () => '');
+    }
+  });
+
+  // Restore Study Recommendations
+  studyRecs.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const recNode = doc.querySelector('study-recommendations');
+      const topic = recNode ? (recNode.getAttribute('topic') || 'Learning Topic') : 'Learning Topic';
+      const courses = recNode ? Array.from(recNode.querySelectorAll('course')).map(node => {
+        const qNodes = Array.from(node.querySelectorAll('question'));
+        const quiz = qNodes.map(qNode => ({
+          type: qNode.getAttribute('type') || 'mcq',
+          question: qNode.getAttribute('question') || '',
+          options: (qNode.getAttribute('options') || '').split(','),
+          correct: parseInt(qNode.getAttribute('correct') || '0', 10)
+        }));
+        return {
+          title: node.getAttribute('title') || '',
+          platform: node.getAttribute('platform') || '',
+          url: node.getAttribute('url') || '#',
+          duration: node.getAttribute('duration') || '',
+          xp: parseInt(node.getAttribute('xp') || '50', 10),
+          difficulty: node.getAttribute('difficulty') || 'Intermediate',
+          quiz: quiz
+        };
+      }) : [];
+      html = html.replace(`%%STUDYREC${idx}%%`, () => renderStudyRecommendations(topic, courses, idx));
+    } catch(e) {
+      console.error("Study Recs restoration error:", e);
+      html = html.replace(`%%STUDYREC${idx}%%`, () => '');
     }
   });
 
@@ -2654,6 +2694,22 @@ The user's GitHub commits activity and LeetCode solved problems are periodically
 *Fallback Rules:* If github_commits_this_week is undefined or missing in the JSON plan, assume it is 0. If config.github_commit_goal is undefined or missing, assume the weekly goal is 5 commits. If config.leetcode_solved_goal is undefined or missing, assume the weekly goal is 3 solved problems.
 If the user asks "check if i reached my weekly commit goal for github?" or "how am I doing on coding target?", read these fields from the database and report the results immediately instead of saying you cannot access GitHub or trying to read calendar/Gmail.
 
+== AUTONOMOUS GAMIFIED STUDIES SYSTEM ==
+When the user asks to learn a topic today, study a subject, or requests study courses/material (e.g., "I want to learn Dynamic Programming today", "help me learn git", "give me course material for system design"):
+1. You MUST search the web (web_search) to locate high-quality free online courses or YouTube playlists. Make multiple query cycles if needed to explore deep/niche topics.
+2. You MUST output your recommendations using the custom <study-recommendations> tags.
+3. For each course, you MUST self-generate quiz questions inside a <quiz> tag containing exactly 2 or 3 conceptual MCQ questions to test their knowledge.
+4. Syntax for study recommendations:
+   <study-recommendations topic="Dynamic Programming">
+     <course title="MIT 6.006 Dynamic Programming Lecture" platform="MIT OCW" url="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/mit6_006f11_lec19/" duration="1 hour" xp="50" difficulty="Intermediate">
+       <quiz>
+         <question type="mcq" question="What are the two key properties of Dynamic Programming?" options="Overlapping subproblems and optimal substructure,Sorting and searching,Hashing and caching,Recursion and induction" correct="0"></question>
+         <question type="mcq" question="Which approach is also known as memoization?" options="Bottom-up,Top-down,Divide and conquer,Greedy" correct="1"></question>
+       </quiz>
+     </course>
+   </study-recommendations>
+Ensure that url values are realistic, high-quality direct links that exist. Do not explain these tags to the user, just output them inside your text response.
+
 == MEMORY-AWARE COACHING RULES ==
 Use these rules whenever giving planning, commitment, workload, or career advice:
 1. Subtract before you add: no new recurring commitment should be recommended unless an existing one is cut, ended, delegated, or explicitly time-boxed.
@@ -2910,7 +2966,9 @@ async function executeTool(name, args) {
 async function webSearch(query) {
   if (!query || !query.trim()) throw new Error('Search query is required.');
   const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-  const readerUrl = `https://r.jina.ai/http://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  
+  // Try html.duckduckgo.com directly via Jina Reader (bypasses redirection latency)
+  const readerUrl = `https://r.jina.ai/https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
   try {
     const res = await fetch(readerUrl);
     if (res.ok) {
@@ -2919,12 +2977,30 @@ async function webSearch(query) {
         query,
         search_url: searchUrl,
         reader_source: readerUrl,
-        results_text: text.slice(0, 6000)
+        results_text: text.slice(0, 7500) // retrieve more content for deep search
       };
     }
   } catch (e) {
-    console.warn('Reader search failed:', e);
+    console.warn('Primary search reader failed:', e);
   }
+  
+  // Google Fallback via Jina Reader
+  const fallbackUrl = `https://r.jina.ai/https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  try {
+    const res = await fetch(fallbackUrl);
+    if (res.ok) {
+      const text = await res.text();
+      return {
+        query,
+        search_url: searchUrl,
+        reader_source: fallbackUrl,
+        results_text: text.slice(0, 7500)
+      };
+    }
+  } catch (e) {
+    console.warn('Fallback search reader failed:', e);
+  }
+  
   return {
     query,
     search_url: searchUrl,
@@ -3198,6 +3274,207 @@ async function updateSemesterDataInFirestore(newJsonString) {
 }
 
 // Initialize on page load
+// Study Recommendations & Quizzes Render helpers
+let activeQuizzes = {};
+
+function renderStudyRecommendations(topic, courses, idx) {
+  courses.forEach((c, cIdx) => {
+    const quizKey = `quiz_${idx}_${cIdx}`;
+    activeQuizzes[quizKey] = c.quiz;
+  });
+
+  let html = `
+    <div class="study-widget" style="background:var(--surface-soft); border:1.5px solid var(--hairline-strong); border-radius:12px; padding:20px; margin:20px 0; box-shadow:var(--shadow); text-align:left;">
+      <h3 style="margin-top:0; border:none; padding:0; font-family:'Syne',sans-serif; font-size:18px; color:var(--ink); display:flex; align-items:center; gap:8px;">
+        🎓 Gamified Study Path: ${topic}
+      </h3>
+      <p style="font-size:13px; color:var(--mute); margin:4px 0 16px 0;">Scout AI scraped the web and generated these courses & quizzes for you today.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:16px; width:100%;">
+  `;
+  
+  courses.forEach((c, cIdx) => {
+    const quizKey = `quiz_${idx}_${cIdx}`;
+    const escapedTitle = c.title.replace(/'/g, "\\'");
+    const escapedUrl = c.url.replace(/'/g, "\\'");
+    const escapedPlatform = c.platform.replace(/'/g, "\\'");
+    const escapedDuration = c.duration.replace(/'/g, "\\'");
+    const escapedDiff = c.difficulty.replace(/'/g, "\\'");
+    
+    html += `
+        <div class="study-widget-card" style="background:var(--canvas); border:1px solid var(--hairline); border-radius:10px; padding:16px; display:flex; justify-content:space-between; align-items:center; gap:16px; transition:border-color 0.2s; width:100%;">
+          <div style="text-align:left; flex:1;">
+            <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #3d7a6a; letter-spacing: 0.04em;">${c.platform} &bull; ${c.difficulty}</div>
+            <h4 style="margin: 4px 0; border: none; padding: 0; font-size: 14.5px; color: var(--ink);">${c.title}</h4>
+            <div style="font-size: 12.5px; color: var(--mute); display: flex; gap: 12px; margin-top: 4px;">
+              <span>Duration: ${c.duration}</span>
+              <span style="color: #b52c24; font-weight: bold;">+${c.xp} XP</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; min-width: 140px;">
+            <a href="${c.url}" target="_blank" class="btn btn-outline" style="height: 32px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; text-align:center;">Launch Course</a>
+            <button class="btn btn-outline" onclick="launchStudyWidgetQuiz('${quizKey}', ${c.xp}, '${escapedTitle}')" style="height: 32px; font-size: 11px;">Take Quiz (+20 XP)</button>
+            <button class="btn btn-primary" onclick="addCourseToSelfStudy('${escapedTitle}', '${escapedPlatform}', '${escapedUrl}', '${escapedDuration}', ${c.xp}, '${escapedDiff}')" style="height: 32px; font-size: 11px;">Add to Studies</button>
+          </div>
+        </div>
+    `;
+  });
+  
+  html += `
+      </div>
+    </div>
+  `;
+  
+  return html;
+}
+
+function addCourseToSelfStudy(title, platform, url, duration, xp, difficulty) {
+  let localCourses = [];
+  try {
+    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
+  } catch(e) {
+    localCourses = [];
+  }
+  
+  if (localCourses.some(lc => lc.title === title)) {
+    alert("This course is already added to your Gamified Self-Study tab!");
+    return;
+  }
+  
+  localCourses.push({ title, platform, url, duration, xp, difficulty });
+  localStorage.setItem('local_courses', JSON.stringify(localCourses));
+  alert(`"${title}" has been successfully added to your Gamified Self-Study tab in Placements!`);
+}
+
+function launchStudyWidgetQuiz(quizKey, courseXp, courseTitle) {
+  const quiz = activeQuizzes[quizKey];
+  if (!quiz || quiz.length === 0) {
+    alert("No quiz questions are available for this course.");
+    return;
+  }
+  
+  const modal = document.getElementById('study-quiz-modal');
+  const title = document.getElementById('quiz-modal-title');
+  const content = document.getElementById('quiz-modal-content');
+  const submitBtn = document.getElementById('quiz-modal-submit-btn');
+  
+  if (!modal || !title || !content || !submitBtn) return;
+  
+  title.textContent = `Quiz: ${courseTitle}`;
+  content.innerHTML = '';
+  
+  quiz.forEach((q, qIdx) => {
+    const qDiv = document.createElement('div');
+    qDiv.style.borderBottom = '1px solid var(--hairline)';
+    qDiv.style.paddingBottom = '12px';
+    qDiv.style.textAlign = 'left';
+    qDiv.innerHTML = `
+      <div style="font-size:14px; font-weight:700; margin-bottom:8px;">${qIdx + 1}. ${q.question}</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${q.options.map((opt, oIdx) => `
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+            <input type="radio" name="q_${quizKey}_${qIdx}" value="${oIdx}" style="accent-color:var(--primary);">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+    content.appendChild(qDiv);
+  });
+  
+  submitBtn.onclick = () => {
+    let correctCount = 0;
+    let answeredAll = true;
+    
+    quiz.forEach((q, qIdx) => {
+      const selected = document.querySelector(`input[name="q_${quizKey}_${qIdx}"]:checked`);
+      if (!selected) {
+        answeredAll = false;
+        return;
+      }
+      if (parseInt(selected.value, 10) === q.correct) {
+        correctCount++;
+      }
+    });
+    
+    if (!answeredAll) {
+      alert("Please answer all questions first!");
+      return;
+    }
+    
+    modal.close();
+    
+    const quizXp = correctCount * 20;
+    let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+    let oldLevel = Math.floor(xp / 200) + 1;
+    let newXp = xp + quizXp;
+    let newLevel = Math.floor(newXp / 200) + 1;
+    
+    localStorage.setItem('study_xp', newXp);
+    localStorage.setItem('study_level', newLevel);
+    
+    playQuizScoreChime(correctCount === quiz.length);
+    
+    if (newLevel > oldLevel) {
+      alert(`Quiz completed! You scored ${correctCount}/${quiz.length} and earned +${quizXp} XP!\n\nLEVEL UP! You reached Level ${newLevel}!`);
+    } else {
+      alert(`Quiz completed! You scored ${correctCount}/${quiz.length} and earned +${quizXp} XP!`);
+    }
+  };
+  
+  modal.showModal();
+}
+
+function playQuizScoreChime(perfect) {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const ctx = new AudioContext();
+  
+  if (perfect) {
+    const notes = [523.25, 659.25];
+    notes.forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime + (i * 0.1));
+      osc.stop(ctx.currentTime + (i * 0.1) + 0.3);
+    });
+  } else {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 392.00;
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  }
+}
+
+// STUDY INTERACTIVE QUIZ MODAL
+const quizDialog = document.createElement('dialog');
+quizDialog.id = 'study-quiz-modal';
+quizDialog.style.cssText = "border:none; border-radius:16px; padding:32px; background:var(--canvas); color:var(--ink); box-shadow:0 0 24px rgba(0,0,0,0.25); max-width:440px; width:90%; font-family:'Syne',sans-serif; outline:none; margin: auto;";
+quizDialog.innerHTML = `
+  <h3 style="margin-top:0; border:none; padding:0; font-size:18px;" id="quiz-modal-title">Course Quiz</h3>
+  <p style="font-size:12.5px; color:var(--mute); margin:4px 0 20px 0;">Answer correctly to claim study XP rewards!</p>
+  
+  <div id="quiz-modal-content" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; max-height:280px; overflow-y:auto; padding-right:8px;">
+    <!-- Populated dynamically -->
+  </div>
+  
+  <div style="display:flex; justify-content:flex-end; gap:12px;">
+    <button class="btn btn-outline" style="height:36px; font-size:12px;" onclick="document.getElementById('study-quiz-modal').close()">Cancel</button>
+    <button class="btn btn-primary" style="height:36px; font-size:12px;" id="quiz-modal-submit-btn">Submit Answers</button>
+  </div>
+`;
+document.body.appendChild(quizDialog);
+
 window.addEventListener('DOMContentLoaded', initFirebase);
 </script>
 </body>
