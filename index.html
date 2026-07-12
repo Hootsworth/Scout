@@ -376,6 +376,40 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
+/* Clickable link buttons & math blocks */
+.message-row.assistant .message a.message-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  margin: 4px 2px;
+  border: 1px solid var(--primary);
+  border-radius: 9999px;
+  background: var(--surface-soft);
+  color: var(--primary);
+  text-decoration: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.message-row.assistant .message a.message-link-btn:hover {
+  background: var(--primary);
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+code.math-complexity {
+  font-family: 'Syne Mono', monospace;
+  background: var(--surface-soft-hover);
+  color: var(--primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--hairline);
+  display: inline-block;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1929,6 +1963,16 @@ function parseMarkdown(md) {
   // 9. Italics
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
   html = html.replace(/(^|[^\w])_([^_\s][^_\n]*?[^_\s])_([^\w]|$)/g, '$1<em>$2</em>$3');
+
+  // 10. Links: [text](url) -> Clickable Button Pills
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, url) => {
+    return `<a href="${url}" target="_blank" class="message-link-btn">${text}</a>`;
+  });
+
+  // 11. Inline Math/Complexity: $O(1)$ -> <code>O(1)</code>
+  html = html.replace(/\$(.*?)\$/g, (match, math) => {
+    return `<code class="math-complexity">${math}</code>`;
+  });
 
   // Restore Code Blocks
   codeBlocks.forEach((item, idx) => {
