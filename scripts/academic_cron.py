@@ -47,9 +47,9 @@ if not FIREBASE_SERVICE_ACCOUNT and os.path.exists("firebase_key.json"):
         print(f"Failed to load firebase_key.json: {e}")
 
 # Check required parameters
-if not all([GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT]):
+if not all([GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT]):
     print("Error: Missing required environment variables. Please check GitHub Secrets or local .env file.")
-    print("Required: GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT")
+    print("Required: GEMINI_API_KEY, BREVO_SMTP_LOGIN, BREVO_SMTP_PASSWORD, USER_EMAIL, USER_UID, FIREBASE_SERVICE_ACCOUNT")
     sys.exit(1)
 
 # Initialize Firebase Admin SDK
@@ -64,13 +64,16 @@ except Exception as e:
     sys.exit(1)
 
 # Helper: Refresh Google OAuth Token
-def get_google_access_token():
+def get_google_access_token(client_id, client_secret, refresh_token):
     print("Refreshing Google OAuth access token...")
+    if not all([client_id, client_secret, refresh_token]):
+        print("Error: Missing Google OAuth Client ID, Secret, or Refresh Token in both shell environment and Firestore.")
+        sys.exit(1)
     url = "https://oauth2.googleapis.com/token"
     payload = {
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "refresh_token": GOOGLE_REFRESH_TOKEN,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "refresh_token": refresh_token,
         "grant_type": "refresh_token"
     }
     res = requests.post(url, data=payload)
@@ -575,7 +578,11 @@ def main():
     print("Firestore plan document successfully loaded.")
         
     # 2. Get Access Token
-    google_token = get_google_access_token()
+    client_id = GOOGLE_CLIENT_ID or semester_data.get("oauth_client_id")
+    client_secret = GOOGLE_CLIENT_SECRET or semester_data.get("oauth_client_secret")
+    refresh_token = GOOGLE_REFRESH_TOKEN or semester_data.get("google_refresh_token")
+    
+    google_token = get_google_access_token(client_id, client_secret, refresh_token)
     
     # 3. Fetch Google Classroom Data (Read-only)
     print("Syncing Google Classroom assignments...")

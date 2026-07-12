@@ -603,6 +603,9 @@ function setupAuthListener() {
         localStorage.setItem('user_email_target', user.email);
         document.getElementById('user-email-target').value = user.email;
       }
+      
+      // Sync local OAuth credentials to Firestore
+      syncOAuthCredentialsToFirestore(user);
     } else {
       statusBox.textContent = "Disconnected";
       statusBox.className = "auth-status disconnected";
@@ -611,6 +614,24 @@ function setupAuthListener() {
       uidContainer.style.display = 'none';
     }
   });
+}
+
+function syncOAuthCredentialsToFirestore(user) {
+  if (!db || !user) return;
+  const clientId = localStorage.getItem('oauth_client_id');
+  const clientSecret = localStorage.getItem('oauth_client_secret');
+  const refreshToken = localStorage.getItem('google_refresh_token');
+  if (clientId && clientSecret && refreshToken) {
+    db.collection('users').doc(user.uid).set({
+      oauth_client_id: clientId,
+      oauth_client_secret: clientSecret,
+      google_refresh_token: refreshToken
+    }, { merge: true }).then(() => {
+      console.log("Google OAuth credentials synced to Firestore document.");
+    }).catch(e => {
+      console.error("Google OAuth credentials sync failed:", e);
+    });
+  }
 }
 
 // Sign In With Google
@@ -803,6 +824,11 @@ async function processOAuthRedirect() {
       document.getElementById('generated-refresh-token').textContent = data.refresh_token;
       localStorage.setItem('google_refresh_token', data.refresh_token);
       alert("Google API authorization complete! Refresh token generated.");
+      
+      const user = firebaseAuth ? firebaseAuth.currentUser : null;
+      if (user) {
+        syncOAuthCredentialsToFirestore(user);
+      }
     } else {
       throw new Error(data.error_description || data.error || "No refresh token returned. Make sure you grant consent.");
     }

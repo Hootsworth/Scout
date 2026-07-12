@@ -7,6 +7,7 @@
 <title>Scout Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <style>
 /* Page specific assistant overrides */
 body {
@@ -499,20 +500,23 @@ body {
         <span id="thinking-text">Thinking...</span>
       </div>
 
-      <!-- QUICK CHIPS -->
-      <div class="quick-prompts">
-        <div class="prompt-chip" onclick="openLectureSummarizerModal()" style="border-color:var(--primary); color:var(--primary);">📝 Summarize Notes</div>
-        <div class="prompt-chip" onclick="sendPrompt('Show my commitments status this week')">Commitments</div>
-        <div class="prompt-chip" onclick="sendPrompt('Check my Gmail for any new deadlines or tasks')">Scan Gmail</div>
-        <div class="prompt-chip" onclick="sendPrompt('What events do I have on my calendar for the next 7 days?')">List Calendar</div>
-        <div class="prompt-chip" onclick="sendPrompt('Suggest a weekly study plan for CV and NLP')">Suggest Plan</div>
-        <div class="prompt-chip" onclick="sendPrompt('Run my weekly planning agent: propose Keep, Cut, and Watch changes with reasons.')">Weekly Agent</div>
-        <div class="prompt-chip" onclick="sendPrompt('I want to mark ECell exit task as done')">Exit ECell</div>
+      <!-- ATTACHMENT PREVIEW AREA -->
+      <div id="attachment-preview-area" style="display:none; padding:8px 24px; background:var(--surface-soft); border-top:1px solid var(--hairline); font-size:12.5px; align-items:center; gap:8px; width:100%;">
+        <span style="color:var(--primary); font-weight:700;">📎 Attached:</span>
+        <span id="attachment-preview-name" style="color:var(--ink);">file.pdf</span>
+        <button onclick="clearChatAttachment()" style="background:none; border:none; color:var(--red); cursor:pointer; font-weight:bold; font-size:14px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center;">✕</button>
       </div>
 
       <!-- CHAT INPUT -->
       <div class="chat-input-container">
-        <input type="text" class="chat-input" id="message-input" placeholder="Ask Scout anything..." onkeydown="handleKeyPress(event)">
+        <button class="btn btn-outline" style="padding: 0; width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; min-width: 38px;" onclick="document.getElementById('chat-attachment-input').click()" title="Attach .md, .txt or .pdf">
+          <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+          </svg>
+        </button>
+        <input type="file" id="chat-attachment-input" accept=".md,.pdf,.txt" style="display:none;" onchange="handleChatAttachmentSelect(this)">
+        
+        <input type="text" class="chat-input" id="message-input" placeholder="Ask Scout anything or attach a file..." onkeydown="handleKeyPress(event)">
         <button class="send-btn" onclick="sendMessage()">Send</button>
       </div>
     </div>
@@ -715,6 +719,29 @@ async function loadUserData() {
     const docSnap = await db.collection('users').doc(currentUid).get();
     if (docSnap.exists) {
       semesterData = docSnap.data();
+      
+      // Two-way sync of Google OAuth credentials
+      const localClientId = localStorage.getItem('oauth_client_id');
+      const localClientSecret = localStorage.getItem('oauth_client_secret');
+      const localRefreshToken = localStorage.getItem('google_refresh_token');
+      
+      const dbClientId = semesterData.oauth_client_id;
+      const dbClientSecret = semesterData.oauth_client_secret;
+      const dbRefreshToken = semesterData.google_refresh_token;
+      
+      if (dbClientId && !localClientId) localStorage.setItem('oauth_client_id', dbClientId);
+      if (dbClientSecret && !localClientSecret) localStorage.setItem('oauth_client_secret', dbClientSecret);
+      if (dbRefreshToken && !localRefreshToken) localStorage.setItem('google_refresh_token', dbRefreshToken);
+      
+      if (localClientId && localClientSecret && localRefreshToken && (!dbClientId || !dbClientSecret || !dbRefreshToken)) {
+        db.collection('users').doc(currentUid).set({
+          oauth_client_id: localClientId,
+          oauth_client_secret: localClientSecret,
+          google_refresh_token: localRefreshToken
+        }, { merge: true }).then(() => {
+          console.log("Synced local OAuth credentials to Firestore.");
+        });
+      }
       
       // Initialize chats array if not present
       if (!semesterData.chats || semesterData.chats.length === 0) {
@@ -2606,23 +2633,34 @@ async function submitCodeForReview(forceSubmit = false) {
 async function sendMessage() {
   const input = document.getElementById('message-input');
   let text = input.value.trim();
-  if (!text) return;
+  if (!text && !attachedFileContent) return;
 
   input.value = '';
   
+  let fullPrompt = text;
+  let userDisplay = text;
+  
+  if (attachedFileContent) {
+    fullPrompt = `${text || 'Summarize this file.'}\n\n---\n**ATTACHED FILE: ${attachedFileName}**\n\n\`\`\`markdown\n${attachedFileContent}\n\`\`\``;
+    userDisplay = `${text || 'Summarize attached file.'}\n\n*📎 Attached: ${attachedFileName}*`;
+  }
+  
   if (text === 'GREET_AS_INTERVIEWER') {
     appendMessage('user', 'I am ready for the mock interview.');
-    text = "Hello! I am ready for the mock interview. Please introduce yourself as my technical interviewer, choose a topic or company, and give me a question to solve.";
+    fullPrompt = "Hello! I am ready for the mock interview. Please introduce yourself as my technical interviewer, choose a topic or company, and give me a question to solve.";
   } else {
-    appendMessage('user', text);
+    appendMessage('user', userDisplay);
   }
+
+  // Clear attachment state
+  clearChatAttachment();
 
   if (activeProvider === 'openai') {
     if (!openaiKey) {
       appendMessage('assistant', 'No OpenAI API key set. Add it on the Setup page.');
       return;
     }
-    openaiHistory.push({ role: 'user', content: text });
+    openaiHistory.push({ role: 'user', content: fullPrompt });
     saveChatHistory();
     await callOpenAIApi();
   } else {
@@ -2630,7 +2668,7 @@ async function sendMessage() {
       appendMessage('assistant', 'No Gemini API key set. Add it on the Setup page.');
       return;
     }
-    conversationHistory.push({ role: 'user', parts: [{ text }] });
+    conversationHistory.push({ role: 'user', parts: [{ text: fullPrompt }] });
     saveChatHistory();
     await callGeminiApi();
   }
@@ -4202,6 +4240,62 @@ Here is the source text to analyze:
 ${textToUse.substring(0, 4000)}`;
 
   sendPrompt(prompt);
+}
+
+let attachedFileContent = "";
+let attachedFileName = "";
+
+async function handleChatAttachmentSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  attachedFileName = file.name;
+  const previewArea = document.getElementById('attachment-preview-area');
+  const previewName = document.getElementById('attachment-preview-name');
+  
+  if (previewName) previewName.textContent = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  if (previewArea) previewArea.style.display = 'flex';
+  
+  if (file.name.endsWith('.pdf')) {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const typedarray = new Uint8Array(e.target.result);
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
+        let fullText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(" ");
+          fullText += `### Page ${i}\n${pageText}\n\n`;
+        }
+        attachedFileContent = fullText;
+        console.log("PDF parsed successfully. Length:", attachedFileContent.length);
+      } catch (error) {
+        console.error("PDF parsing failed:", error);
+        alert("Failed to parse PDF file. Please ensure it contains readable text.");
+        clearChatAttachment();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      attachedFileContent = e.target.result;
+      console.log("Text file parsed successfully. Length:", attachedFileContent.length);
+    };
+    reader.readAsText(file);
+  }
+}
+
+function clearChatAttachment() {
+  attachedFileContent = "";
+  attachedFileName = "";
+  const input = document.getElementById('chat-attachment-input');
+  if (input) input.value = '';
+  const previewArea = document.getElementById('attachment-preview-area');
+  if (previewArea) previewArea.style.display = 'none';
 }
 
 window.addEventListener('DOMContentLoaded', initFirebase);
