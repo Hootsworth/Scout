@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
-<title>Scout - Self-Study Map</title>
+<title>Scout - Self-Study</title>
 <!-- Global Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Outfit:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
@@ -18,241 +18,43 @@ body {
   flex-direction: column;
 }
 
-/* Header stat styles */
-.stats-header {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  padding: 24px;
-  max-width: 1200px;
-  width: 95%;
-  margin: 0 auto;
-}
-
-.stat-card {
-  background: var(--surface-soft);
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-}
-
-.stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--primary);
-  display: flex;
+/* Custom overlay styles */
+#study-celebration-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 99999;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 20px;
-  box-shadow: 0 4px 8px rgba(42, 107, 94, 0.2);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 
-.stat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-info span {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--mute);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-.stat-info strong {
-  font-size: 18px;
-  color: var(--ink);
-  font-weight: 800;
-}
-
-/* Modern Road Map */
-.map-section {
-  max-width: 1200px;
-  width: 95%;
-  margin: 0 auto 24px auto;
-}
-
-.map-card {
-  background: var(--surface-soft);
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-}
-
-.map-track {
-  height: 120px;
+.boss-dialog-content label {
   display: flex;
   align-items: center;
-  position: relative;
-  padding: 0 40px;
-  margin-top: 20px;
-}
-
-.map-line {
-  position: absolute;
-  left: 40px;
-  right: 40px;
-  height: 4px;
-  background: var(--hairline-strong);
-  z-index: 1;
-}
-
-.map-line-progress {
-  position: absolute;
-  left: 40px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--green) 100%);
-  z-index: 2;
-  transition: width 0.4s ease;
-}
-
-.node-item {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--canvas);
-  border: 3px solid var(--mute);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
+  gap: 8px;
   cursor: pointer;
-  transform: translateY(-2px);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.node-item:hover {
-  transform: scale(1.15) translateY(-2px);
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(42, 107, 94, 0.2);
-}
-
-.node-item.completed {
-  background: var(--green);
-  border-color: var(--green);
-  color: #fff;
-}
-
-.node-item.active {
-  background: var(--red);
-  border-color: var(--red);
-  color: #fff;
-  box-shadow: 0 0 12px rgba(181, 44, 36, 0.4);
-}
-
-.node-item.locked {
-  background: var(--surface-soft-hover);
-  border-color: var(--mute);
-  color: var(--mute);
-  cursor: not-allowed;
-}
-
-.node-num {
-  font-weight: 800;
-  font-size: 15px;
-}
-
-/* Detail workspace card */
-.dialog-section {
-  max-width: 1200px;
-  width: 95%;
-  margin: 0 auto 30px auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.dialog-card {
-  background: var(--surface-soft);
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius-md);
-  padding: 32px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-}
-
-.course-meta {
-  display: flex;
-  gap: 16px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
-.meta-pill {
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
-  padding: 6px 12px;
-  border-radius: 9999px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  margin-top: 6px;
   color: var(--body);
 }
 
-/* Forms & buttons override */
-.custom-input {
+.boss-dialog-content input[type="text"] {
   width: 100%;
-  min-height: 44px;
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 8px 12px;
+  font-size: 13.5px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--hairline-strong);
   background: var(--canvas);
   color: var(--ink);
   outline: none;
-  font-family: inherit;
-  margin-bottom: 16px;
-}
-
-/* Dark Modal overlays */
-.dark-dialog {
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--radius-md);
-  background: var(--canvas);
-  color: var(--ink);
-  padding: 32px;
-  box-shadow: 0 12px 36px rgba(0,0,0,0.15);
-  max-width: 580px;
-  width: 90%;
-  margin: auto;
-  outline: none;
-}
-
-/* Victory Screen styles */
-#victory-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(15, 18, 25, 0.95);
-  z-index: 10000;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px;
-}
-
-.victory-card {
-  background: var(--surface-soft);
-  border: 2px solid var(--yellow);
-  box-shadow: 0 0 24px rgba(163, 118, 3, 0.35);
-  border-radius: var(--radius-md);
-  padding: 48px 32px;
-  max-width: 600px;
-  width: 90%;
+  margin-top: 6px;
 }
 </style>
 </head>
@@ -278,427 +80,487 @@ body {
 
 <div style="margin-top: 56px;"></div>
 
-<!-- STATUS DASHBOARD BAR -->
-<div class="stats-header">
-  <div class="stat-card">
-    <div class="stat-icon" style="background:var(--primary);">🏆</div>
-    <div class="stat-info">
-      <span>Total XP</span>
-      <strong id="header-xp">0</strong>
-    </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon" style="background:var(--yellow);">⭐</div>
-    <div class="stat-info">
-      <span>Player Level</span>
-      <strong id="header-level">L01</strong>
-    </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon" style="background:var(--green);">🪙</div>
-    <div class="stat-info">
-      <span>Completed</span>
-      <strong id="header-coins">0 Courses</strong>
-    </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon" style="background:var(--red);">🎯</div>
-    <div class="stat-info">
-      <span>Current World</span>
-      <strong id="header-world">World 1-1</strong>
-    </div>
-  </div>
-</div>
+<div class="container page-offset">
+  <!-- SECTION HEADER -->
+  <section style="padding: 24px 0 0 0; border-bottom: none;">
+    <div class="section-label"><span class="section-num">01</span><h2 class="section-title">Self-Study Dashboard</h2></div>
+    <p class="section-desc">Search for topics you want to master, find recommended free courses and YouTube videos, and earn XP to level up your engineering skills.</p>
+  </section>
 
-<!-- MAP TRACK VIEW -->
-<div class="map-section">
-  <div class="map-card">
-    <h3 style="margin:0; font-family:'Syne',sans-serif; font-size:18px; font-weight:700;">Self-Study Track Map</h3>
-    <p style="font-size:13px; color:var(--mute); margin:4px 0 0 0;">Move along the track to unlock learning flags and clear assessments.</p>
-    
-    <div class="map-track">
-      <div class="map-line"></div>
-      <div class="map-line-progress" id="track-progress-bar" style="width: 0%;"></div>
+  <!-- STATS & PROGRESS ROW -->
+  <section style="padding: 0; border-bottom: none; margin-bottom: 24px;">
+    <div class="grid-cols-3">
+      <!-- Level Stats -->
+      <div class="stat-box" style="display: flex; align-items: center; gap: 16px; padding: 20px;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #3d7a6a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 20px; box-shadow: var(--shadow);" id="study-level-badge">
+          L1
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--mute); text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Current Rank</div>
+          <div style="font-weight: 800; font-size: 18px; color: var(--ink);" id="study-rank-title">Novice Engineer</div>
+        </div>
+      </div>
       
-      <!-- Nodes container -->
-      <div id="nodes-container" style="position: absolute; left: 40px; right: 40px; top: 0; bottom: 0; display: flex; align-items: center;">
-        <!-- Rendered dynamically -->
+      <!-- XP Progress -->
+      <div class="stat-box" style="display: flex; flex-direction: column; justify-content: center; padding: 20px; grid-column: span 2;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 8px;">
+          <span style="color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em;">XP Progress</span>
+          <span style="color: var(--ink);" id="study-xp-ratio">0 / 200 XP</span>
+        </div>
+        <div style="width: 100%; height: 12px; background: var(--hairline-strong); border-radius: 6px; overflow: hidden; position: relative;">
+          <div id="study-xp-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #3d7a6a 100%); border-radius: 6px; transition: width 0.4s ease;"></div>
+        </div>
       </div>
     </div>
+  </section>
+
+  <!-- MAIN GRIID -->
+  <section style="padding: 0; border-bottom: none;">
+    <div class="grid-cols-3">
+      <!-- Search console -->
+      <div class="setup-card" style="margin-bottom:0; height: fit-content;">
+        <h3 style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700;">Search Study Topic</h3>
+        <p style="font-size:13.5px; color:var(--mute); margin-bottom:16px; line-height:1.5;">What topic would you like to master today? Scout will scan high-quality free repositories, Coursera, edX, and YouTube playlists.</p>
+        
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="form-group" style="margin: 0;">
+            <label for="study-search-input" style="display:block; font-size:11px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Search Query</label>
+            <input type="text" id="study-search-input" placeholder="e.g. Dynamic Programming, System Design, Git..." style="width:100%; height:40px; padding:8px 12px; font-size:14px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink);">
+          </div>
+          <button class="btn btn-primary" onclick="searchStudyMaterial()" style="width:100%; height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+            <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Find Free Courses &amp; Videos
+          </button>
+        </div>
+      </div>
+      
+      <!-- Right inventory list -->
+      <div class="setup-card" id="study-results-card" style="grid-column: span 2; margin-bottom: 0; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+        <div id="study-placeholder">
+          <svg style="width:48px; height:48px; color:var(--mute); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <p style="color:var(--mute); font-size:14.5px; max-width:320px; text-align: center; margin:0 auto; line-height:1.5;">Type a study topic on the left to pull curated, free educational courses and video links.</p>
+        </div>
+        
+        <div id="study-loading" style="display:none; text-align: center;">
+          <div class="thinking-dots" style="display:inline-flex; gap:6px; margin-bottom:12px;">
+            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0s;"></span>
+            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.2s;"></span>
+            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.4s;"></span>
+          </div>
+          <p style="color:var(--body); font-size:14px; margin:0;">Scout AI is scanning public course indexes and playlists...</p>
+        </div>
+        
+        <div id="study-courses-list" style="display:none; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Course cards populated dynamically -->
+        </div>
+
+        <!-- BOSS CHALLENGE CARD BANNER -->
+        <div id="boss-challenge-banner" style="display:none; width:100%; background:linear-gradient(135deg, #1e1112 0%, #301618 100%); border:1px solid var(--red); border-radius:10px; padding:20px; margin-top:20px; text-align:left; align-items:center; justify-content:space-between; gap:20px; box-shadow:0 4px 12px rgba(181, 44, 36, 0.15);">
+          <div style="flex:1;">
+            <h4 style="color:var(--red); font-family:'Syne',sans-serif; font-size:16px; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;">👹 Final Boss Battle Assessment Unlocked!</h4>
+            <p style="color:#a89c9d; font-size:13px; line-height:1.5; margin:6px 0 0 0;">All catalog courses are cleared. Defeat Bowser in the recruitment review challenge to finalize your study track!</p>
+          </div>
+          <button class="btn btn-primary" style="background:var(--red); border-color:var(--red); height:40px; padding:0 24px;" onclick="openBossBattleModal()">Fight Boss</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CELEBRATION CONGRATS OVERLAY -->
+<div id="study-celebration-overlay">
+  <div style="background: var(--surface-soft); padding: 48px; border-radius: 20px; border: 2px solid var(--primary); box-shadow: 0 0 32px rgba(42, 107, 94, 0.25); max-width: 480px; width: 90%; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; gap: 20px;" id="study-celebration-card">
+    <div id="study-celebration-badge" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #3d7a6a 100%); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 800; box-shadow: 0 0 20px rgba(42, 107, 94, 0.4); color: #fff;">
+      🏆
+    </div>
+    <h2 style="font-family:'Syne',sans-serif; font-size: 32px; font-weight: 800; margin: 0; text-transform: uppercase; color:var(--ink); letter-spacing: 0.02em;">LEVEL UP!</h2>
+    <p id="study-celebration-text" style="font-size: 15px; color: var(--body); line-height: 1.6; margin: 0;">You crossed the XP threshold and leveled up your placement readiness index!</p>
+    <div style="width: 100%; height: 12px; background: var(--hairline-strong); border-radius: 6px; overflow: hidden; margin-top: 10px;">
+      <div style="width: 100%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #3d7a6a 100%); border-radius: 6px; animation: fillBar 1.5s ease forwards;"></div>
+    </div>
+    <button class="btn btn-primary" onclick="closeStudyCelebration()" style="margin-top: 12px; height: 44px; padding: 0 32px;">Awesome, Continue!</button>
   </div>
 </div>
 
-<!-- DETAILS DIALOG CARD -->
-<div class="dialog-section">
-  <div class="dialog-card">
-    <div id="details-view" style="text-align: left;">
-      <h2 style="font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;" id="course-details-title">
-        Select a Course Node
-      </h2>
-      <div id="course-details-body" style="font-size: 15px; color:var(--body); line-height: 1.6; white-space:pre-wrap; margin-top:16px;">
-Select one of the World Nodes on the map track above to review active syllabus content, launch documentation links, and take validation exams. Completing all preceding flags unlocks Bowser's Castle final boss assessment.
-      </div>
-      <div id="course-meta-container" class="course-meta" style="display:none; margin-top:20px;">
-        <span class="meta-pill" id="course-meta-platform">Platform: -</span>
-        <span class="meta-pill" id="course-meta-difficulty">Difficulty: -</span>
-        <span class="meta-pill" id="course-meta-duration">Duration: -</span>
-        <span class="meta-pill" id="course-meta-xp" style="color:var(--red); font-weight:700;">+50 XP</span>
-      </div>
-    </div>
-    
-    <!-- Action Panel -->
-    <div id="course-actions" style="margin-top: 24px; display: none; gap: 12px;">
-      <a id="launch-course-btn" href="#" target="_blank" class="btn btn-outline" style="height: 40px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;" onclick="playJumpSound()">Launch Course URL</a>
-      <button id="claim-course-btn" class="btn btn-primary" style="height: 40px; background:var(--green); border-color:var(--green);" onclick="claimSelectedCourse()">Mark Complete</button>
-      <button id="exam-course-btn" class="btn btn-outline" style="height: 40px; color:var(--yellow); border-color:var(--yellow);" onclick="openCourseExam()">Take Course Quiz</button>
-    </div>
-  </div>
-</div>
-
-<!-- RETRO EXAM MODAL -->
-<dialog id="retro-exam-modal" class="dark-dialog">
-  <h3 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:700; border-bottom:1px solid var(--hairline-strong); padding-bottom:12px; margin-top:0;" id="exam-modal-title">Course Quiz</h3>
-  
-  <div id="exam-modal-questions" style="font-size:14.5px; color:var(--body); max-height:280px; overflow-y:auto; margin:20px 0; display:flex; flex-direction:column; gap:16px; text-align:left; padding-right:8px;">
-    <!-- Rendered dynamically -->
-  </div>
-  
-  <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px; border-top:1px solid var(--hairline-strong); padding-top:16px;">
-    <button class="btn btn-outline" style="height:36px; font-size:12.5px;" onclick="document.getElementById('retro-exam-modal').close()">Cancel</button>
-    <button class="btn btn-primary" style="height:36px; font-size:12.5px;" id="exam-modal-submit-btn">Submit Exam</button>
-  </div>
-</dialog>
-
-<!-- BOWSER CASTLE FINAL ASSIGNMENT MODAL -->
-<dialog id="bowser-castle-modal" class="dark-dialog" style="max-width: 600px; text-align: center;">
-  <div style="font-size:40px; margin-bottom:12px;">👹</div>
-  <h2 style="font-family:'Syne',sans-serif; font-size:22px; font-weight:700; color:var(--red); margin:0 0 12px 0;">Bowser's Castle Final Assignment</h2>
-  <p style="font-size:14px; color:var(--body); line-height:1.5; margin-bottom:20px;">
-    Congratulations on completing the coursework! Answer these final placement verification queries to defeat Bowser and complete the SDE self-study curriculum.
+<!-- BOWSER CASTLE FINAL BOSS DIALOG -->
+<dialog id="bowser-boss-modal" style="border:1.5px solid var(--red); border-radius:12px; background-color:var(--canvas); padding:28px; max-width:540px; width:90%; font-family:inherit; color:var(--ink); outline:none; margin:auto; box-shadow:0 12px 36px rgba(181, 44, 36, 0.25);">
+  <div style="font-size:36px; text-align:center; margin-bottom:10px;">👹</div>
+  <h3 style="color:var(--red); font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin:0 0 8px 0; text-align:center;">Bowser's Recruitment Assessment</h3>
+  <p style="font-size:13.5px; color:var(--body); line-height:1.5; margin-bottom:20px; text-align:center;">
+    Answer these final core engineering verification challenges correctly to defeat Bowser and finalize your study track!
   </p>
   
-  <div id="bowser-exam-content" style="font-size:14.5px; color:var(--body); max-height:300px; overflow-y:auto; margin-bottom:24px; text-align:left; display:flex; flex-direction:column; gap:20px; padding-right:8px;">
+  <div class="boss-dialog-content" style="display:flex; flex-direction:column; gap:16px; max-height:280px; overflow-y:auto; padding-right:8px; text-align:left;">
     <!-- Q1 (MCQ) -->
-    <div style="border-bottom: 1px solid var(--hairline-strong); padding-bottom:16px;">
-      <div style="font-weight:700; margin-bottom:8px; color:var(--ink);">Q1. What is the average time complexity of building a heap of size N?</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq1" value="0"> O(N log N)</label>
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq1" value="1"> O(N)</label>
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq1" value="2"> O(log N)</label>
-      </div>
+    <div style="border-bottom: 1px solid var(--hairline); padding-bottom:12px;">
+      <div style="font-weight:700; font-size:14px;">Q1. What is the time complexity of building a heap of size N?</div>
+      <label><input type="radio" name="bq1" value="0"> O(N log N)</label>
+      <label><input type="radio" name="bq1" value="1"> O(N)</label>
+      <label><input type="radio" name="bq1" value="2"> O(log N)</label>
     </div>
-    <!-- Q2 (Fill-In) -->
-    <div style="border-bottom: 1px solid var(--hairline-strong); padding-bottom:16px;">
-      <div style="font-weight:700; margin-bottom:8px; color:var(--ink);">Q2. The ________ Theorem is used to determine asymptotic complexity bounds for divide-and-conquer recurrences.</div>
-      <input type="text" id="bq2-input" class="custom-input" placeholder="Enter answer (case-insensitive)...">
+    <!-- Q2 (Fill-in) -->
+    <div style="border-bottom: 1px solid var(--hairline); padding-bottom:12px;">
+      <div style="font-weight:700; font-size:14px;">Q2. The ________ Theorem is used to solve divide-and-conquer recurrences.</div>
+      <input type="text" id="bq2-input" placeholder="Your answer...">
     </div>
-    <!-- Q3 (Coding MCQ) -->
+    <!-- Q3 (MCQ) -->
     <div>
-      <div style="font-weight:700; margin-bottom:8px; color:var(--ink);">Q3. In recursive fibonacci computation, what technique specifically prevents exponential recursion depth by caching subproblems?</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq3" value="0"> Iteration</label>
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq3" value="1"> Memoization</label>
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="radio" name="bq3" value="2"> Tabulation</label>
-      </div>
+      <div style="font-weight:700; font-size:14px;">Q3. Which recursion-optimization technique caches intermediate values?</div>
+      <label><input type="radio" name="bq3" value="0"> Tabulation</label>
+      <label><input type="radio" name="bq3" value="1"> Memoization</label>
+      <label><input type="radio" name="bq3" value="2"> Dividers</label>
     </div>
   </div>
   
-  <div style="display:flex; justify-content:center; gap:12px; border-top:1px solid var(--hairline-strong); padding-top:16px;">
-    <button class="btn btn-outline" style="height:38px;" onclick="document.getElementById('bowser-castle-modal').close()">Retreat</button>
-    <button class="btn btn-primary" style="height:38px; background:var(--red); border-color:var(--red);" onclick="submitFinalBossExam()">Submit Answers</button>
+  <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px; border-top:1px solid var(--hairline); padding-top:16px;">
+    <button class="btn btn-outline" style="height:36px; font-size:13px;" onclick="document.getElementById('bowser-boss-modal').close()">Retreat</button>
+    <button class="btn btn-primary" style="height:36px; font-size:13px; background:var(--red); border-color:var(--red);" onclick="submitBossExam()">Submit &amp; Fight</button>
   </div>
 </dialog>
 
 <!-- VICTORY OVERLAY SCREEN -->
-<div id="victory-overlay">
-  <div class="victory-card">
-    <div style="font-size:56px; margin-bottom:16px;">👑</div>
-    <h1 style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--yellow); margin-bottom:12px;">WORLD COMPLETED!</h1>
-    <h2 style="font-family:'Syne',sans-serif; font-size:18px; color:var(--ink); margin-bottom:20px;">Academic SDE Track Cleared</h2>
-    
-    <p style="font-size:15px; color:var(--body); line-height:1.6; margin-bottom:28px;" id="victory-card-text">
+<div id="victory-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,18,25,0.92); z-index:10000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;">
+  <div style="background:var(--canvas); border:1px solid var(--yellow); box-shadow:0 0 24px rgba(163, 118, 3, 0.3); border-radius:12px; padding:48px 32px; max-width:580px; width:90%;">
+    <div style="font-size:56px; margin-bottom:16px;">🏆</div>
+    <h2 style="font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:var(--yellow); margin-bottom:8px;">WORLD COMPLETED!</h2>
+    <h3 style="font-size:16px; color:var(--ink); margin-bottom:20px;">Bowser Has Been Defeated!</h3>
+    <p style="font-size:14.5px; color:var(--body); line-height:1.6; margin-bottom:28px;">
       "Thank you Aditya! But our SDE Principal Rank is in another castle!"
       
-      Congratulations! You have cleared all self-study courses and successfully defeated the Final Placement Boss. You are now prepared to ace recruitment Online Assessments (OA) and technical rounds!
+      Congratulations! You cleared all active courses and successfully resolved the final assessment verification checks. You are officially SDE placement-ready!
     </p>
-    
-    <button class="btn btn-primary" style="height:44px; padding:0 32px;" onclick="closeVictoryScreen()">Return to Map</button>
+    <button class="btn btn-primary" onclick="closeVictoryScreen()" style="height:44px; padding:0 32px;">Awesome</button>
   </div>
 </div>
 
-<!-- JS Core Logic -->
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<!-- JS Script Logic -->
 <script>
-let courses = [];
-let completedTitles = [];
-let selectedIndex = -1;
+// Firebase Setup compatibility
+let db = null;
+let currentUid = null;
 
-function getCoursesList() {
-  try {
-    return JSON.parse(localStorage.getItem('local_courses') || '[]');
-  } catch(e) {
-    return [];
+const DEFAULT_FIREBASE_CONFIG = {
+  authDomain: "scout-4b662.firebaseapp.com",
+  storageBucket: "scout-4b662.firebasestorage.app",
+  projectId: "scout-4b662"
+};
+
+function initFirebase() {
+  let firebaseConfig = DEFAULT_FIREBASE_CONFIG;
+  const storedConfig = localStorage.getItem('firebase_config');
+  if (storedConfig) {
+    try { firebaseConfig = JSON.parse(storedConfig); } catch(e) {}
+  }
+  
+  if (firebaseConfig && firebaseConfig.apiKey) {
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.firestore();
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          currentUid = user.uid;
+        }
+      });
+    } catch(e) {
+      console.error("Firebase init failed:", e);
+    }
   }
 }
 
-function getCompletedTitles() {
-  try {
-    return JSON.parse(localStorage.getItem('completed_courses') || '[]');
-  } catch(e) {
-    return [];
-  }
-}
-
-function saveCompletedTitles(list) {
-  localStorage.setItem('completed_courses', JSON.stringify(list));
-}
-
-function renderWorldMap() {
-  courses = getCoursesList();
-  completedTitles = getCompletedTitles();
-  
-  const container = document.getElementById('nodes-container');
-  const progressBar = document.getElementById('track-progress-bar');
-  if (!container) return;
-  container.innerHTML = '';
-  
+// Studies logic
+function initStudiesTab() {
   let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
   let level = Math.floor(xp / 200) + 1;
-  document.getElementById('header-xp').textContent = xp;
-  document.getElementById('header-level').textContent = `L${String(level).padStart(2, '0')}`;
-  document.getElementById('header-coins').textContent = `${completedTitles.length} / ${courses.length}`;
+  localStorage.setItem('study_level', level);
   
-  const count = courses.length;
-  const totalNodes = count + 1; // plus Bowser
+  const xpInLevel = xp % 200;
+  const pct = (xpInLevel / 200) * 100;
   
-  // Position line progress
-  let completedCount = courses.filter(c => completedTitles.includes(c.title)).length;
-  let progressPct = (completedCount / totalNodes) * 100;
-  if (progressBar) progressBar.style.width = `${progressPct}%`;
+  const badge = document.getElementById('study-level-badge');
+  const ratio = document.getElementById('study-xp-ratio');
+  const bar = document.getElementById('study-xp-progress-bar');
+  const title = document.getElementById('study-rank-title');
   
-  courses.forEach((c, idx) => {
-    const leftPct = (idx / (totalNodes - 1)) * 100;
-    
-    const node = document.createElement('div');
-    node.className = 'node-item';
-    
-    const isCompleted = completedTitles.includes(c.title);
-    if (isCompleted) {
-      node.classList.add('completed');
-    }
-    if (idx === selectedIndex) {
-      node.classList.add('active');
-    }
-    
-    node.style.left = `calc(${leftPct}% - 24px)`;
-    node.onclick = () => selectLevel(idx);
-    
-    node.innerHTML = `
-      <span class="node-num">${isCompleted ? '✓' : idx + 1}</span>
-    `;
-    container.appendChild(node);
-  });
+  if (badge) badge.textContent = `L${level}`;
+  if (ratio) ratio.textContent = `${xpInLevel} / 200 XP (Total: ${xp} XP)`;
+  if (bar) bar.style.width = `${pct}%`;
   
-  // Render Bowser Node
-  const finalLeftPct = 100;
-  const bowserNode = document.createElement('div');
-  bowserNode.className = 'node-item';
-  bowserNode.style.left = `calc(${finalLeftPct}% - 30px)`;
+  const ranks = ["Novice Engineer", "Apprentice Developer", "Skillful Coder", "Advanced SDE", "Systems Architect", "Principal Tech Lead"];
+  if (title) title.textContent = ranks[Math.min(level - 1, ranks.length - 1)];
+
+  renderSavedStudyCourses();
+}
+
+function renderSavedStudyCourses() {
+  const container = document.getElementById('study-courses-list');
+  const placeholder = document.getElementById('study-placeholder');
+  const banner = document.getElementById('boss-challenge-banner');
+  if (!container) return;
   
-  const isBowserUnlocked = courses.length > 0 && courses.every(c => completedTitles.includes(c.title));
-  if (!isBowserUnlocked) {
-    bowserNode.classList.add('locked');
-  } else if (completedTitles.includes('Bowser Castle')) {
-    bowserNode.classList.add('completed');
-  }
-  if (selectedIndex === count) {
-    bowserNode.classList.add('active');
+  let localCourses = [];
+  try {
+    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
+  } catch(e) {
+    localCourses = [];
   }
   
-  bowserNode.onclick = () => {
-    if (!isBowserUnlocked) {
-      playDamageSound();
-      alert("Bowser's Castle is locked! Complete all preceding course modules to unlock the final boss battle.");
-      return;
+  if (localCourses.length === 0) {
+    // If no active courses but there are completed ones, display Bowser Boss battle
+    let completed = JSON.parse(localStorage.getItem('completed_courses') || '[]');
+    if (completed.length > 0) {
+      if (placeholder) placeholder.style.display = 'none';
+      container.style.display = 'none';
+      if (banner) banner.style.display = 'flex';
+    } else {
+      if (placeholder) placeholder.style.display = 'block';
+      container.style.display = 'none';
+      if (banner) banner.style.display = 'none';
     }
-    selectLevel(count);
-  };
+    return;
+  }
   
-  bowserNode.innerHTML = `
-    <span class="node-num">👹</span>
+  if (placeholder) placeholder.style.display = 'none';
+  if (banner) banner.style.display = 'none';
+  container.style.display = 'flex';
+  
+  container.innerHTML = `
+    <h3 style="margin: 0 0 4px 0; border: none; padding: 0; text-align: left; font-size: 16px; font-family:'Syne',sans-serif; font-weight:700;">Active Study Inventory</h3>
+    <p style="font-size:12.5px; color:var(--mute); text-align: left; margin:0 0 10px 0;">Courses added from your conversations with Scout. Claim them on completion!</p>
   `;
-  container.appendChild(bowserNode);
-}
-
-function selectLevel(idx) {
-  selectedIndex = idx;
-  playJumpSound();
-  renderWorldMap();
   
-  const detailsTitle = document.getElementById('course-details-title');
-  const detailsBody = document.getElementById('course-details-body');
-  const actionsDiv = document.getElementById('course-actions');
-  const metaContainer = document.getElementById('course-meta-container');
-  
-  if (idx === courses.length) {
-    // Bowser's Castle
-    detailsTitle.innerHTML = '👹 World Final: Bowser\'s Castle';
-    detailsBody.textContent = `World Level Status: Unlocked!\n\nYou have completed the SDE curriculum outline! Challenge Bowser's Castle to run the final Boss verification query assessment. Passing this exam marks your Self-Study track as officially cleared!`;
-    metaContainer.style.display = 'none';
-    actionsDiv.style.display = 'flex';
-    document.getElementById('launch-course-btn').style.display = 'none';
-    document.getElementById('claim-course-btn').style.display = 'none';
-    document.getElementById('exam-course-btn').style.display = 'inline-block';
-    document.getElementById('exam-course-btn').textContent = "Challenge Boss";
+  localCourses.forEach((c, idx) => {
+    const card = document.createElement('div');
+    card.style.background = 'var(--canvas)';
+    card.style.border = '1px solid var(--hairline)';
+    card.style.borderRadius = '10px';
+    card.style.padding = '16px 20px';
+    card.style.display = 'flex';
+    card.style.justifyContent = 'space-between';
+    card.style.alignItems = 'center';
+    card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+    card.style.transition = 'transform 0.2s, border-color 0.2s';
+    card.style.width = '100%';
     
-    document.getElementById('header-world').textContent = `World Final`;
-    return;
-  }
-  
-  const c = courses[idx];
-  const isCompleted = completedTitles.includes(c.title);
-  
-  document.getElementById('header-world').textContent = `World 1-${idx + 1}`;
-  detailsTitle.innerHTML = `${isCompleted ? '✓ ' : ''}World 1-${idx + 1}: ${c.title}`;
-  detailsBody.textContent = `Status: ${isCompleted ? 'Course Cleared' : 'In Progress'}\n\nReview this learning path carefully. Open the target documentation / playlist guidelines to study, then complete the level assessment quiz to claim your XP score!`;
-  
-  // Show meta info
-  metaContainer.style.display = 'flex';
-  document.getElementById('course-meta-platform').textContent = `Platform: ${c.platform}`;
-  document.getElementById('course-meta-difficulty').textContent = `Difficulty: ${c.difficulty}`;
-  document.getElementById('course-meta-duration').textContent = `Duration: ${c.duration}`;
-  document.getElementById('course-meta-xp').textContent = `+${c.xp} XP`;
-  
-  actionsDiv.style.display = 'flex';
-  document.getElementById('launch-course-btn').style.display = 'inline-flex';
-  document.getElementById('launch-course-btn').href = c.url;
-  
-  const claimBtn = document.getElementById('claim-course-btn');
-  if (isCompleted) {
-    claimBtn.style.display = 'none';
-  } else {
-    claimBtn.style.display = 'inline-block';
-    claimBtn.textContent = "Mark Complete";
-  }
-  
-  const examBtn = document.getElementById('exam-course-btn');
-  if (c.quiz && c.quiz.length > 0) {
-    examBtn.style.display = 'inline-block';
-    examBtn.textContent = "Take Course Quiz";
-  } else {
-    examBtn.style.display = 'none';
-  }
-}
-
-function claimSelectedCourse() {
-  if (selectedIndex < 0 || selectedIndex >= courses.length) return;
-  const c = courses[selectedIndex];
-  if (completedTitles.includes(c.title)) return;
-  
-  completedTitles.push(c.title);
-  saveCompletedTitles(completedTitles);
-  
-  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
-  localStorage.setItem('study_xp', xp + c.xp);
-  
-  playPowerUpSound();
-  alert(`Course Cleared! You earned +${c.xp} XP.`);
-  
-  renderWorldMap();
-  selectLevel(selectedIndex);
-}
-
-function openCourseExam() {
-  if (selectedIndex < 0) return;
-  if (selectedIndex === courses.length) {
-    playCastleTheme();
-    document.getElementById('bowser-castle-modal').showModal();
-    return;
-  }
-  
-  const c = courses[selectedIndex];
-  const modal = document.getElementById('retro-exam-modal');
-  const title = document.getElementById('exam-modal-title');
-  const qContainer = document.getElementById('exam-modal-questions');
-  const submitBtn = document.getElementById('exam-modal-submit-btn');
-  
-  title.textContent = `Quiz: World 1-${selectedIndex + 1}`;
-  qContainer.innerHTML = '';
-  
-  c.quiz.forEach((q, qIdx) => {
-    const qDiv = document.createElement('div');
-    qDiv.innerHTML = `
-      <div style="font-weight:700; margin-bottom:8px; color:var(--ink);">Q${qIdx + 1}. ${q.question}</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        ${q.options.map((opt, oIdx) => `
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px;">
-            <input type="radio" name="eq_${qIdx}" value="${oIdx}" style="accent-color:var(--primary);">
-            <span>${opt}</span>
-          </label>
-        `).join('')}
+    card.onmouseenter = () => { card.style.borderColor = 'var(--primary)'; card.style.transform = 'translateY(-2px)'; };
+    card.onmouseleave = () => { card.style.borderColor = 'var(--hairline)'; card.style.transform = 'translateY(0)'; };
+    
+    card.innerHTML = `
+      <div style="flex:1; text-align:left; padding-right:20px;">
+        <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #3d7a6a; letter-spacing: 0.04em;">${c.platform} &bull; ${c.difficulty}</div>
+        <h4 style="margin: 4px 0; border: none; padding: 0; font-size: 15px; color: var(--ink); font-family:'Outfit',sans-serif; font-weight:700;">${c.title}</h4>
+        <div style="font-size: 13px; color: var(--mute); display: flex; gap: 12px; margin-top: 4px;">
+          <span>Duration: ${c.duration}</span>
+          <span style="color: #b52c24; font-weight: bold;">+${c.xp} XP reward</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+        <a href="${c.url}" target="_blank" class="btn btn-outline" style="height: 36px; padding: 0 16px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">Study Now</a>
+        <button class="btn btn-primary" onclick="claimSavedCourseXP(${idx}, ${c.xp}, '${c.title.replace(/'/g, "\\'")}')" style="height: 36px; font-size: 12px; background:var(--green); border-color:var(--green);">Complete &amp; Claim</button>
       </div>
     `;
-    qContainer.appendChild(qDiv);
+    container.appendChild(card);
   });
+}
+
+function claimSavedCourseXP(idx, xp, title) {
+  let localCourses = [];
+  try {
+    localCourses = JSON.parse(localStorage.getItem('local_courses') || '[]');
+  } catch(e) {
+    localCourses = [];
+  }
   
-  submitBtn.onclick = () => {
-    let allCorrect = true;
-    let answeredAll = true;
+  // Add to completed lists
+  let completed = JSON.parse(localStorage.getItem('completed_courses') || '[]');
+  if (!completed.includes(title)) {
+    completed.push(title);
+    localStorage.setItem('completed_courses', JSON.stringify(completed));
+  }
+  
+  completeCourse(xp, title);
+  
+  localCourses.splice(idx, 1);
+  localStorage.setItem('local_courses', JSON.stringify(localCourses));
+  
+  initStudiesTab();
+}
+
+async function searchStudyMaterial() {
+  const queryInput = document.getElementById('study-search-input');
+  const query = queryInput.value.trim();
+  if (!query) {
+    alert("Please type a topic to search!");
+    return;
+  }
+  
+  const placeholder = document.getElementById('study-placeholder');
+  const loader = document.getElementById('study-loading');
+  const list = document.getElementById('study-courses-list');
+  const banner = document.getElementById('boss-challenge-banner');
+  
+  if (placeholder) placeholder.style.display = 'none';
+  if (loader) loader.style.display = 'block';
+  if (list) list.style.display = 'none';
+  if (banner) banner.style.display = 'none';
+  
+  const focusStack = localStorage.getItem('personal_techstack') || 'Not specified';
+  
+  const prompt = `You are Scout's Academic Search agent.
+The user wants to find free high-quality online courses, articles, or YouTube video playlists to master this topic: "${query}".
+User Tech Stack Preference: ${focusStack}
+
+Research the topic online and fetch the absolute best free resources (Coursera, edX, MIT OCW, freeCodeCamp, high-quality YouTube channels like Abdul Bari, William Fiset, freeCodeCamp.org).
+Generate exactly 3 recommendation items. For each item, award a reasonable XP reward (50 XP for single videos/short courses, 100 XP for large comprehensive courses).
+You must return your output strictly in this JSON format (do not include any other markdown text or tags outside the json codeblock):
+\`\`\`json
+{
+  "courses": [
+    {
+      "title": "Clean, highly specific course/video title",
+      "platform": "YouTube / freeCodeCamp / MIT OCW / Coursera",
+      "url": "A realistic direct URL link to study this",
+      "duration": "e.g. 8 hours / 4 episodes / 12 articles",
+      "xp": 50,
+      "difficulty": "Beginner | Intermediate | Advanced"
+    }
+  ]
+}
+\`\`\``;
+
+  try {
+    const rawResult = await callGeminiApi(prompt, "Find free study materials.");
+    const data = extractJson(rawResult);
     
-    c.quiz.forEach((q, qIdx) => {
-      const selected = document.querySelector(`input[name="eq_${qIdx}"]:checked`);
-      if (!selected) {
-        answeredAll = false;
-        return;
-      }
-      if (parseInt(selected.value, 10) !== q.correct) {
-        allCorrect = false;
-      }
-    });
-    
-    if (!answeredAll) {
-      playDamageSound();
-      alert("Please answer all questions first!");
+    if (loader) loader.style.display = 'none';
+    if (!data || !data.courses || data.courses.length === 0) {
+      if (placeholder) placeholder.style.display = 'block';
+      alert("No courses could be retrieved for this topic. Please try again.");
       return;
     }
     
-    modal.close();
-    
-    if (allCorrect) {
-      playPowerUpSound();
-      alert("Exam cleared! Course marked as complete.");
-      claimSelectedCourse();
-    } else {
-      playDamageSound();
-      alert("Verification Failed. Some answers were incorrect. Review the course material and try again.");
+    if (list) {
+      list.innerHTML = '';
+      list.style.display = 'flex';
+      
+      data.courses.forEach(c => {
+        const card = document.createElement('div');
+        card.style.background = 'var(--canvas)';
+        card.style.border = '1px solid var(--hairline)';
+        card.style.borderRadius = '10px';
+        card.style.padding = '16px 20px';
+        card.style.display = 'flex';
+        card.style.justifyContent = 'space-between';
+        card.style.alignItems = 'center';
+        card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+        card.style.transition = 'transform 0.2s, border-color 0.2s';
+        card.style.width = '100%';
+        
+        card.onmouseenter = () => { card.style.borderColor = 'var(--primary)'; card.style.transform = 'translateY(-2px)'; };
+        card.onmouseleave = () => { card.style.borderColor = 'var(--hairline)'; card.style.transform = 'translateY(0)'; };
+        
+        card.innerHTML = `
+          <div style="flex:1; text-align:left; padding-right:20px;">
+            <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #3d7a6a; letter-spacing: 0.04em;">${c.platform} &bull; ${c.difficulty}</div>
+            <h4 style="margin: 4px 0; border: none; padding: 0; font-size: 15px; color: var(--ink); font-family:'Outfit',sans-serif; font-weight:700;">${c.title}</h4>
+            <div style="font-size: 13px; color: var(--mute); display: flex; gap: 12px; margin-top: 4px;">
+              <span>Duration: ${c.duration}</span>
+              <span style="color: #b52c24; font-weight: bold;">+${c.xp} XP reward</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+            <a href="${c.url}" target="_blank" class="btn btn-outline" style="height: 36px; padding: 0 16px; font-size: 12px; display: inline-flex; align-items: center; text-decoration: none;">Study Now</a>
+            <button class="btn btn-primary" onclick="completeCourseDirect(${c.xp}, '${c.title.replace(/'/g, "\\'")}')" style="height: 36px; font-size: 12px;">Complete &amp; Claim</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
     }
-  };
-  
-  modal.showModal();
+  } catch (err) {
+    console.error(err);
+    if (loader) loader.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'block';
+    alert("Error searching courses: " + err.message);
+  }
 }
 
-function submitFinalBossExam() {
+// Complete course from ad-hoc search results
+function completeCourseDirect(xp, title) {
+  let completed = JSON.parse(localStorage.getItem('completed_courses') || '[]');
+  if (!completed.includes(title)) {
+    completed.push(title);
+    localStorage.setItem('completed_courses', JSON.stringify(completed));
+  }
+  completeCourse(xp, title);
+}
+
+function completeCourse(xpAwarded, courseTitle) {
+  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+  let oldLevel = Math.floor(xp / 200) + 1;
+  
+  let newXp = xp + xpAwarded;
+  let newLevel = Math.floor(newXp / 200) + 1;
+  
+  localStorage.setItem('study_xp', newXp);
+  localStorage.setItem('study_level', newLevel);
+  
+  initStudiesTab();
+  playLevelUpChime(newLevel > oldLevel);
+  
+  if (newLevel > oldLevel) {
+    const overlay = document.getElementById('study-celebration-overlay');
+    const card = document.getElementById('study-celebration-card');
+    const text = document.getElementById('study-celebration-text');
+    
+    if (overlay && card && text) {
+      text.textContent = `Congratulations! By completing "${courseTitle}", you earned +${xpAwarded} XP and leveled up to L${newLevel} (${document.getElementById('study-rank-title').textContent})!`;
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+        card.style.transform = 'scale(1)';
+      }, 50);
+    }
+  } else {
+    alert(`Course Completed! You gained +${xpAwarded} XP towards Level ${newLevel}!`);
+  }
+}
+
+function openBossBattleModal() {
+  playCastleTheme();
+  document.getElementById('bowser-boss-modal').showModal();
+}
+
+function submitBossExam() {
   const bq1 = document.querySelector('input[name="bq1"]:checked');
   const bq2 = document.getElementById('bq2-input').value.trim().toLowerCase();
   const bq3 = document.querySelector('input[name="bq3"]:checked');
   
   if (!bq1 || !bq2 || !bq3) {
     playDamageSound();
-    alert("Please answer all boss queries to submit!");
+    alert("Please answer all questions before submitting!");
     return;
   }
   
-  const isQ1Correct = bq1.value === "1"; 
-  const isQ2Correct = bq2 === "master"; 
-  const isQ3Correct = bq3.value === "1"; 
+  const isQ1Correct = bq1.value === "1"; // O(N)
+  const isQ2Correct = bq2 === "master"; // Master theorem
+  const isQ3Correct = bq3.value === "1"; // Memoization
   
-  document.getElementById('bowser-castle-modal').close();
+  document.getElementById('bowser-boss-modal').close();
   
   if (isQ1Correct && isQ2Correct && isQ3Correct) {
     playCastleClearedSound();
     
-    if (!completedTitles.includes('Bowser Castle')) {
-      completedTitles.push('Bowser Castle');
-      saveCompletedTitles(completedTitles);
+    let completed = JSON.parse(localStorage.getItem('completed_courses') || '[]');
+    if (!completed.includes('Bowser Castle')) {
+      completed.push('Bowser Castle');
+      localStorage.setItem('completed_courses', JSON.stringify(completed));
       let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
       localStorage.setItem('study_xp', xp + 200);
     }
@@ -706,17 +568,31 @@ function submitFinalBossExam() {
     document.getElementById('victory-overlay').style.display = 'flex';
   } else {
     playDamageSound();
-    alert("Boss Challenge Failed! The proctor query rejected your submission. Try again!");
+    alert("Submission Failed! Bowser roars: WRONG CODE CONSTRAINTS! Re-verify and try again!");
   }
 }
 
 function closeVictoryScreen() {
   document.getElementById('victory-overlay').style.display = 'none';
-  renderWorldMap();
-  selectLevel(courses.length);
+  // Clear completed_courses log to reset Boss challenge optionally
+  localStorage.removeItem('completed_courses');
+  initStudiesTab();
 }
 
-// Synth Audio Engine
+function closeStudyCelebration() {
+  const overlay = document.getElementById('study-celebration-overlay');
+  const card = document.getElementById('study-celebration-card');
+  if (overlay && card) {
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    card.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 400);
+  }
+}
+
+// Audio synth engine
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
@@ -745,24 +621,36 @@ function playJumpSound() {
   osc.stop(audioCtx.currentTime + 0.15);
 }
 
-function playPowerUpSound() {
+function playLevelUpChime(isLevelUp) {
   initAudio();
   if (!audioCtx) return;
-  const notes = [330, 392, 659, 523, 587, 784];
-  notes.forEach((f, i) => {
+  
+  if (isLevelUp) {
+    const freqs = [261.63, 329.63, 392.00, 523.25, 659.25, 1046.50];
+    freqs.forEach((f, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.value = f;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+      osc.start(audioCtx.currentTime + (i * 0.1));
+      osc.stop(audioCtx.currentTime + (i * 0.1) + 0.8);
+    });
+  } else {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    
-    osc.type = 'sine';
-    osc.frequency.value = f;
+    osc.frequency.value = 523.25;
+    osc.type = 'triangle';
     gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-    
-    osc.start(audioCtx.currentTime + (i * 0.08));
-    osc.stop(audioCtx.currentTime + (i * 0.08) + 0.4);
-  });
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.3);
+  }
 }
 
 function playDamageSound() {
@@ -777,7 +665,7 @@ function playDamageSound() {
   osc.frequency.setValueAtTime(180, audioCtx.currentTime);
   osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.3);
   
-  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
   
   osc.start();
@@ -824,12 +712,44 @@ function playCastleClearedSound() {
   });
 }
 
+// API Call utility
+async function callGeminiApi(prompt, contextDesc = "") {
+  // Read apiKey from localStorage
+  const apiKey = localStorage.getItem('google_gemini_api_key');
+  if (!apiKey) {
+    throw new Error("Gemini API key missing. Please configure in Settings page.");
+  }
+  
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Gemini request failed: HTTP ${res.status}`);
+  }
+  
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+function extractJson(rawText) {
+  let clean = rawText.trim();
+  const jsonStart = clean.indexOf('{');
+  const jsonEnd = clean.lastIndexOf('}');
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    clean = clean.substring(jsonStart, jsonEnd + 1);
+  }
+  return JSON.parse(clean);
+}
+
 // Initialise page on load
 window.addEventListener('DOMContentLoaded', () => {
-  renderWorldMap();
-  if (getCoursesList().length > 0) {
-    selectLevel(0);
-  }
+  initFirebase();
+  initStudiesTab();
 });
 </script>
 </body>
