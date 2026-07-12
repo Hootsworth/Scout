@@ -315,18 +315,20 @@ code.block {
                 <input type="text" id="discord-channel-id" placeholder="Target text channel ID">
               </div>
               <hr style="border:0; border-top:1px solid var(--hairline); margin: 20px 0;">
-              <h3>ElevenLabs Voice Settings (Hyper Mode)</h3>
+              <h3>Cartesia Voice Settings (Hyper Mode)</h3>
+              <p style="font-size:12.5px; color:var(--mute); margin: -4px 0 14px 0; line-height:1.5;">Cartesia provides ultra-low-latency, human-quality TTS for voice interview simulations. <a href="https://play.cartesia.ai" target="_blank" style="color:var(--primary);">Get your API key →</a></p>
               <div class="form-group">
-                <label for="elevenlabs-key">ElevenLabs API Key</label>
-                <input type="password" id="elevenlabs-key" placeholder="xi-api-key">
+                <label for="cartesia-key">Cartesia API Key</label>
+                <input type="password" id="cartesia-key" placeholder="sk-cart-...">
               </div>
               <div class="form-group">
-                <label for="elevenlabs-voice-id">ElevenLabs Voice ID</label>
-                <input type="text" id="elevenlabs-voice-id" placeholder="e.g. 21m00Tcm4TlvDq8ikWAM">
+                <label for="cartesia-voice-id">Cartesia Voice ID</label>
+                <input type="text" id="cartesia-voice-id" placeholder="e.g. 79a125e8-cd45-4c13-8a67-188112f4dd22">
+                <small style="font-size:11.5px; color:var(--mute); margin-top:4px; display:block;">Leave blank to use the default Scout interviewer voice (Barbershop Man). Browse voices at <a href="https://play.cartesia.ai" target="_blank" style="color:var(--primary);">play.cartesia.ai</a></small>
               </div>
               <div class="form-group">
-                <label for="elevenlabs-personality">Voice Interviewer Personality</label>
-                <textarea id="elevenlabs-personality" placeholder="e.g. A strict, no-nonsense senior HR executive from Google who asks tough technical questions." style="width:100%; height:80px; padding:8px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
+                <label for="cartesia-personality">Voice Interviewer Personality</label>
+                <textarea id="cartesia-personality" placeholder="e.g. A strict, no-nonsense senior HR executive from Google who asks tough technical questions." style="width:100%; height:80px; padding:8px 12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical;"></textarea>
               </div>
               <button class="btn btn-red" onclick="saveApiKeys()">Save Credentials</button>
             </div>
@@ -552,9 +554,9 @@ document.getElementById('user-cgpa').value = localStorage.getItem('user_cgpa') |
 document.getElementById('user-backlogs').value = localStorage.getItem('user_backlogs') || '0';
 document.getElementById('discord-bot-token').value = localStorage.getItem('discord_bot_token') || '';
 document.getElementById('discord-channel-id').value = localStorage.getItem('discord_channel_id') || '';
-document.getElementById('elevenlabs-key').value = localStorage.getItem('elevenlabs_api_key') || '';
-document.getElementById('elevenlabs-voice-id').value = localStorage.getItem('elevenlabs_voice_id') || '';
-document.getElementById('elevenlabs-personality').value = localStorage.getItem('elevenlabs_personality') || '';
+document.getElementById('cartesia-key').value = localStorage.getItem('cartesia_api_key') || '';
+document.getElementById('cartesia-voice-id').value = localStorage.getItem('cartesia_voice_id') || '';
+document.getElementById('cartesia-personality').value = localStorage.getItem('cartesia_personality') || '';
 document.getElementById('personal-focus').value = localStorage.getItem('personal_focus') || '';
 document.getElementById('personal-techstack').value = localStorage.getItem('personal_techstack') || '';
 document.getElementById('personal-career').value = localStorage.getItem('personal_career') || '';
@@ -750,9 +752,9 @@ function saveApiKeys() {
   localStorage.setItem('user_backlogs', document.getElementById('user-backlogs').value.trim());
   localStorage.setItem('discord_bot_token', document.getElementById('discord-bot-token').value.trim());
   localStorage.setItem('discord_channel_id', document.getElementById('discord-channel-id').value.trim());
-  localStorage.setItem('elevenlabs_api_key', document.getElementById('elevenlabs-key').value.trim());
-  localStorage.setItem('elevenlabs_voice_id', document.getElementById('elevenlabs-voice-id').value.trim());
-  localStorage.setItem('elevenlabs_personality', document.getElementById('elevenlabs-personality').value.trim());
+  localStorage.setItem('cartesia_api_key', document.getElementById('cartesia-key').value.trim());
+  localStorage.setItem('cartesia_voice_id', document.getElementById('cartesia-voice-id').value.trim());
+  localStorage.setItem('cartesia_personality', document.getElementById('cartesia-personality').value.trim());
   alert("Credentials and placement configuration saved locally!");
 }
 

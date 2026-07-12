@@ -768,7 +768,7 @@ dialog#jd-overlay::backdrop {
       <div class="setup-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between; min-height:160px; padding:24px;">
         <div>
           <h3 style="margin-bottom:6px; border:none; padding:0;">Voice HR Interview Sandbox</h3>
-          <p style="font-size:13.5px; color:var(--mute); margin:0;">Simulate verbal HR questions using ElevenLabs human TTS voices and microphone recognition.</p>
+          <p style="font-size:13.5px; color:var(--mute); margin:0;">Simulate verbal HR questions using Cartesia ultra-low-latency TTS voices and microphone recognition.</p>
         </div>
         <button class="btn btn-red" onclick="startVoiceHrSandbox()" style="height:40px; width:100%; margin-top:16px; background: linear-gradient(135deg, #b52c24 0%, #d32f2f 100%); border:none; color:#fff;">
           Launch Voice HR Sandbox
@@ -1419,7 +1419,7 @@ function updateSidebarStats() {
     document.getElementById('sim-sidebar-round').textContent = `Question ${sim.voiceHrTurnIndex + 1} of ${sim.maxVoiceHrTurns}`;
     document.getElementById('sim-sidebar-applicants').innerHTML = `
       <div style="font-size: 13px; color: var(--mute); line-height: 1.5; padding: 12px; border: 1px dashed var(--hairline-strong); border-radius: 8px; text-align: center;">
-        Voice HR Sandbox. Testing ElevenLabs audio synthesis and speech-to-text.
+        Voice HR Sandbox. Testing Cartesia audio synthesis and speech-to-text.
       </div>
     `;
     return;
@@ -1620,7 +1620,7 @@ function appendSimChat(speaker, text, isUser = false, isThought = false) {
       if (isVoiceActive) {
         if (!isThought && (speaker === "Recruitment Proctor" || speaker === "STAR Evaluator" || speaker === "HR Interviewer")) {
           appendVoiceFeed(speaker, stripXml(text), false);
-          speakTextElevenLabs(stripXml(text));
+          speakTextCartesia(stripXml(text));
         }
       }
     }
@@ -1735,7 +1735,7 @@ Start the round by presenting a realistic prompt or challenge.
 
 Keep your response professional, firm, and fully in character. Speak directly.
 For Tech and HR Interview rounds, you should tailor your questions to probe their stated tech stack, DSA strengths, and areas of growth to make it a highly realistic, resume-based interview.
-${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('elevenlabs_personality') || 'A strict, professional HR director'}. You are in a voice interview round, so keep your questions clear, direct, conversational, and voice-friendly. Do not include coding formatting or markdown tables.` : ''}`;
+${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('cartesia_personality') || 'A strict, professional HR director'}. You are in a voice interview round, so keep your questions clear, direct, conversational, and voice-friendly. Do not include coding formatting or markdown tables.` : ''}`;
 
   appendSimChat("SYSTEM", "Proctor is generating challenge...", false, true);
   let challengerSpeech = await callGeminiSimApi(proctorPrompt);
@@ -1771,7 +1771,7 @@ async function submitSimulationAnswer() {
     let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
     const isFinal = sim.voiceHrTurnIndex >= sim.maxVoiceHrTurns - 1;
     
-    const customPersonality = localStorage.getItem('elevenlabs_personality') || "A friendly yet strict senior corporate recruiter who speaks clearly and asks human-centric interview questions.";
+    const customPersonality = localStorage.getItem('cartesia_personality') || "A friendly yet strict senior corporate recruiter who speaks clearly and asks human-centric interview questions.";
     const proctorPrompt = `You are a professional HR Director.
 You are evaluating the candidate's last answer in a mock voice interview.
 Interviewer Personality: ${customPersonality}
@@ -2003,7 +2003,7 @@ You MUST respond strictly using the following XML format:
   <eliminated>number</eliminated>
   <message>interviewer response speech</message>
 </evaluation>
-${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('elevenlabs_personality') || 'A strict, professional HR director'}. Since this is a voice-speaking round, keep the proctor message voice-friendly, clear, and conversational.` : ''}`;
+${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('cartesia_personality') || 'A strict, professional HR director'}. Since this is a voice-speaking round, keep the proctor message voice-friendly, clear, and conversational.` : ''}`;
 
   appendSimChat("SYSTEM", "AI Proctor is evaluating your performance...", false, true);
   
@@ -2587,36 +2587,49 @@ function setVoiceProctorState(state) {
   }
 }
 
-async function speakTextElevenLabs(text) {
-  const apiKey = localStorage.getItem('elevenlabs_api_key');
-  const voiceId = localStorage.getItem('elevenlabs_voice_id') || '21m00Tcm4TlvDq8ikWAM';
+async function speakTextCartesia(text) {
+  // Cartesia TTS via /tts/bytes REST endpoint
+  // Default voice: Barbershop Man (79a125e8-cd45-4c13-8a67-188112f4dd22)
+  const apiKey = localStorage.getItem('cartesia_api_key');
+  const voiceId = localStorage.getItem('cartesia_voice_id') || '79a125e8-cd45-4c13-8a67-188112f4dd22';
   
   if (!apiKey) {
-    console.warn("ElevenLabs API key missing in config. Using fallback browser synthesizer.");
+    console.warn("Cartesia API key missing in Settings. Using fallback browser synthesizer.");
     speakTextBrowserFallback(text);
     return;
   }
   
   try {
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    const response = await fetch('https://api.cartesia.ai/tts/bytes', {
       method: 'POST',
       headers: {
-        'xi-api-key': apiKey,
+        'X-API-Key': apiKey,
+        'Cartesia-Version': '2025-04-16',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        text: text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+        model_id: 'sonic-2',
+        transcript: text,
+        voice: {
+          mode: 'id',
+          id: voiceId
+        },
+        output_format: {
+          container: 'wav',
+          encoding: 'pcm_f32le',
+          sample_rate: 44100
+        },
+        language: 'en'
       })
     });
     
     if (!response.ok) {
       if (response.status === 401) {
-        console.error("ElevenLabs speak error: Unauthorized (HTTP 401). Your ElevenLabs API key in Settings is invalid, expired, or missing. Falling back to browser Speech Synthesis.");
+        console.error("Cartesia speak error: Unauthorized (HTTP 401). Your Cartesia API key in Settings is invalid or missing. Falling back to browser Speech Synthesis.");
       }
-      throw new Error(`ElevenLabs returned HTTP ${response.status}`);
+      throw new Error(`Cartesia returned HTTP ${response.status}`);
     }
+    
     const blob = await response.blob();
     const audioUrl = URL.createObjectURL(blob);
     const audio = new Audio(audioUrl);
@@ -2626,13 +2639,14 @@ async function speakTextElevenLabs(text) {
       stopListening();
     };
     audio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
       setVoiceProctorState('listening');
       startListening();
     };
     
     audio.play();
   } catch (err) {
-    console.error("ElevenLabs speak error:", err);
+    console.error("Cartesia speak error:", err);
     speakTextBrowserFallback(text);
   }
 }
