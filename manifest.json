@@ -1,0 +1,20 @@
+{
+  "name": "Scout Academic Planner",
+  "short_name": "Scout",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0d0d12",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

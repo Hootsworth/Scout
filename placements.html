@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
 <title>Scout Placements</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<script>/* Prevent theme flash */(function(){var t=localStorage.getItem('scout_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
+<link rel="manifest" href="manifest.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <style>
 /* Page specific placements overrides */
 .hero {
@@ -253,21 +256,41 @@ footer {
 </style>
 </head>
 <body>
-<!-- NAVIGATION BAR -->
-<nav class="primary-nav">
-  <div class="logo-area">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
-      <path d="M10 20v-6h4v6M18 10a4 4 0 0 0-8 0v4H6a2 2 0 0 0-2 2v2M20 20v-4a4 4 0 0 0-4-4h-2V6a2 2 0 0 0-4 0v4H9"></path>
-      <circle cx="14" cy="5" r="0.5"></circle>
-    </svg>
-    <span>Scout</span>
+<!-- SIDEBAR NAVIGATION -->
+<nav class="sidebar-nav" id="sidebar-nav">
+  <a href="index.html" class="sidebar-logo" style="text-decoration:none;">
+    <img src="logo.png" alt="Scout" class="sidebar-logo-img">
+    <span class="sidebar-logo-text">Scout</span>
+  </a>
+  <div class="sidebar-items">
+    <a href="index.html" class="sidebar-item" title="Chat">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span class="sidebar-label">Chat</span>
+    </a>
+    <a href="placements.html" class="sidebar-item active" title="Placements">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      <span class="sidebar-label">Placements</span>
+    </a>
+    <a href="study.html" class="sidebar-item" title="Self-Study">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+      <span class="sidebar-label">Self-Study</span>
+    </a>
+    <a href="simulator.html" class="sidebar-item" title="Simulator">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+      <span class="sidebar-label">Simulator</span>
+    </a>
   </div>
-  <div class="nav-links">
-    <a href="index.html">Chat</a>
-    <a href="placements.html" class="active">Placements</a>
-    <a href="study.html">Self-Study</a>
-    <a href="simulator.html">Simulator</a>
-    <a href="settings.html">Settings</a>
+  <div class="sidebar-footer">
+    <div class="sidebar-deadline-chip" id="sidebar-deadline-chip"></div>
+    <button class="sidebar-item sidebar-theme-btn" id="theme-toggle-btn" title="Toggle theme" style="background:none;border:none;cursor:pointer;">
+      <svg class="sidebar-icon theme-icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <svg class="sidebar-icon theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <span class="sidebar-label">Theme</span>
+    </button>
+    <a href="settings.html" class="sidebar-item" title="Settings">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span class="sidebar-label">Settings</span>
+    </a>
   </div>
 </nav>
 
@@ -317,26 +340,56 @@ footer {
     </div>
   </section>
 
-  <!-- SECTION: APPLICATIONS BOARD -->
+  <!-- SECTION: APPLICATIONS BOARD (KANBAN) -->
   <section id="applications">
-    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Application Board</h2></div>
+    <div class="section-label"><span class="section-num">02</span><h2 class="section-title">Job Application Pipeline</h2></div>
     
-    <div class="board-container">
-      <!-- COLUMN 1: ON-CAMPUS RECRUITMENT -->
-      <div class="board-column">
-        <h3>On-Campus Opportunities <span id="on-campus-badge" style="font-size:13px; color:var(--mute); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
-        <div id="on-campus-list" style="margin-top:20px;">
-          <!-- Managed via JS -->
+    <div class="kanban-board">
+      
+      <!-- COLUMN 1: APPLIED -->
+      <div class="kanban-col" data-status="applied" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event, 'applied')">
+        <div class="kanban-col-header">
+          <span>Applied / Pending</span>
+          <span class="kanban-col-count" id="count-applied">0</span>
+        </div>
+        <div class="kanban-cards-container" id="col-applied" style="min-height: 250px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Cards -->
         </div>
       </div>
 
-      <!-- COLUMN 2: OFF-CAMPUS DRIVES -->
-      <div class="board-column">
-        <h3>Off-Campus &amp; Referrals <span id="off-campus-badge" style="font-size:13px; color:var(--mute); font-weight:normal; margin-left:auto;">0 Jobs</span></h3>
-        <div id="off-campus-list" style="margin-top:20px;">
-          <!-- Managed via JS -->
+      <!-- COLUMN 2: OA STAGE -->
+      <div class="kanban-col" data-status="test" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event, 'test')">
+        <div class="kanban-col-header">
+          <span>Online Assessment (OA)</span>
+          <span class="kanban-col-count" id="count-test">0</span>
+        </div>
+        <div class="kanban-cards-container" id="col-test" style="min-height: 250px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Cards -->
         </div>
       </div>
+
+      <!-- COLUMN 3: INTERVIEW -->
+      <div class="kanban-col" data-status="technical" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event, 'technical')">
+        <div class="kanban-col-header">
+          <span>Interviews</span>
+          <span class="kanban-col-count" id="count-technical">0</span>
+        </div>
+        <div class="kanban-cards-container" id="col-technical" style="min-height: 250px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Cards -->
+        </div>
+      </div>
+
+      <!-- COLUMN 4: OFFERS -->
+      <div class="kanban-col" data-status="offer" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event, 'offer')">
+        <div class="kanban-col-header">
+          <span>Offers / Decided</span>
+          <span class="kanban-col-count" id="count-offer">0</span>
+        </div>
+        <div class="kanban-cards-container" id="col-offer" style="min-height: 250px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Cards -->
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -406,6 +459,14 @@ footer {
             <select id="resume-target-select" style="width:100%; min-height:40px; padding:8px 12px; font-size:14px; border-radius:8px; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink);">
               <option value="">-- Select target opening --</option>
             </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Attach Resume File (.pdf, .txt, .md)</label>
+            <input type="file" id="resume-file-input" accept=".pdf,.txt,.md" style="display:none;" onchange="handleResumeUpload(this)">
+            <button class="btn btn-outline" onclick="document.getElementById('resume-file-input').click()" style="width:100%; height:40px; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+              <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+              Upload PDF / Text
+            </button>
           </div>
           <div>
             <label style="display:block; font-size:12px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Resume Content (Markdown / Text)</label>
@@ -653,72 +714,142 @@ async function deleteEntry(id) {
   }
 }
 
-// Update status directly from card dropdown
+// Drag & Drop event handlers for Kanban Board
+function allowDrop(e) {
+  e.preventDefault();
+  const col = e.currentTarget;
+  col.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  const col = e.currentTarget;
+  col.classList.remove('drag-over');
+}
+
+function dragStart(e, id) {
+  e.dataTransfer.setData("text/plain", id);
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    // Add small timeout to visual drop class to prevent invisible drag image
+    setTimeout(() => card.classList.add('dragging'), 0);
+  }
+}
+
+function dragEnd(id) {
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    card.classList.remove('dragging');
+  }
+}
+
+async function dropCard(e, targetStatus) {
+  e.preventDefault();
+  const col = e.currentTarget;
+  col.classList.remove('drag-over');
+  
+  const id = e.dataTransfer.getData("text/plain");
+  if (!id) return;
+  
+  dragEnd(id);
+  await updateStatus(id, targetStatus);
+}
+
+// Update status directly from drag & drop or select dropdown
 async function updateStatus(id, newStatus) {
   placements = placements.map(p => {
-    if (p.id === id) p.status = newStatus;
+    if (p.id === id) {
+      p.status = newStatus;
+    }
     return p;
   });
   await savePlacements();
 }
 
-// Render Placements Board
+// Render Placements Kanban Board
 function renderBoard() {
-  const onCampusList = document.getElementById('on-campus-list');
-  const offCampusList = document.getElementById('off-campus-list');
+  const colApplied = document.getElementById('col-applied');
+  const colTest = document.getElementById('col-test');
+  const colTechnical = document.getElementById('col-technical');
+  const colOffer = document.getElementById('col-offer');
   
-  onCampusList.innerHTML = '';
-  offCampusList.innerHTML = '';
+  if (!colApplied || !colTest || !colTechnical || !colOffer) return;
+  
+  colApplied.innerHTML = '';
+  colTest.innerHTML = '';
+  colTechnical.innerHTML = '';
+  colOffer.innerHTML = '';
+  
+  let countApplied = 0;
+  let countTest = 0;
+  let countTechnical = 0;
+  let countOffer = 0;
   
   let totalCount = placements.length;
   let activeCount = 0;
   let offersCount = 0;
-  let onCampusCount = 0;
-  let offCampusCount = 0;
   
   placements.forEach(job => {
-    // Stat trackers
     if (['applied', 'test', 'technical', 'hr'].includes(job.status)) activeCount++;
     if (job.status === 'offer') offersCount++;
     
-    // Status text mapping
     const statusText = job.status.charAt(0).toUpperCase() + job.status.slice(1);
-    const badgeClass = `status-badge badge-${job.status}`;
+    let badgeClass = 'badge-indigo';
+    if (job.status === 'dreaming') badgeClass = 'badge-pill';
+    else if (job.status === 'test') badgeClass = 'badge-yellow';
+    else if (job.status === 'technical' || job.status === 'hr') badgeClass = 'badge-indigo';
+    else if (job.status === 'offer') badgeClass = 'badge-green';
+    else if (job.status === 'rejected') badgeClass = 'badge-red';
     
     const card = document.createElement('div');
-    card.className = 'job-card';
+    card.className = 'kanban-card';
+    card.id = `card-${job.id}`;
+    card.draggable = true;
+    card.setAttribute('ondragstart', `dragStart(event, '${job.id}')`);
+    card.setAttribute('ondragend', `dragEnd('${job.id}')`);
+    
+    // Set top highlight line color
+    let statusColor = 'var(--mute)';
+    if (job.status === 'applied') statusColor = 'var(--primary)';
+    else if (job.status === 'test') statusColor = 'var(--yellow)';
+    else if (job.status === 'technical' || job.status === 'hr') statusColor = '#6366f1';
+    else if (job.status === 'offer') statusColor = 'var(--green)';
+    else if (job.status === 'rejected') statusColor = 'var(--red)';
+    
+    card.style.borderTop = `3px solid ${statusColor}`;
+    
     card.innerHTML = `
-      <span class="${badgeClass}">${statusText}</span>
-      <h4>${job.name}</h4>
-      <div class="company">${job.title}</div>
-      <div class="ctc">${job.ctc}</div>
-      
-      ${job.jd ? `<div class="jd-summary"><b>Job Requirements:</b>\n${job.jd}</div>` : ''}
-      ${job.notes ? `<div class="prep-notes"><b>Preparation notes:</b>\n${job.notes}</div>` : ''}
-      
-      <div class="form-group" style="margin-top:12px; margin-bottom: 0;">
-        <select onchange="updateStatus('${job.id}', this.value)" style="padding: 6px; font-size:11px;">
-          <option value="dreaming" ${job.status === 'dreaming' ? 'selected' : ''}>Target / Dreaming</option>
-          <option value="applied" ${job.status === 'applied' ? 'selected' : ''}>Applied / Pending</option>
-          <option value="test" ${job.status === 'test' ? 'selected' : ''}>Online Assessment (OA)</option>
-          <option value="technical" ${job.status === 'technical' ? 'selected' : ''}>Technical Interview</option>
-          <option value="hr" ${job.status === 'hr' ? 'selected' : ''}>HR Interview</option>
-          <option value="offer" ${job.status === 'offer' ? 'selected' : ''}>Offer Extended</option>
-          <option value="rejected" ${job.status === 'rejected' ? 'selected' : ''}>Rejected / Closed</option>
-        </select>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <h4 class="kanban-company-name" style="margin:0; font-size:14px; font-weight:700;">${job.name}</h4>
+        <span class="badge-pill ${badgeClass}" style="font-size:9px; padding:2px 6px; flex-shrink:0;">${statusText}</span>
       </div>
-
-      <div class="job-card-actions">
-        <button onclick="deleteEntry('${job.id}')">Delete Application</button>
+      <div class="kanban-company-meta" style="margin-top:4px;">${job.title}</div>
+      <div class="kanban-company-meta" style="font-weight:700; color:var(--ink); margin-top:2px;">${job.ctc}</div>
+      
+      ${job.jd ? `<div class="jd-summary" style="font-size:11px; color:var(--mute); margin-top:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${job.jd}</div>` : ''}
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-top:1px solid var(--hairline); padding-top:8px;">
+        <span class="badge-pill" style="font-size:9px; text-transform:none; padding:2px 5px; background:var(--surface-1); color:var(--body);">${job.type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button onclick="deleteEntry('${job.id}')" style="background:none; border:none; color:var(--red); cursor:pointer; padding:2px; display:flex;" title="Delete">
+            <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
       </div>
     `;
     
-    if (job.type === 'on-campus') {
-      onCampusList.appendChild(card);
-      onCampusCount++;
-    } else {
-      offCampusList.appendChild(card);
-      offCampusCount++;
+    // Sort into Kanban columns
+    if (job.status === 'dreaming' || job.status === 'applied') {
+      colApplied.appendChild(card);
+      countApplied++;
+    } else if (job.status === 'test') {
+      colTest.appendChild(card);
+      countTest++;
+    } else if (job.status === 'technical' || job.status === 'hr') {
+      colTechnical.appendChild(card);
+      countTechnical++;
+    } else if (job.status === 'offer' || job.status === 'rejected') {
+      colOffer.appendChild(card);
+      countOffer++;
     }
   });
   
@@ -726,10 +857,12 @@ function renderBoard() {
   document.getElementById('active-apps').textContent = activeCount;
   document.getElementById('offers-count').textContent = offersCount;
   
-  document.getElementById('on-campus-badge').textContent = `${onCampusCount} Job(s)`;
-  document.getElementById('off-campus-badge').textContent = `${offCampusCount} Job(s)`;
-
-  // Populate dropdowns for Resume and OA target selectors
+  document.getElementById('count-applied').textContent = countApplied;
+  document.getElementById('count-test').textContent = countTest;
+  document.getElementById('count-technical').textContent = countTechnical;
+  document.getElementById('count-offer').textContent = countOffer;
+  
+  // Populate dropdowns for target selectors
   const resumeSelect = document.getElementById('resume-target-select');
   const oaSelect = document.getElementById('oa-target-select');
   if (resumeSelect && oaSelect) {
@@ -860,6 +993,45 @@ function extractJson(text) {
       }
     }
     throw new Error("No valid JSON structure found in AI response.");
+  }
+}
+
+async function handleResumeUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const textarea = document.getElementById('resume-textarea-input');
+  if (!textarea) return;
+  
+  if (file.name.endsWith('.pdf')) {
+    textarea.value = "Parsing PDF resume contents, please wait...";
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const typedarray = new Uint8Array(e.target.result);
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
+        let fullText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(" ");
+          fullText += `### Page ${i}\n${pageText}\n\n`;
+        }
+        textarea.value = fullText;
+      } catch (error) {
+        console.error("PDF parsing failed:", error);
+        textarea.value = "";
+        alert("Failed to parse PDF file. Please ensure it contains readable text.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      textarea.value = e.target.result;
+    };
+    reader.readAsText(file);
   }
 }
 
@@ -1138,7 +1310,28 @@ ${data.review}`;
     .catch(err => {
       consoleOutput.textContent = "Error running evaluation: " + err.message;
     });
-}
+// Evaluation function
 </script>
+
+<!-- COMMAND PALETTE MODAL -->
+<div class="cmd-palette-overlay" id="cmd-palette">
+  <div class="cmd-palette-modal">
+    <div class="cmd-palette-header">
+      <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="cmd-palette-input" placeholder="Type a command or search..." autocomplete="off">
+      <kbd>ESC</kbd>
+    </div>
+    <div class="cmd-palette-list" id="cmd-palette-list"></div>
+    <div class="cmd-palette-footer">
+      <span><kbd>↑↓</kbd> Navigate</span>
+      <span><kbd>↵</kbd> Select</span>
+      <span><kbd>⌘K</kbd> Open anywhere</span>
+    </div>
+  </div>
+</div>
+
+<script src="scout-sidebar.js"></script>
 </body>
 </html>

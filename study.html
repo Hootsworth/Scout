@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png">
 <title>Scout - Self-Study</title>
-<!-- Global Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Outfit:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>/* Prevent theme flash */(function(){var t=localStorage.getItem('scout_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ollama.css">
+<link rel="manifest" href="manifest.json">
 <style>
 body {
   background-color: var(--canvas);
@@ -60,25 +61,43 @@ body {
 </head>
 <body>
 
-<!-- NAVIGATION BAR -->
-<nav class="primary-nav">
-  <div class="logo-area">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
-      <path d="M10 20v-6h4v6M18 10a4 4 0 0 0-8 0v4H6a2 2 0 0 0-2 2v2M20 20v-4a4 4 0 0 0-4-4h-2V6a2 2 0 0 0-4 0v4H9"></path>
-      <circle cx="14" cy="5" r="0.5"></circle>
-    </svg>
-    <span>Scout</span>
+<!-- SIDEBAR NAVIGATION -->
+<nav class="sidebar-nav" id="sidebar-nav">
+  <a href="index.html" class="sidebar-logo" style="text-decoration:none;">
+    <img src="logo.png" alt="Scout" class="sidebar-logo-img">
+    <span class="sidebar-logo-text">Scout</span>
+  </a>
+  <div class="sidebar-items">
+    <a href="index.html" class="sidebar-item" title="Chat">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span class="sidebar-label">Chat</span>
+    </a>
+    <a href="placements.html" class="sidebar-item" title="Placements">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      <span class="sidebar-label">Placements</span>
+    </a>
+    <a href="study.html" class="sidebar-item active" title="Self-Study">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+      <span class="sidebar-label">Self-Study</span>
+    </a>
+    <a href="simulator.html" class="sidebar-item" title="Simulator">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+      <span class="sidebar-label">Simulator</span>
+    </a>
   </div>
-  <div class="nav-links">
-    <a href="index.html">Chat</a>
-    <a href="placements.html">Placements</a>
-    <a href="study.html" class="active">Self-Study</a>
-    <a href="simulator.html">Simulator</a>
-    <a href="settings.html">Settings</a>
+  <div class="sidebar-footer">
+    <div class="sidebar-deadline-chip" id="sidebar-deadline-chip"></div>
+    <button class="sidebar-item sidebar-theme-btn" id="theme-toggle-btn" title="Toggle theme" style="background:none;border:none;cursor:pointer;">
+      <svg class="sidebar-icon theme-icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <svg class="sidebar-icon theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <span class="sidebar-label">Theme</span>
+    </button>
+    <a href="settings.html" class="sidebar-item" title="Settings">
+      <svg class="sidebar-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span class="sidebar-label">Settings</span>
+    </a>
   </div>
 </nav>
-
-<div style="margin-top: 56px;"></div>
 
 <div class="container page-offset">
   <!-- SECTION HEADER -->
@@ -91,18 +110,29 @@ body {
   <section style="padding: 0; border-bottom: none; margin-bottom: 24px;">
     <div class="grid-cols-3">
       <!-- Level Stats -->
-      <div class="stat-box" style="display: flex; align-items: center; gap: 16px; padding: 20px;">
-        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #3d7a6a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 20px; box-shadow: var(--shadow);" id="study-level-badge">
+      <div class="stat-box" style="display: flex; align-items: center; gap: 16px; padding: 20px; margin: 0;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, #3d7a6a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 20px; box-shadow: var(--shadow); flex-shrink:0;" id="study-level-badge">
           L1
         </div>
         <div>
           <div style="font-size: 12px; color: var(--mute); text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Current Rank</div>
-          <div style="font-weight: 800; font-size: 18px; color: var(--ink);" id="study-rank-title">Novice Engineer</div>
+          <div style="font-weight: 800; font-size: 16px; color: var(--ink);" id="study-rank-title">Novice Engineer</div>
+        </div>
+      </div>
+
+      <!-- Streak Box -->
+      <div class="stat-box" style="display: flex; align-items: center; gap: 16px; padding: 20px; margin: 0;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(239,68,68,0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 24px; flex-shrink:0;">
+          🔥
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--mute); text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Study Streak</div>
+          <div style="font-weight: 800; font-size: 18px; color: var(--ink);" id="study-streak-val">14 Days</div>
         </div>
       </div>
       
       <!-- XP Progress -->
-      <div class="stat-box" style="display: flex; flex-direction: column; justify-content: center; padding: 20px; grid-column: span 2;">
+      <div class="stat-box" style="display: flex; flex-direction: column; justify-content: center; padding: 20px; margin: 0;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 8px;">
           <span style="color: var(--mute); text-transform: uppercase; letter-spacing: 0.05em;">XP Progress</span>
           <span style="color: var(--ink);" id="study-xp-ratio">0 / 200 XP</span>
@@ -114,12 +144,26 @@ body {
     </div>
   </section>
 
-  <!-- MAIN GRIID -->
-  <section style="padding: 0; border-bottom: none;">
+  <!-- TABS SWITCHER -->
+  <div class="tabs-switcher" style="display: flex; gap: 24px; margin-bottom: 28px; border-bottom: 1.5px solid var(--hairline-strong); padding-bottom: 0;">
+    <button id="btn-tab-courses" onclick="switchStudyTab('courses')" style="background: none; border: none; border-bottom: 2.5px solid var(--primary); padding: 12px 6px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
+      Course Discovery &amp; Subjects
+    </button>
+    <button id="btn-tab-flashcards" onclick="switchStudyTab('flashcards')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px; display:inline-flex; align-items:center; gap:6px;">
+      Review Flashcards
+      <span class="badge-pill badge-red" id="flashcard-due-count" style="display:none; font-size:9.5px; padding:1px 5px;">0</span>
+    </button>
+    <button id="btn-tab-focus" onclick="switchStudyTab('focus')" style="background: none; border: none; border-bottom: 2.5px solid transparent; padding: 12px 6px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: var(--mute); cursor: pointer; transition: all 0.2s ease; margin-bottom: -1.5px;">
+      Focus Timer &amp; Pomodoro
+    </button>
+  </div>
+
+  <!-- TAB: COURSE DISCOVERY -->
+  <div id="tab-sec-courses">
     <div class="grid-cols-3">
       <!-- Search console -->
       <div class="setup-card" style="margin-bottom:0; height: fit-content;">
-        <h3 style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700;">Search Study Topic</h3>
+        <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:700;">Search Study Topic</h3>
         <p style="font-size:13.5px; color:var(--mute); margin-bottom:16px; line-height:1.5;">What topic would you like to master today? Scout will scan high-quality free repositories, Coursera, edX, and YouTube playlists.</p>
         
         <div style="display:flex; flex-direction:column; gap:16px;">
@@ -134,37 +178,197 @@ body {
         </div>
       </div>
       
-      <!-- Right inventory list -->
-      <div class="setup-card" id="study-results-card" style="grid-column: span 2; margin-bottom: 0; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
-        <div id="study-placeholder" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%;">
-          <svg style="width:48px; height:48px; color:var(--mute); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          <p style="color:var(--mute); font-size:14.5px; max-width:320px; text-align: center; margin:0 auto; line-height:1.5;">Type a study topic on the left to pull curated, free educational courses and video links.</p>
-        </div>
+      <!-- Right inventory list & default syllabus tracker -->
+      <div class="setup-card" id="study-results-card" style="grid-column: span 2; margin-bottom: 0; min-height: 400px; display: flex; flex-direction: column; justify-content: flex-start; position: relative;">
         
-        <div id="study-loading" style="display:none; text-align: center;">
-          <div class="thinking-dots" style="display:inline-flex; gap:6px; margin-bottom:12px;">
-            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0s;"></span>
-            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.2s;"></span>
-            <span class="dot" style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation:pulseDot 1.4s infinite 0.4s;"></span>
-          </div>
-          <p style="color:var(--body); font-size:14px; margin:0;">Scout AI is scanning public course indexes and playlists...</p>
-        </div>
-        
+        <!-- Active inventory of courses -->
         <div id="study-courses-list" style="display:none; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 16px;">
           <!-- Course cards populated dynamically -->
         </div>
 
         <!-- BOSS CHALLENGE CARD BANNER -->
-        <div id="boss-challenge-banner" style="display:none; width:100%; background:linear-gradient(135deg, #1e1112 0%, #301618 100%); border:1px solid var(--red); border-radius:10px; padding:20px; margin-top:20px; text-align:left; align-items:center; justify-content:space-between; gap:20px; box-shadow:0 4px 12px rgba(181, 44, 36, 0.15);">
+        <div id="boss-challenge-banner" style="display:none; width:100%; background:linear-gradient(135deg, #1e1112 0%, #301618 100%); border:1px solid var(--red); border-radius:10px; padding:20px; margin-top:20px; text-align:left; align-items:center; justify-content:space-between; gap:20px; box-shadow:0 4px 12px rgba(181, 44, 36, 0.15); margin-bottom: 20px;">
           <div style="flex:1;">
-            <h4 style="color:var(--red); font-family:'Syne',sans-serif; font-size:16px; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;">👹 Final Boss Battle Assessment Unlocked!</h4>
+            <h4 style="color:var(--red); font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;">👹 Final Boss Battle Assessment Unlocked!</h4>
             <p style="color:#a89c9d; font-size:13px; line-height:1.5; margin:6px 0 0 0;">All catalog courses are cleared. Defeat Bowser in the recruitment review challenge to finalize your study track!</p>
           </div>
           <button class="btn btn-primary" style="background:var(--red); border-color:var(--red); height:40px; padding:0 24px;" onclick="openBossBattleModal()">Fight Boss</button>
         </div>
+
+        <!-- Default Syllabus progress rings dashboard (shown when study inventory is empty) -->
+        <div id="study-placeholder" style="width: 100%;">
+          <h3 style="margin-bottom:6px; border:none; padding:0;">Core CS Syllabus Coverage</h3>
+          <p style="font-size:13px; color:var(--mute); margin: 0 0 20px 0;">Track your mastery levels in core placement subjects. Solve OAs and review flashcards to update status.</p>
+          
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+            
+            <div class="setup-card" style="padding:16px; margin:0; display:flex; align-items:center; gap:16px; background:var(--surface-1);">
+              <svg style="width:48px; height:48px; transform:rotate(-90deg); overflow:visible; flex-shrink:0;">
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--hairline-strong)" stroke-width="4"></circle>
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--primary)" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="34" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+              </svg>
+              <div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">DS &amp; Algorithms</div>
+                <div style="font-size:11.5px; color:var(--mute); margin-top:2px;">70% Complete (14/20 topics)</div>
+              </div>
+            </div>
+
+            <div class="setup-card" style="padding:16px; margin:0; display:flex; align-items:center; gap:16px; background:var(--surface-1);">
+              <svg style="width:48px; height:48px; transform:rotate(-90deg); overflow:visible; flex-shrink:0;">
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--hairline-strong)" stroke-width="4"></circle>
+                <circle cx="24" cy="24" r="18" fill="none" stroke="#6366f1" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="67" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+              </svg>
+              <div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">Operating Systems</div>
+                <div style="font-size:11.5px; color:var(--mute); margin-top:2px;">40% Complete (4/10 topics)</div>
+              </div>
+            </div>
+
+            <div class="setup-card" style="padding:16px; margin:0; display:flex; align-items:center; gap:16px; background:var(--surface-1);">
+              <svg style="width:48px; height:48px; transform:rotate(-90deg); overflow:visible; flex-shrink:0;">
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--hairline-strong)" stroke-width="4"></circle>
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--green)" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="45" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+              </svg>
+              <div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">DBMS &amp; SQL</div>
+                <div style="font-size:11.5px; color:var(--mute); margin-top:2px;">60% Complete (6/10 topics)</div>
+              </div>
+            </div>
+
+            <div class="setup-card" style="padding:16px; margin:0; display:flex; align-items:center; gap:16px; background:var(--surface-1);">
+              <svg style="width:48px; height:48px; transform:rotate(-90deg); overflow:visible; flex-shrink:0;">
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--hairline-strong)" stroke-width="4"></circle>
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--yellow)" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="79" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+              </svg>
+              <div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">Computer Networks</div>
+                <div style="font-size:11.5px; color:var(--mute); margin-top:2px;">30% Complete (3/10 topics)</div>
+              </div>
+            </div>
+
+            <div class="setup-card" style="padding:16px; margin:0; display:flex; align-items:center; gap:16px; background:var(--surface-1); grid-column:span 2;">
+              <svg style="width:48px; height:48px; transform:rotate(-90deg); overflow:visible; flex-shrink:0;">
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--hairline-strong)" stroke-width="4"></circle>
+                <circle cx="24" cy="24" r="18" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="90" style="transition:stroke-dashoffset 0.8s ease;"></circle>
+              </svg>
+              <div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">System Design</div>
+                <div style="font-size:11.5px; color:var(--mute); margin-top:2px;">20% Complete (2/10 topics)</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
-  </section>
+  </div>
+
+  <!-- TAB: FLASHCARDS -->
+  <div id="tab-sec-flashcards" style="display:none;">
+    <div class="grid-cols-3">
+      <!-- Sidebar stats and quick add -->
+      <div class="setup-card" style="margin-bottom:0; height: fit-content; display:flex; flex-direction:column; gap:16px;">
+        <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:700; margin:0; border:none; padding:0;">Flashcard Deck Overview</h3>
+        <p style="font-size:13px; color:var(--mute); margin:0;">Active review stack utilizing the SM-2 Spaced Repetition algorithm.</p>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="setup-card" style="padding:12px; margin:0; background:var(--surface-1); text-align:center;">
+            <div id="fc-total-count" style="font-size:20px; font-weight:800; color:var(--ink);">0</div>
+            <div style="font-size:10px; text-transform:uppercase; color:var(--mute); font-weight:600; margin-top:4px;">Total Cards</div>
+          </div>
+          <div class="setup-card" style="padding:12px; margin:0; background:rgba(220,38,38,0.06); border-color:rgba(220,38,38,0.1); text-align:center;">
+            <div id="fc-due-count-side" style="font-size:20px; font-weight:800; color:var(--red);">0</div>
+            <div style="font-size:10px; text-transform:uppercase; color:var(--red); font-weight:600; margin-top:4px;">Due Today</div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="openAddCardModal()" style="width:100%;">+ Add Custom Card</button>
+      </div>
+
+      <!-- Flashcards screen -->
+      <div class="setup-card" id="fc-results-card" style="grid-column: span 2; margin-bottom: 0; min-height: 420px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+        
+        <!-- Active deck deck container -->
+        <div id="fc-deck-container" style="display:none; width:100%; text-align:center;">
+          <div class="flashcard-scene" onclick="flipActiveCard()">
+            <div class="flashcard" id="active-flashcard">
+              <!-- Front -->
+              <div class="flashcard-face front">
+                <span class="flashcard-category" id="fc-active-cat">DSA</span>
+                <span class="flashcard-hint" style="margin-top:16px;">Click to reveal answer</span>
+                <div class="flashcard-text" id="fc-active-front">Question loading...</div>
+              </div>
+              <!-- Back -->
+              <div class="flashcard-face back">
+                <span class="flashcard-category" id="fc-active-cat-back">DSA</span>
+                <span class="flashcard-hint" style="margin-top:16px; color:var(--primary);">Correct Explanation</span>
+                <div class="flashcard-text" id="fc-active-back">Answer loading...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rating options (revealed only when flipped) -->
+          <div class="flashcard-rating" id="fc-rating-container" style="visibility:hidden; max-width:440px; margin: 20px auto 0 auto;">
+            <button class="rate-again" onclick="rateActiveCard(1)">Again (1m)</button>
+            <button class="rate-hard" onclick="rateActiveCard(2)">Hard (1d)</button>
+            <button class="rate-good" onclick="rateActiveCard(3)">Good (4d)</button>
+            <button class="rate-easy" onclick="rateActiveCard(4)">Easy (8d)</button>
+          </div>
+        </div>
+
+        <!-- Empty / completed state -->
+        <div id="fc-placeholder" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%;">
+          <svg style="width:48px; height:48px; color:var(--mute); margin-bottom:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <p style="color:var(--mute); font-size:14.5px; max-width:320px; text-align: center; margin:0 auto; line-height:1.5;" id="fc-placeholder-msg">Your flashcard queue is clean! All caught up for today.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: FOCUS TIMER -->
+  <div id="tab-sec-focus" style="display:none;">
+    <div class="grid-cols-3">
+      <!-- Timer Configuration -->
+      <div class="setup-card" style="margin-bottom:0; height: fit-content; display:flex; flex-direction:column; gap:16px;">
+        <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:700; margin:0; border:none; padding:0;">Timer Settings</h3>
+        <p style="font-size:13px; color:var(--mute); margin:0;">Configure study periods and break intervals to build cognitive focus.</p>
+        
+        <div class="form-group" style="margin:0;">
+          <label style="display:block; font-size:11px; font-weight:700; text-transform:uppercase; color:var(--mute); margin-bottom:8px;">Focus Mode</label>
+          <select id="focus-preset-select" onchange="applyFocusPreset(this.value)" style="width:100%;">
+            <option value="pomodoro">Pomodoro (25m Work / 5m Break)</option>
+            <option value="short">Short Sprint (15m Work / 3m Break)</option>
+            <option value="long">Deep Work (50m Work / 10m Break)</option>
+          </select>
+        </div>
+
+        <div style="border-top:1px solid var(--hairline); padding-top:16px;">
+          <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:8px;">
+            <span style="color:var(--mute); font-weight:500;">Sessions Completed:</span>
+            <span id="focus-sessions-count" style="font-weight:700; color:var(--ink);">0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+            <span style="color:var(--mute); font-weight:500;">Focused Time:</span>
+            <span id="focus-total-minutes" style="font-weight:700; color:var(--ink);">0 mins</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main timer interface -->
+      <div class="setup-card" style="grid-column: span 2; margin-bottom: 0; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <div style="margin-bottom:8px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--primary); background:var(--primary-glow); padding:4px 12px; border-radius:99px;" id="focus-status-label">Ready to Focus</div>
+        
+        <div style="font-family:'JetBrains Mono', ui-monospace, monospace; font-size: 84px; font-weight: 700; color:var(--ink); line-height:1.1; margin: 16px 0; letter-spacing:-0.04em;" id="focus-timer-display">25:00</div>
+        
+        <div style="display:flex; gap:16px; margin-top:20px;">
+          <button class="btn btn-primary" id="btn-focus-start" onclick="toggleFocusTimer()" style="width:120px; height:44px;">Start Focus</button>
+          <button class="btn btn-outline" id="btn-focus-reset" onclick="resetFocusTimer()" style="width:100px; height:44px;">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- CELEBRATION CONGRATS OVERLAY -->
@@ -233,6 +437,35 @@ body {
   </div>
 </div>
 
+<!-- ADD FLASHCARD DIALOG -->
+<dialog id="fc-add-modal" style="border:1.5px solid var(--primary); border-radius:12px; background-color:var(--canvas); padding:24px; max-width:440px; width:90%; font-family:inherit; color:var(--ink); outline:none; margin:auto; box-shadow:var(--shadow-lg);">
+  <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:18px; font-weight:700; margin:0 0 16px 0;">Add Custom Flashcard</h3>
+  <form id="fc-add-form" onsubmit="saveCustomFlashcard(event)">
+    <div class="form-group">
+      <label>Category</label>
+      <select id="fc-add-cat-select" style="width:100%;">
+        <option value="DSA">Data Structures &amp; Algorithms</option>
+        <option value="OS">Operating Systems</option>
+        <option value="DBMS">Database Management</option>
+        <option value="CN">Computer Networks</option>
+        <option value="SD">System Design</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Front / Question</label>
+      <input type="text" id="fc-add-front-input" placeholder="e.g. What is the average time complexity of Quicksort?" required>
+    </div>
+    <div class="form-group">
+      <label>Back / Answer</label>
+      <textarea id="fc-add-back-input" placeholder="e.g. O(N log N). In the worst case it is O(N^2)." required style="height:100px;"></textarea>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px; border-top:1px solid var(--hairline); padding-top:16px;">
+      <button type="button" class="btn btn-outline" style="height:36px;" onclick="document.getElementById('fc-add-modal').close()">Cancel</button>
+      <button type="submit" class="btn btn-primary" style="height:36px;">Save Card</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -291,6 +524,11 @@ function initStudiesTab() {
   if (badge) badge.textContent = `L${level}`;
   if (ratio) ratio.textContent = `${xpInLevel} / 200 XP (Total: ${xp} XP)`;
   if (bar) bar.style.width = `${pct}%`;
+  
+  const streakEl = document.getElementById('study-streak-val');
+  if (streakEl) {
+    streakEl.textContent = `${localStorage.getItem('scout_streak') || '14'} Days`;
+  }
   
   const ranks = ["Novice Engineer", "Apprentice Developer", "Skillful Coder", "Advanced SDE", "Systems Architect", "Principal Tech Lead"];
   if (title) title.textContent = ranks[Math.min(level - 1, ranks.length - 1)];
@@ -736,6 +974,386 @@ async function callGeminiApi(prompt, contextDesc = "") {
   return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
+// ── STUDY TABS CONTROLLER ─────────────────────────────────
+function switchStudyTab(tabId) {
+  const btnCourses = document.getElementById('btn-tab-courses');
+  const btnFlashcards = document.getElementById('btn-tab-flashcards');
+  const btnFocus = document.getElementById('btn-tab-focus');
+  
+  const secCourses = document.getElementById('tab-sec-courses');
+  const secFlashcards = document.getElementById('tab-sec-flashcards');
+  const secFocus = document.getElementById('tab-sec-focus');
+  
+  [btnCourses, btnFlashcards, btnFocus].forEach(btn => {
+    if (btn) {
+      btn.style.borderBottomColor = 'transparent';
+      btn.style.color = 'var(--mute)';
+    }
+  });
+  
+  [secCourses, secFlashcards, secFocus].forEach(sec => {
+    if (sec) sec.style.display = 'none';
+  });
+  
+  if (tabId === 'courses') {
+    if (btnCourses) {
+      btnCourses.style.borderBottomColor = 'var(--primary)';
+      btnCourses.style.color = 'var(--ink)';
+    }
+    if (secCourses) secCourses.style.display = 'block';
+  } else if (tabId === 'flashcards') {
+    if (btnFlashcards) {
+      btnFlashcards.style.borderBottomColor = 'var(--primary)';
+      btnFlashcards.style.color = 'var(--ink)';
+    }
+    if (secFlashcards) secFlashcards.style.display = 'block';
+    renderFlashcardUI();
+  } else if (tabId === 'focus') {
+    if (btnFocus) {
+      btnFocus.style.borderBottomColor = 'var(--primary)';
+      btnFocus.style.color = 'var(--ink)';
+    }
+    if (secFocus) secFocus.style.display = 'block';
+  }
+}
+
+// ── SPACED REPETITION FLASHCARDS (SM-2) ───────────────────
+const DEFAULT_FLASHCARDS = [
+  { id: 'fc_1', category: 'DSA', front: 'What is the average time complexity of Quicksort?', back: 'O(N log N). In the worst case it is O(N^2) if pivot choices are extremely skewed.', interval: 1, ef: 2.5, reps: 0, due: new Date().toISOString() },
+  { id: 'fc_2', category: 'OS', front: 'What is a Semaphore?', back: 'A variable or abstract data type used to control access to a common resource by multiple processes in concurrent systems.', interval: 1, ef: 2.5, reps: 0, due: new Date().toISOString() },
+  { id: 'fc_3', category: 'DBMS', front: 'What is Third Normal Form (3NF)?', back: 'A database relation schema is in 3NF if it is in 2NF and no non-prime attribute is transitively dependent on the primary key.', interval: 1, ef: 2.5, reps: 0, due: new Date().toISOString() },
+  { id: 'fc_4', category: 'CN', front: 'What is Address Resolution Protocol (ARP)?', back: 'A communication protocol used for discovering the link layer address, such as a MAC address, associated with an IP address.', interval: 1, ef: 2.5, reps: 0, due: new Date().toISOString() },
+  { id: 'fc_5', category: 'SD', front: 'What is horizontal vs vertical scaling?', back: 'Vertical scaling adds more power (CPU, RAM) to a single machine. Horizontal scaling adds more machines to the network pool.', interval: 1, ef: 2.5, reps: 0, due: new Date().toISOString() }
+];
+
+let flashcards = [];
+let activeCard = null;
+
+function loadLocalFlashcards() {
+  const local = localStorage.getItem('scout_flashcards');
+  if (local) {
+    try { flashcards = JSON.parse(local); } catch(e) { flashcards = [...DEFAULT_FLASHCARDS]; }
+  } else {
+    flashcards = [...DEFAULT_FLASHCARDS];
+    localStorage.setItem('scout_flashcards', JSON.stringify(flashcards));
+  }
+}
+
+async function loadFlashcards() {
+  if (db && currentUid) {
+    try {
+      const docSnap = await db.collection('users').doc(currentUid).get();
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        flashcards = data.flashcards || [...DEFAULT_FLASHCARDS];
+      } else {
+        flashcards = [...DEFAULT_FLASHCARDS];
+      }
+    } catch(e) {
+      console.error("Error loading flashcards:", e);
+      loadLocalFlashcards();
+    }
+  } else {
+    loadLocalFlashcards();
+  }
+  updateDueCountBadge();
+}
+
+async function saveFlashcards() {
+  if (db && currentUid) {
+    try {
+      await db.collection('users').doc(currentUid).set({ flashcards: flashcards }, { merge: true });
+    } catch(e) {
+      console.error("Error saving flashcards:", e);
+    }
+  }
+  localStorage.setItem('scout_flashcards', JSON.stringify(flashcards));
+  updateDueCountBadge();
+}
+
+function updateDueCountBadge() {
+  const now = new Date();
+  const due = flashcards.filter(c => new Date(c.due) <= now);
+  
+  const badge = document.getElementById('flashcard-due-count');
+  const sideCount = document.getElementById('fc-due-count-side');
+  const totalCount = document.getElementById('fc-total-count');
+  
+  if (badge) {
+    if (due.length > 0) {
+      badge.textContent = due.length;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  if (sideCount) sideCount.textContent = due.length;
+  if (totalCount) totalCount.textContent = flashcards.length;
+}
+
+function renderFlashcardUI() {
+  const now = new Date();
+  const due = flashcards.filter(c => new Date(c.due) <= now);
+  
+  const deck = document.getElementById('fc-deck-container');
+  const placeholder = document.getElementById('fc-placeholder');
+  const placeholderMsg = document.getElementById('fc-placeholder-msg');
+  
+  if (due.length === 0) {
+    if (deck) deck.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'flex';
+    if (placeholderMsg) placeholderMsg.textContent = flashcards.length > 0 ? "You've finished your reviews for today! Great job." : "Your deck is empty. Add custom flashcards to start studying!";
+    activeCard = null;
+    return;
+  }
+  
+  if (placeholder) placeholder.style.display = 'none';
+  if (deck) deck.style.display = 'block';
+  
+  // Pick first due card
+  activeCard = due[0];
+  
+  // Reset card state (front side)
+  const fc = document.getElementById('active-flashcard');
+  if (fc) fc.classList.remove('flipped');
+  
+  document.getElementById('fc-active-cat').textContent = activeCard.category;
+  document.getElementById('fc-active-cat-back').textContent = activeCard.category;
+  document.getElementById('fc-active-front').textContent = activeCard.front;
+  document.getElementById('fc-active-back').textContent = activeCard.back;
+  
+  // Hide rating keys
+  document.getElementById('fc-rating-container').style.visibility = 'hidden';
+}
+
+function flipActiveCard() {
+  const fc = document.getElementById('active-flashcard');
+  if (fc && !fc.classList.contains('flipped')) {
+    fc.classList.add('flipped');
+    // Reveal rating keys after flip
+    document.getElementById('fc-rating-container').style.visibility = 'visible';
+  }
+}
+
+async function rateActiveCard(rating) {
+  if (!activeCard) return;
+  
+  // rating: 1 = Again, 2 = Hard, 3 = Good, 4 = Easy
+  let interval = activeCard.interval || 1;
+  let ef = activeCard.ef || 2.5;
+  let reps = activeCard.reps || 0;
+  
+  if (rating >= 2) {
+    if (reps === 0) {
+      interval = 1;
+    } else if (reps === 1) {
+      interval = 6;
+    } else {
+      interval = Math.round(interval * ef);
+    }
+    reps++;
+  } else {
+    reps = 0;
+    interval = 1;
+  }
+  
+  // Easiness Factor adjustment
+  ef = ef + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02));
+  if (ef < 1.3) ef = 1.3;
+  
+  // Update card variables
+  activeCard.interval = interval;
+  activeCard.ef = ef;
+  activeCard.reps = reps;
+  
+  const dueTime = new Date();
+  if (rating === 1) {
+    dueTime.setMinutes(dueTime.getMinutes() + 1); // 1 min again
+  } else if (rating === 2) {
+    dueTime.setDate(dueTime.getDate() + 1); // 1 day
+  } else if (rating === 3) {
+    dueTime.setDate(dueTime.getDate() + interval);
+  } else if (rating === 4) {
+    dueTime.setDate(dueTime.getDate() + interval * 1.5);
+  }
+  activeCard.due = dueTime.toISOString();
+  
+  // Award 15 XP on review completion
+  awardXp(15);
+  
+  await saveFlashcards();
+  renderFlashcardUI();
+}
+
+function openAddCardModal() {
+  document.getElementById('fc-add-modal').showModal();
+}
+
+async function saveCustomFlashcard(e) {
+  e.preventDefault();
+  const category = document.getElementById('fc-add-cat-select').value;
+  const front = document.getElementById('fc-add-front-input').value.trim();
+  const back = document.getElementById('fc-add-back-input').value.trim();
+  
+  const newCard = {
+    id: 'fc_' + Date.now(),
+    category,
+    front,
+    back,
+    interval: 1,
+    ef: 2.5,
+    reps: 0,
+    due: new Date().toISOString()
+  };
+  
+  flashcards.push(newCard);
+  await saveFlashcards();
+  
+  document.getElementById('fc-add-form').reset();
+  document.getElementById('fc-add-modal').close();
+  alert("Custom card saved successfully!");
+  
+  if (document.getElementById('tab-sec-flashcards').style.display !== 'none') {
+    renderFlashcardUI();
+  }
+}
+
+// ── FOCUS / POMODORO TIMER ───────────────────────────────
+let focusTimer = null;
+let focusSecondsLeft = 1500; // 25 mins
+let focusTotalSeconds = 1500;
+let focusIsActive = false;
+let focusIsBreak = false;
+let focusSessionsCompleted = 0;
+let focusTotalMinutes = 0;
+
+function applyFocusPreset(preset) {
+  if (focusIsActive) {
+    alert("Please pause the timer before changing presets.");
+    return;
+  }
+  
+  if (preset === 'pomodoro') {
+    focusTotalSeconds = 1500;
+  } else if (preset === 'short') {
+    focusTotalSeconds = 900;
+  } else if (preset === 'long') {
+    focusTotalSeconds = 3000;
+  }
+  focusSecondsLeft = focusTotalSeconds;
+  focusIsBreak = false;
+  updateTimerDisplay();
+  document.getElementById('focus-status-label').textContent = "Ready to Focus";
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(focusSecondsLeft / 60);
+  const secs = focusSecondsLeft % 60;
+  document.getElementById('focus-timer-display').textContent = 
+    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function toggleFocusTimer() {
+  const btn = document.getElementById('btn-focus-start');
+  if (focusIsActive) {
+    // Pause
+    clearInterval(focusTimer);
+    focusIsActive = false;
+    if (btn) btn.textContent = "Start Focus";
+  } else {
+    // Start
+    focusIsActive = true;
+    if (btn) btn.textContent = "Pause";
+    
+    focusTimer = setInterval(() => {
+      focusSecondsLeft--;
+      updateTimerDisplay();
+      
+      if (focusSecondsLeft <= 0) {
+        clearInterval(focusTimer);
+        focusIsActive = false;
+        if (btn) btn.textContent = "Start Focus";
+        
+        // Timer completed!
+        playCastleClearedSound(); // synthesizer chime alert
+        
+        if (!focusIsBreak) {
+          // Focus finished
+          focusSessionsCompleted++;
+          const minsCompleted = Math.round(focusTotalSeconds / 60);
+          focusTotalMinutes += minsCompleted;
+          
+          document.getElementById('focus-sessions-count').textContent = focusSessionsCompleted;
+          document.getElementById('focus-total-minutes').textContent = `${focusTotalMinutes} mins`;
+          
+          // Award XP for focusing (100 XP per full sprint completed)
+          const xpAwarded = Math.round((focusTotalSeconds / 1500) * 100);
+          awardXp(xpAwarded);
+          
+          alert(`Great job! You focused for ${minsCompleted} minutes and earned ${xpAwarded} XP! Let's take a break.`);
+          
+          // Go to Break preset
+          focusIsBreak = true;
+          focusTotalSeconds = Math.round(focusTotalSeconds * 0.2); // 20% break duration
+          focusSecondsLeft = focusTotalSeconds;
+          document.getElementById('focus-status-label').textContent = "Short Break Active";
+        } else {
+          // Break finished
+          focusIsBreak = false;
+          applyFocusPreset(document.getElementById('focus-preset-select').value);
+          alert("Break finished! Back to focus.");
+        }
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+}
+
+function resetFocusTimer() {
+  if (focusIsActive) {
+    clearInterval(focusTimer);
+    focusIsActive = false;
+    document.getElementById('btn-focus-start').textContent = "Start Focus";
+  }
+  applyFocusPreset(document.getElementById('focus-preset-select').value);
+}
+
+function awardXp(amount) {
+  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+  let oldLevel = Math.floor(xp / 200) + 1;
+  let newXp = xp + amount;
+  let newLevel = Math.floor(newXp / 200) + 1;
+  
+  localStorage.setItem('study_xp', newXp);
+  
+  // Re-run status bar updates
+  initStudiesTab();
+  
+  if (newLevel > oldLevel) {
+    // Leveled up! Trigger congrats celebration popup
+    const badge = document.getElementById('study-celebration-badge');
+    const title = document.getElementById('study-rank-title')?.textContent || "Master SDE";
+    if (badge) badge.textContent = `L${newLevel}`;
+    
+    document.getElementById('study-celebration-text').innerHTML = 
+      `You completed assessments & reviewed core flashcards to advance to level <b>L${newLevel}</b> (<b>${title}</b>)!`;
+    
+    document.getElementById('study-celebration-overlay').style.display = 'flex';
+    document.getElementById('study-celebration-overlay').style.opacity = '1';
+    document.getElementById('study-celebration-overlay').style.pointerEvents = 'all';
+    
+    playLevelUpChime(true);
+  }
+}
+
+// Extends default initStudiesTab
+const originalInitStudiesTab = initStudiesTab;
+initStudiesTab = function() {
+  originalInitStudiesTab();
+  // Ensure flashcards queue counts are loaded correctly
+  loadFlashcards();
+}
+
 function extractJson(rawText) {
   let clean = rawText.trim();
   const jsonStart = clean.indexOf('{');
@@ -752,5 +1370,26 @@ window.addEventListener('DOMContentLoaded', () => {
   initStudiesTab();
 });
 </script>
+
+<!-- COMMAND PALETTE MODAL -->
+<div class="cmd-palette-overlay" id="cmd-palette">
+  <div class="cmd-palette-modal">
+    <div class="cmd-palette-header">
+      <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="cmd-palette-input" placeholder="Type a command or search..." autocomplete="off">
+      <kbd>ESC</kbd>
+    </div>
+    <div class="cmd-palette-list" id="cmd-palette-list"></div>
+    <div class="cmd-palette-footer">
+      <span><kbd>↑↓</kbd> Navigate</span>
+      <span><kbd>↵</kbd> Select</span>
+      <span><kbd>⌘K</kbd> Open anywhere</span>
+    </div>
+  </div>
+</div>
+
+<script src="scout-sidebar.js"></script>
 </body>
 </html>
