@@ -473,6 +473,7 @@ body {
 
       <!-- QUICK CHIPS -->
       <div class="quick-prompts">
+        <div class="prompt-chip" onclick="openLectureSummarizerModal()" style="border-color:var(--primary); color:var(--primary);">📝 Summarize Notes</div>
         <div class="prompt-chip" onclick="sendPrompt('Show my commitments status this week')">Commitments</div>
         <div class="prompt-chip" onclick="sendPrompt('Check my Gmail for any new deadlines or tasks')">Scan Gmail</div>
         <div class="prompt-chip" onclick="sendPrompt('What events do I have on my calendar for the next 7 days?')">List Calendar</div>
@@ -1614,6 +1615,31 @@ function parseMarkdown(md) {
     return id;
   });
 
+  const ankiDecks = [];
+  const mindMaps = [];
+  const dsaVisualizers = [];
+
+  // Parse custom <anki-flashcards> tags before HTML escaping
+  md = md.replace(/<anki-flashcards\b[^>]*>([\s\S]*?)<\/anki-flashcards>/gi, (match) => {
+    const id = `%%ANKI${ankiDecks.length}%%`;
+    ankiDecks.push(match);
+    return id;
+  });
+
+  // Parse custom <concept-mindmap> tags before HTML escaping
+  md = md.replace(/<concept-mindmap\b[^>]*>([\s\S]*?)<\/concept-mindmap>/gi, (match) => {
+    const id = `%%MINDMAP${mindMaps.length}%%`;
+    mindMaps.push(match);
+    return id;
+  });
+
+  // Parse custom <dsa-visualizer> tags before HTML escaping
+  md = md.replace(/<dsa-visualizer\b[^>]*>([\s\S]*?)<\/dsa-visualizer>|<dsa-visualizer\b[^>]*\/>|<dsa-visualizer\b[^>]*>/gi, (match) => {
+    const id = `%%VISUALIZER${dsaVisualizers.length}%%`;
+    dsaVisualizers.push(match);
+    return id;
+  });
+
   // Parse custom <pie-chart> tags before HTML escaping and replace with placeholders
   md = md.replace(/<pie-chart\b[^>]*>([\s\S]*?)<\/pie-chart>/gi, (match) => {
     const id = `%%PIECHART${pieCharts.length}%%`;
@@ -1905,6 +1931,59 @@ function parseMarkdown(md) {
     }
   });
 
+  // Restore Anki Flashcards
+  ankiDecks.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const node = doc.querySelector('anki-flashcards');
+      const deck = node ? (node.getAttribute('deck') || 'Flashcard Deck') : 'Flashcard Deck';
+      const cards = node ? Array.from(node.querySelectorAll('card')).map(cardNode => ({
+        front: cardNode.getAttribute('front') || '',
+        back: cardNode.getAttribute('back') || ''
+      })) : [];
+      html = html.replace(`%%ANKI${idx}%%`, () => renderAnkiFlashcards(deck, cards, idx));
+    } catch(e) {
+      console.error("Anki restoration error:", e);
+      html = html.replace(`%%ANKI${idx}%%`, () => '');
+    }
+  });
+
+  // Restore Concept Mind-Maps
+  mindMaps.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const node = doc.querySelector('concept-mindmap');
+      const topic = node ? (node.getAttribute('topic') || 'Mind Map') : 'Mind Map';
+      const nodesList = node ? Array.from(node.querySelectorAll('node')).map(nodeNode => ({
+        label: nodeNode.getAttribute('label') || '',
+        parent: nodeNode.getAttribute('parent') || '',
+        desc: nodeNode.getAttribute('desc') || ''
+      })) : [];
+      html = html.replace(`%%MINDMAP${idx}%%`, () => renderConceptMindMap(topic, nodesList, idx));
+    } catch(e) {
+      console.error("Mindmap restoration error:", e);
+      html = html.replace(`%%MINDMAP${idx}%%`, () => '');
+    }
+  });
+
+  // Restore DSA Visualizers
+  dsaVisualizers.forEach((match, idx) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(match, 'text/html');
+      const node = doc.querySelector('dsa-visualizer');
+      const algorithm = node ? (node.getAttribute('algorithm') || 'bubblesort') : 'bubblesort';
+      const initial = node ? (node.getAttribute('initial') || '5,3,8,2,9') : '5,3,8,2,9';
+      const targetVal = node ? (node.getAttribute('target') || '') : '';
+      html = html.replace(`%%VISUALIZER${idx}%%`, () => renderDsaVisualizer(algorithm, initial, targetVal, idx));
+    } catch(e) {
+      console.error("Visualizer restoration error:", e);
+      html = html.replace(`%%VISUALIZER${idx}%%`, () => '');
+    }
+  });
+
   // Replace double newlines with paragraphs
   const paragraphs = html.split(/\n{2,}/);
   const formattedParagraphs = paragraphs.map(p => {
@@ -1992,6 +2071,7 @@ function decorateAssistantMessage(container, rawText) {
   container.dataset.rawMarkdown = rawText || '';
   addMessageActions(container, rawText || '');
   addChartActions(container);
+  initializeVisualizerWidgets(container);
 }
 
 function addMessageActions(container, rawText) {
@@ -2674,6 +2754,21 @@ When the user asks to learn a topic today, study a subject, or requests study co
      </course>
    </study-recommendations>
 Ensure that url values are realistic, high-quality direct links that exist. Do not explain these tags to the user, just output them inside your text response.
+5. Interactive Learning Widgets: You can generate concept mind-maps, flashcard decks, and algorithm visualizers:
+   - Mind-Maps (draws connection branches up to 3 levels):
+     <concept-mindmap topic="Topic Title">
+       <node label="Root Node" parent="" desc="Description..."></node>
+       <node label="Child Node" parent="Root Node" desc="Description..."></node>
+       <node label="Grandchild Node" parent="Child Node" desc="Description..."></node>
+     </concept-mindmap>
+   - Flashcard Decks:
+     <anki-flashcards deck="Topic Deck Name">
+       <card front="Question 1?" back="Answer 1"></card>
+       <card front="Question 2?" back="Answer 2"></card>
+     </anki-flashcards>
+   - DSA Visualizers (available algorithm values: 'bubblesort', 'binarysearch'):
+     <dsa-visualizer algorithm="bubblesort" initial="40,10,90,30,50"></dsa-visualizer>
+     <dsa-visualizer algorithm="binarysearch" initial="10,20,30,45,60,75,90" target="60"></dsa-visualizer>
 
 == MEMORY-AWARE COACHING RULES ==
 Use these rules whenever giving planning, commitment, workload, or career advice:
@@ -3408,7 +3503,7 @@ function playQuizScoreChime(perfect) {
       osc.start(ctx.currentTime + (i * 0.1));
       osc.stop(ctx.currentTime + (i * 0.1) + 0.3);
     });
-  } else {
+    } else {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -3419,6 +3514,526 @@ function playQuizScoreChime(perfect) {
     osc.start();
     osc.stop(ctx.currentTime + 0.2);
   }
+}
+
+// ==========================================
+// INTERACTIVE STUDY WIDGETS & RETRO SYNTH ENGINE
+// ==========================================
+const activeAnkiDecks = {};
+const visualizerStates = {};
+
+function playJumpSound() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(150, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.12, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.15);
+}
+
+function playPowerUpSound() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const ctx = new AudioContext();
+  const notes = [330, 392, 659, 523, 587, 784];
+  notes.forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = f;
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime + (i * 0.08));
+    osc.stop(ctx.currentTime + (i * 0.08) + 0.4);
+  });
+}
+
+function playDamageSound() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(180, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3);
+  gain.gain.setValueAtTime(0.12, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.3);
+}
+
+function renderAnkiFlashcards(deckName, cards, idx) {
+  const deckKey = `anki_${idx}`;
+  activeAnkiDecks[deckKey] = {
+    cards: cards,
+    currentIdx: 0
+  };
+  
+  return `
+    <div class="anki-deck-container" id="anki-deck-${idx}" style="background:var(--surface-soft); border:1px solid var(--hairline-strong); border-radius:12px; padding:20px; margin:20px 0; text-align:center; box-shadow:var(--shadow);">
+      <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--mute); text-transform:uppercase; letter-spacing:0.04em;">
+        <span>🎴 Flashcard Deck</span>
+        <span id="anki-counter-${idx}" style="color:var(--ink);">Card 1 of ${cards.length}</span>
+      </div>
+      <h4 style="margin: 6px 0 0 0; font-family:'Syne',sans-serif; font-size:15px; color:var(--ink); text-align:left;">${deckName}</h4>
+      
+      <div class="anki-card-wrapper" onclick="flipAnkiCard(${idx})" style="perspective: 1000px; width: 100%; height: 160px; margin: 16px 0; cursor: pointer;">
+        <div class="anki-card-inner" id="anki-card-inner-${idx}" style="position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.4s; transform-style: preserve-3d;">
+          <div class="anki-card-front" id="anki-front-${idx}" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid var(--hairline-strong); display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--canvas); color: var(--ink); font-size: 14.5px; font-weight: 600; line-height:1.5;">
+            ${cards[0].front}
+          </div>
+          <div class="anki-card-back" id="anki-back-${idx}" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid var(--hairline-strong); display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--primary); color: #fff; transform: rotateY(180deg); font-size: 14px; font-weight: 500; line-height: 1.5;">
+            ${cards[0].back}
+          </div>
+        </div>
+      </div>
+      
+      <div style="font-size:11px; color:var(--mute); margin-bottom:12px;">Click card to flip and reveal answer</div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <button class="btn btn-outline" onclick="prevAnkiCard(${idx})" style="height:32px; font-size:11px; padding:0 12px;">◀ Prev</button>
+        
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-outline" onclick="rateAnkiCard(${idx}, 2)" style="height:32px; font-size:11px; padding:0 8px; border-color:var(--red); color:var(--red);">Hard (+2 XP)</button>
+          <button class="btn btn-outline" onclick="rateAnkiCard(${idx}, 5)" style="height:32px; font-size:11px; padding:0 8px; border-color:var(--yellow); color:var(--yellow);">Good (+5 XP)</button>
+          <button class="btn btn-primary" onclick="rateAnkiCard(${idx}, 10)" style="height:32px; font-size:11px; padding:0 12px; background:var(--green); border-color:var(--green);">Easy (+10 XP)</button>
+        </div>
+        
+        <button class="btn btn-outline" onclick="nextAnkiCard(${idx})" style="height:32px; font-size:11px; padding:0 12px;">Next ▶</button>
+      </div>
+    </div>
+  `;
+}
+
+function flipAnkiCard(idx) {
+  const card = document.getElementById(`anki-card-inner-${idx}`);
+  if (card) {
+    if (card.style.transform === 'rotateY(180deg)') {
+      card.style.transform = 'rotateY(0deg)';
+    } else {
+      card.style.transform = 'rotateY(180deg)';
+    }
+  }
+}
+
+function updateAnkiCardUi(idx) {
+  const state = activeAnkiDecks[`anki_${idx}`];
+  const card = state.cards[state.currentIdx];
+  
+  const inner = document.getElementById(`anki-card-inner-${idx}`);
+  if (inner) inner.style.transform = 'rotateY(0deg)';
+  
+  setTimeout(() => {
+    document.getElementById(`anki-front-${idx}`).textContent = card.front;
+    document.getElementById(`anki-back-${idx}`).textContent = card.back;
+    document.getElementById(`anki-counter-${idx}`).textContent = `Card ${state.currentIdx + 1} of ${state.cards.length}`;
+  }, 100);
+}
+
+function prevAnkiCard(idx) {
+  event.stopPropagation();
+  const state = activeAnkiDecks[`anki_${idx}`];
+  if (state.currentIdx > 0) {
+    state.currentIdx--;
+    updateAnkiCardUi(idx);
+    playJumpSound();
+  }
+}
+
+function nextAnkiCard(idx) {
+  event.stopPropagation();
+  const state = activeAnkiDecks[`anki_${idx}`];
+  if (state.currentIdx < state.cards.length - 1) {
+    state.currentIdx++;
+    updateAnkiCardUi(idx);
+    playJumpSound();
+  }
+}
+
+function rateAnkiCard(idx, xpGained) {
+  event.stopPropagation();
+  let xp = parseInt(localStorage.getItem('study_xp') || '0', 10);
+  localStorage.setItem('study_xp', xp + xpGained);
+  
+  playPowerUpSound();
+  alert(`Feedback saved! You earned +${xpGained} XP!`);
+  
+  const state = activeAnkiDecks[`anki_${idx}`];
+  if (state.currentIdx < state.cards.length - 1) {
+    state.currentIdx++;
+    updateAnkiCardUi(idx);
+  }
+}
+
+function renderConceptMindMap(topic, nodes, idx) {
+  let root = nodes.find(n => !n.parent) || nodes[0];
+  if (!root) return '';
+  
+  const width = 560;
+  const height = 300;
+  
+  let level1 = nodes.filter(n => n.parent === root.label);
+  let level2 = [];
+  
+  root.x = 60;
+  root.y = height / 2;
+  root.level = 0;
+  
+  level1.forEach((n, i) => {
+    n.x = 240;
+    n.y = (i + 0.5) * (height / Math.max(1, level1.length));
+    n.level = 1;
+    
+    let children = nodes.filter(c => c.parent === n.label);
+    children.forEach((c) => {
+      c.x = 440;
+      c.level = 2;
+      level2.push(c);
+    });
+  });
+  
+  level2.forEach((n, i) => {
+    n.y = (i + 0.5) * (height / Math.max(1, level2.length));
+  });
+  
+  const nodeMap = {};
+  nodes.forEach(n => { nodeMap[n.label] = n; });
+  
+  let linesHtml = '';
+  nodes.forEach(n => {
+    if (n.parent && nodeMap[n.parent]) {
+      const p = nodeMap[n.parent];
+      linesHtml += `
+        <path d="M ${p.x + 120} ${p.y} C ${p.x + 180} ${p.y}, ${n.x - 40} ${n.y}, ${n.x} ${n.y}" 
+              stroke="var(--primary)" stroke-opacity="0.4" stroke-width="2" fill="none" />
+      `;
+    }
+  });
+  
+  let nodesHtml = '';
+  nodes.forEach((n) => {
+    const isRoot = n.level === 0;
+    const bg = 'var(--canvas)';
+    const border = isRoot ? 'var(--primary)' : 'var(--hairline-strong)';
+    const escapedDesc = (n.desc || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    
+    nodesHtml += `
+      <g class="mindmap-node" style="cursor:pointer;" onclick="selectMindMapNode(${idx}, '${n.label.replace(/'/g, "\\'")}', '${escapedDesc}')">
+        <rect x="${n.x}" y="${n.y - 18}" width="120" height="36" rx="6" 
+              fill="${bg}" stroke="${border}" stroke-width="2" />
+        <text x="${n.x + 60}" y="${n.y + 5}" text-anchor="middle" font-family="'Outfit', sans-serif" font-size:11.5px" font-weight:700" fill="var(--ink)">
+          ${n.label.substring(0, 16)}
+        </text>
+      </g>
+    `;
+  });
+  
+  return `
+    <div style="background:var(--surface-soft); border:1.5px solid var(--hairline-strong); border-radius:12px; padding:20px; margin:20px 0; text-align:left; box-shadow:var(--shadow);">
+      <h3 style="margin-top:0; border:none; padding:0; font-family:'Syne',sans-serif; font-size:16px; color:var(--ink); display:flex; align-items:center; gap:8px;">
+        🗺️ Concept Mind-Map: ${topic}
+      </h3>
+      <p style="font-size:12.5px; color:var(--mute); margin:4px 0 16px 0;">Interactive concept tree. Click any node block to inspect notes and definitions.</p>
+      
+      <div style="width:100%; overflow-x:auto; background:var(--canvas); border:1px solid var(--hairline); border-radius:8px; padding:10px;">
+        <svg width="${width}" height="${height}" style="background:var(--canvas); display:block; margin: 0 auto;">
+          ${linesHtml}
+          ${nodesHtml}
+        </svg>
+      </div>
+      
+      <div id="mindmap-detail-${idx}" style="margin-top:12px; background:var(--surface-soft-hover); border:1px solid var(--hairline); border-radius:6px; padding:12px; font-size:13.5px; min-height:60px; line-height:1.5; color:var(--body);">
+        <strong style="color:var(--ink);">Details:</strong> Click any node above to explore definitions.
+      </div>
+    </div>
+  `;
+}
+
+function selectMindMapNode(idx, label, desc) {
+  const panel = document.getElementById(`mindmap-detail-${idx}`);
+  if (panel) {
+    panel.innerHTML = `<strong style="color:var(--primary);">${label}</strong>: ${desc || 'No description available.'}`;
+    playJumpSound();
+  }
+}
+
+function renderDsaVisualizer(algorithm, initial, target, idx) {
+  const arr = initial.split(',').map(Number);
+  const targetVal = Number(target || 0);
+  
+  const key = `vis_${idx}`;
+  visualizerStates[key] = {
+    algorithm: algorithm,
+    initialArray: [...arr],
+    array: [...arr],
+    target: targetVal,
+    steps: [],
+    currentStep: 0,
+    intervalId: null
+  };
+  
+  generateVisualizerSteps(key);
+  
+  return `
+    <div style="background:var(--surface-soft); border:1.5px solid var(--hairline-strong); border-radius:12px; padding:20px; margin:20px 0; text-align:left; box-shadow:var(--shadow);">
+      <h3 style="margin-top:0; border:none; padding:0; font-family:'Syne',sans-serif; font-size:16px; color:var(--ink); display:flex; align-items:center; gap:8px;">
+        🌳 DSA Visualizer: ${algorithm.toUpperCase()}
+      </h3>
+      <p style="font-size:12.5px; color:var(--mute); margin:4px 0 16px 0;">Algorithm step-through player. Run play or click step to traverse code execution visually.</p>
+      
+      <div id="vis-bars-container-${idx}" style="display:flex; justify-content:center; align-items:flex-end; gap:8px; height:180px; background:var(--canvas); border:1px solid var(--hairline); border-radius:8px; padding:20px; position:relative; overflow-x:auto;">
+        <!-- Rendered dynamically -->
+      </div>
+      
+      <div id="vis-status-${idx}" style="margin:12px 0; background:var(--surface-soft-hover); border:1px solid var(--hairline); border-radius:6px; padding:10px; font-size:13px; min-height:44px; line-height:1.5; color:var(--body);">
+        Press Play to begin step-through simulation.
+      </div>
+      
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-outline" onclick="playVisualizer(${idx})" id="vis-play-${idx}" style="height:36px; font-size:12px; min-width:80px;">Play ▶</button>
+        <button class="btn btn-outline" onclick="stepVisualizer(${idx})" style="height:36px; font-size:12px;">Step ⏭</button>
+        <button class="btn btn-outline" onclick="resetVisualizer(${idx})" style="height:36px; font-size:12px;">Reset ↺</button>
+      </div>
+    </div>
+  `;
+}
+
+function generateVisualizerSteps(key) {
+  const state = visualizerStates[key];
+  const steps = [];
+  
+  if (state.algorithm === 'bubblesort') {
+    let a = [...state.initialArray];
+    steps.push({ array: [...a], compare: [], swap: [], status: "Initial array loaded. Start bubble sort." });
+    for (let i = 0; i < a.length; i++) {
+      for (let j = 0; j < a.length - 1 - i; j++) {
+        steps.push({
+          array: [...a],
+          compare: [j, j+1],
+          swap: [],
+          status: `Comparing index ${j} (${a[j]}) and ${j+1} (${a[j+1]}).`
+        });
+        if (a[j] > a[j+1]) {
+          let temp = a[j];
+          a[j] = a[j+1];
+          a[j+1] = temp;
+          steps.push({
+            array: [...a],
+            compare: [j, j+1],
+            swap: [j, j+1],
+            status: `Swapped index ${j} and ${j+1} since ${a[j+1]} < ${a[j]}.`
+          });
+        }
+      }
+    }
+    steps.push({ array: [...a], compare: [], swap: [], status: "Array sorted successfully!" });
+  } else if (state.algorithm === 'binarysearch') {
+    let a = [...state.initialArray].sort((x, y) => x - y);
+    let low = 0;
+    let high = a.length - 1;
+    let target = state.target;
+    steps.push({ array: [...a], bounds: [low, high], mid: -1, status: `Sorted array loaded. Searching for target: ${target}.` });
+    let found = false;
+    while (low <= high) {
+      let mid = Math.floor((low + high) / 2);
+      steps.push({
+        array: [...a],
+        bounds: [low, high],
+        mid: mid,
+        status: `Checking mid index: ${mid} (value: ${a[mid]}). Is ${a[mid]} === ${target}?`
+      });
+      if (a[mid] === target) {
+        steps.push({
+          array: [...a],
+          bounds: [low, high],
+          mid: mid,
+          status: `Target ${target} found at index ${mid}!`
+        });
+        found = true;
+        break;
+      } else if (a[mid] < target) {
+        low = mid + 1;
+        steps.push({
+          array: [...a],
+          bounds: [low, high],
+          mid: mid,
+          status: `Since ${a[mid]} < ${target}, look in the right partition. Moving low to index ${low}.`
+        });
+      } else {
+        high = mid - 1;
+        steps.push({
+          array: [...a],
+          bounds: [low, high],
+          mid: mid,
+          status: `Since ${a[mid]} > ${target}, look in the left partition. Moving high to index ${high}.`
+        });
+      }
+    }
+    if (!found) {
+      steps.push({ array: [...a], bounds: [], mid: -1, status: `Bounds empty. Target ${target} not found.` });
+    }
+  }
+  state.steps = steps;
+}
+
+function updateVisualizerUi(idx) {
+  const key = `vis_${idx}`;
+  const state = visualizerStates[key];
+  if (!state) return;
+  const step = state.steps[state.currentStep];
+  if (!step) return;
+  
+  const container = document.getElementById(`vis-bars-container-${idx}`);
+  const statusText = document.getElementById(`vis-status-${idx}`);
+  if (!container || !statusText) return;
+  
+  container.innerHTML = '';
+  statusText.textContent = step.status;
+  
+  step.array.forEach((val, i) => {
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.flex = '1';
+    wrapper.style.minWidth = '30px';
+    
+    const bar = document.createElement('div');
+    bar.style.width = '100%';
+    bar.style.borderRadius = '4px';
+    bar.style.transition = 'all 0.2s';
+    
+    const valText = document.createElement('div');
+    valText.style.fontSize = '11px';
+    valText.style.fontWeight = 'bold';
+    valText.style.color = 'var(--ink)';
+    valText.style.marginBottom = '4px';
+    valText.textContent = val;
+    
+    const idxText = document.createElement('div');
+    idxText.style.fontSize = '10px';
+    idxText.style.color = 'var(--mute)';
+    idxText.style.marginTop = '4px';
+    idxText.textContent = i;
+    
+    if (state.algorithm === 'bubblesort') {
+      const maxVal = Math.max(...step.array);
+      const pctHeight = (val / maxVal) * 100;
+      bar.style.height = `${Math.max(20, pctHeight)}px`;
+      
+      if (step.swap.includes(i)) {
+        bar.style.backgroundColor = 'var(--red)';
+      } else if (step.compare.includes(i)) {
+        bar.style.backgroundColor = 'var(--yellow)';
+      } else {
+        bar.style.backgroundColor = 'var(--primary)';
+      }
+    } else if (state.algorithm === 'binarysearch') {
+      bar.style.height = '40px';
+      bar.style.display = 'flex';
+      bar.style.alignItems = 'center';
+      bar.style.justifyContent = 'center';
+      bar.style.color = '#fff';
+      bar.textContent = val;
+      valText.style.display = 'none';
+      
+      if (step.mid === i) {
+        bar.style.backgroundColor = 'var(--red)';
+        bar.style.boxShadow = '0 0 10px rgba(181, 44, 36, 0.4)';
+      } else if (step.bounds && i >= step.bounds[0] && i <= step.bounds[1]) {
+        bar.style.backgroundColor = 'var(--primary)';
+      } else {
+        bar.style.backgroundColor = 'var(--surface-soft-hover)';
+        bar.style.color = 'var(--mute)';
+      }
+    }
+    
+    wrapper.appendChild(valText);
+    wrapper.appendChild(bar);
+    wrapper.appendChild(idxText);
+    container.appendChild(wrapper);
+  });
+}
+
+function playVisualizer(idx) {
+  const key = `vis_${idx}`;
+  const state = visualizerStates[key];
+  const playBtn = document.getElementById(`vis-play-${idx}`);
+  if (!playBtn) return;
+  
+  if (state.intervalId) {
+    clearInterval(state.intervalId);
+    state.intervalId = null;
+    playBtn.textContent = 'Play ▶';
+  } else {
+    playBtn.textContent = 'Pause ⏸';
+    state.intervalId = setInterval(() => {
+      if (state.currentStep < state.steps.length - 1) {
+        state.currentStep++;
+        updateVisualizerUi(idx);
+        playJumpSound();
+      } else {
+        clearInterval(state.intervalId);
+        state.intervalId = null;
+        playBtn.textContent = 'Play ▶';
+        playPowerUpSound();
+      }
+    }, 1200);
+  }
+}
+
+function stepVisualizer(idx) {
+  const key = `vis_${idx}`;
+  const state = visualizerStates[key];
+  if (state.intervalId) {
+    clearInterval(state.intervalId);
+    state.intervalId = null;
+    document.getElementById(`vis-play-${idx}`).textContent = 'Play ▶';
+  }
+  
+  if (state.currentStep < state.steps.length - 1) {
+    state.currentStep++;
+    updateVisualizerUi(idx);
+    playJumpSound();
+  } else {
+    playPowerUpSound();
+  }
+}
+
+function resetVisualizer(idx) {
+  const key = `vis_${idx}`;
+  const state = visualizerStates[key];
+  if (state.intervalId) {
+    clearInterval(state.intervalId);
+    state.intervalId = null;
+    document.getElementById(`vis-play-${idx}`).textContent = 'Play ▶';
+  }
+  state.currentStep = 0;
+  updateVisualizerUi(idx);
+  playJumpSound();
+}
+
+function initializeVisualizerWidgets(container) {
+  Object.keys(visualizerStates).forEach(key => {
+    const idx = key.split('_')[1];
+    const barsContainer = container.querySelector(`#vis-bars-container-${idx}`);
+    if (barsContainer) {
+      updateVisualizerUi(idx);
+    }
+  });
 }
 
 // STUDY INTERACTIVE QUIZ MODAL
@@ -3439,6 +4054,81 @@ quizDialog.innerHTML = `
   </div>
 `;
 document.body.appendChild(quizDialog);
+
+// LECTURE SUMMARIZER MODAL
+const summarizerDialog = document.createElement('dialog');
+summarizerDialog.id = 'lecture-summarizer-modal';
+summarizerDialog.style.cssText = "border:none; border-radius:16px; padding:32px; background:var(--canvas); color:var(--ink); box-shadow:0 0 24px rgba(0,0,0,0.25); max-width:540px; width:90%; font-family:inherit; outline:none; margin: auto;";
+summarizerDialog.innerHTML = `
+  <h3 style="margin-top:0; border:none; padding:0; font-family:'Syne',sans-serif; font-size:18px;" id="summarizer-modal-title">📝 Summarize Lecture Slides / Notes</h3>
+  <p style="font-size:12.5px; color:var(--mute); margin:4px 0 16px 0;">Upload or paste your course notes, slides, or transcript files to dynamically build outlines, mind-maps, and practice flashcards.</p>
+  
+  <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+    <!-- Paste Notes Area -->
+    <textarea id="summarizer-text-input" placeholder="Paste slides text, lecture notes, or key concepts here..." style="width:100%; height:160px; padding:12px; font-size:13.5px; border-radius:8px; border:1px solid var(--hairline-strong); background:var(--canvas); color:var(--ink); font-family:inherit; resize:vertical; outline:none;"></textarea>
+    
+    <!-- File Picker -->
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px dashed var(--hairline-strong); border-radius:8px; padding:12px; background:var(--surface-soft);">
+      <span style="font-size:12px; color:var(--body);">Or upload notes file (.txt, .md text)</span>
+      <input type="file" id="summarizer-file-input" accept=".txt,.md" style="display:none;" onchange="handleLectureFileSelect(this)">
+      <button class="btn btn-outline" style="height:30px; font-size:11px; padding:0 12px;" onclick="document.getElementById('summarizer-file-input').click()">Choose File</button>
+    </div>
+    <div id="summarizer-file-info" style="font-size:11.5px; color:var(--primary); font-weight:700; display:none;">Selected: -</div>
+  </div>
+  
+  <div style="display:flex; justify-content:flex-end; gap:12px;">
+    <button class="btn btn-outline" style="height:36px; font-size:12px;" onclick="document.getElementById('lecture-summarizer-modal').close()">Cancel</button>
+    <button class="btn btn-primary" style="height:36px; font-size:12px;" onclick="triggerLectureSummarizer()">Generate Study Deck</button>
+  </div>
+`;
+document.body.appendChild(summarizerDialog);
+
+function openLectureSummarizerModal() {
+  document.getElementById('summarizer-text-input').value = '';
+  document.getElementById('summarizer-file-input').value = '';
+  document.getElementById('summarizer-file-info').style.display = 'none';
+  loadedNotesText = '';
+  document.getElementById('lecture-summarizer-modal').showModal();
+}
+
+let loadedNotesText = "";
+
+function handleLectureFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  document.getElementById('summarizer-file-info').textContent = `Selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  document.getElementById('summarizer-file-info').style.display = 'block';
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    loadedNotesText = e.target.result;
+  };
+  reader.readAsText(file);
+}
+
+function triggerLectureSummarizer() {
+  const pasteText = document.getElementById('summarizer-text-input').value.trim();
+  const textToUse = pasteText || loadedNotesText;
+  
+  if (!textToUse) {
+    alert("Please paste note texts or upload a text file first!");
+    return;
+  }
+  
+  document.getElementById('lecture-summarizer-modal').close();
+  
+  const prompt = `Act as Scout's Academic Summarizer. Analyze these slides/notes text and generate:
+1. A structured outline summary.
+2. An interactive visual concept Mind-Map using <concept-mindmap> tags linking the core components.
+3. An interactive Anki flashcard deck using <anki-flashcards> tags with 3-4 cards of core conceptual definitions.
+4. Exactly 2 conceptual MCQs.
+
+Here is the source text to analyze:
+${textToUse.substring(0, 4000)}`;
+
+  sendPrompt(prompt);
+}
 
 window.addEventListener('DOMContentLoaded', initFirebase);
 </script>
