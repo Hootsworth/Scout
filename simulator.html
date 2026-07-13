@@ -1713,6 +1713,41 @@ Keep your response professional and ask a single direct question. Do not include
     return;
   }
   
+  if (sim.roundIndex === 4 || sim.isVoiceHrSandbox) {
+    const roundTitle = "HR Culture & Salary Fitment Interview";
+    appendSimChat("SYSTEM", `Initiating ${roundTitle}...`, false, true);
+    
+    if (sim.isVoiceHrSandbox) {
+      sim.voiceHrTurnIndex = 0;
+      sim.maxVoiceHrTurns = 3;
+      
+      const greetingPrompt = `You are a friendly, professional corporate HR recruiter in a voice practice sandbox.
+Introduce yourself briefly, welcome the candidate to the Voice HR Practice Sandbox, ask how they are doing today, and explain that you will ask them a few light questions to test their communication.
+Do not ask any difficult behavioral or technical questions yet. Keep it warm, conversational, and concise.`;
+      
+      appendSimChat("SYSTEM", "AI Recruiter is greeting you...", false, true);
+      let greetingText = await callGeminiSimApi(greetingPrompt);
+      appendSimChat("HR Interviewer", greetingText, false);
+      return;
+    } else {
+      sim.hrTurnIndex = 0;
+      sim.maxHrTurns = 3;
+      
+      const greetingPrompt = `You are the HR Recruiter at ${sim.company.name} interviewing the candidate for the role of ${sim.company.title} (${sim.company.ctc} LPA).
+Current Stage: Welcome and Greeting (Round 5 of 5).
+Candidate Personalization Context:
+${getPersonalizationContextStr()}
+
+Introduce yourself, welcome the candidate warmly to the final round (HR Interview), and ask how they are doing today.
+Do not jump into heavy behavioral questions or salary fitment yet. Keep it warm, professional, conversational, and concise.`;
+      
+      appendSimChat("SYSTEM", "AI Recruiter is greeting you...", false, true);
+      let greetingText = await callGeminiSimApi(greetingPrompt);
+      appendSimChat("HR Interviewer", greetingText, false);
+      return;
+    }
+  }
+  
   if (sim.roundIndex === 0) {
     appendSimChat("SYSTEM", `Initiating Group Discussion (GD) Round...`, false, true);
     
@@ -1794,20 +1829,27 @@ async function submitSimulationAnswer() {
     const isFinal = sim.voiceHrTurnIndex >= sim.maxVoiceHrTurns - 1;
     
     const customPersonality = localStorage.getItem('cartesia_personality') || "A friendly yet strict senior corporate recruiter who speaks clearly and asks human-centric interview questions.";
-    const proctorPrompt = `You are a professional HR Director.
-You are evaluating the candidate's last answer in a mock voice interview.
+    const proctorPrompt = `You are a professional corporate HR recruiter in a mock voice practice sandbox.
 Interviewer Personality: ${customPersonality}
 Current Round: Question ${sim.voiceHrTurnIndex + 1} of ${sim.maxVoiceHrTurns}.
 
 Here is the conversation log:
 ${conversationHistoryStr}
 
-You MUST evaluate the candidate response and reply strictly in this XML structure:
+You MUST evaluate the candidate's response and reply strictly in this XML structure:
 <evaluation>
   <outcome>PASS</outcome>
-  <message>${isFinal ? 'Final summary feedback on their verbal communication, tone, confidence, and answer strength.' : 'Brief verbal feedback and a follow-up HR question.'}</message>
+  <message>your response here</message>
 </evaluation>
-Keep the message concise and voice-friendly since it will be spoken back to them.`;
+
+Inside the <message> tag, provide:
+${isFinal 
+  ? 'Final summary feedback on their verbal communication, tone, confidence, and overall answer strength.' 
+  : sim.voiceHrTurnIndex === 0
+    ? 'Brief conversational feedback to their greeting, then ask a light behavioral/introductory question (e.g. Tell me a bit about yourself, why you are interested in SDE, or about one of your projects).'
+    : 'Brief conversational feedback to their previous response, then ask a fitment or salary expectations question (e.g. CTC expectations, hybrid vs remote preferences, or why we should hire you).'
+}
+Keep the message concise, warm, professional, and voice-friendly since it will be spoken back to them.`;
 
     appendSimChat("SYSTEM", "AI Proctor is evaluating verbal response...", false, true);
     const evaluationXml = await callGeminiSimApi(proctorPrompt);
@@ -2000,7 +2042,41 @@ ${feedback}
 
   let conversationHistoryStr = simMessages.map(m => `${m.speaker}: ${m.text}`).join('\n');
   
-  const proctorPrompt = `You are the recruitment proctor at ${sim.company.name} evaluating round ${sim.roundIndex + 1} (of 5).
+  let proctorPrompt = "";
+  if (sim.roundIndex === 4) {
+    if (typeof sim.hrTurnIndex === 'undefined') sim.hrTurnIndex = 0;
+    if (typeof sim.maxHrTurns === 'undefined') sim.maxHrTurns = 3;
+    const isFinalHr = (sim.hrTurnIndex >= sim.maxHrTurns - 1);
+    const customPersonality = localStorage.getItem('cartesia_personality') || "A professional, friendly senior corporate recruiter.";
+    
+    proctorPrompt = `You are the HR Recruiter/Interviewer at ${sim.company.name} conducting the final HR Interview round for the role of ${sim.company.title} (${sim.company.ctc} LPA).
+Interviewer Personality: ${customPersonality}
+Candidate: Aditya Dixit (CGPA: ${localStorage.getItem('user_cgpa') || '8.5'}, Backlogs: ${localStorage.getItem('user_backlogs') || '0'})
+Reality Mode is active: ${isRealityMode}. If reality mode is active, your grading standards are extremely severe.
+Current Round: Turn ${sim.hrTurnIndex + 1} of ${sim.maxHrTurns}.
+
+Here is the conversation log:
+---
+${conversationHistoryStr}
+---
+
+Candidate just replied. You MUST respond strictly in this XML format:
+<evaluation>
+  <outcome>${isFinalHr ? 'PASS or FAIL' : 'PASS'}</outcome>
+  <eliminated>${isFinalHr ? 'number' : '0'}</eliminated>
+  <message>your response here</message>
+</evaluation>
+
+Inside the <message> tag, provide:
+${isFinalHr 
+  ? 'Overall final feedback explaining the PASS/FAIL decision, evaluating their culture fit, communication, and confidence. Be in character.' 
+  : sim.hrTurnIndex === 0
+    ? 'Brief conversational feedback to their greeting, then ask a light behavioral/introductory question (e.g. Tell me a bit about yourself, why you want to work at this company, or a teamwork project from their resume/background).'
+    : 'Brief conversational feedback to their previous response, then ask a salary fitment or culture fit question (e.g. CTC expectations, hybrid vs remote preferences, or why we should hire you).'
+}
+Keep the message concise, professional, and voice-friendly since it will be spoken.`;
+  } else {
+    proctorPrompt = `You are the recruitment proctor at ${sim.company.name} evaluating round ${sim.roundIndex + 1} (of 5).
 Role: ${sim.company.title} (${sim.company.ctc} LPA)
 Candidate: Aditya Dixit (CGPA: ${localStorage.getItem('user_cgpa') || '8.5'}, Backlogs: ${localStorage.getItem('user_backlogs') || '0'})
 Reality Mode is active: ${isRealityMode}. If reality mode is active, your grading standards are extremely severe.
@@ -2026,6 +2102,7 @@ You MUST respond strictly using the following XML format:
   <message>interviewer response speech</message>
 </evaluation>
 ${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interviewer Personality: ${localStorage.getItem('cartesia_personality') || 'A strict, professional HR director'}. Since this is a voice-speaking round, keep the proctor message voice-friendly, clear, and conversational.` : ''}`;
+  }
 
   appendSimChat("SYSTEM", "AI Proctor is evaluating your performance...", false, true);
   
@@ -2055,6 +2132,14 @@ ${sim.isHyperMode && (sim.roundIndex === 3 || sim.roundIndex === 4) ? `Interview
   }
   
   appendSimChat("Recruitment Proctor", feedbackMsg, false);
+  
+  if (sim.roundIndex === 4 && sim.hrTurnIndex < sim.maxHrTurns - 1) {
+    sim.hrTurnIndex++;
+    btn.disabled = false;
+    btn.textContent = "Submit Response";
+    checkVoiceModeState();
+    return;
+  }
   
   if (outcome === 'FAIL') {
     appendSimChat("SYSTEM", `Simulation Terminated: You have been eliminated in Round ${sim.roundIndex + 1}.`, false, true);
