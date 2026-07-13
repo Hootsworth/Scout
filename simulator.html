@@ -888,7 +888,7 @@ dialog#jd-overlay::backdrop {
     <div class="sim-overlay-header" style="height:64px;">
       <div style="display:flex; flex-direction:column; gap:2px;">
         <h3 id="sim-modal-title" style="font-size:16px;">Mock Placement Simulation</h3>
-        <span id="sim-header-details" style="font-size:11px; opacity:0.75;">Eligibility Evaluated ✓</span>
+        <span id="sim-header-details" style="font-size:11px; opacity:0.75;">Eligibility Evaluated: Successful</span>
       </div>
 
       <!-- Path progress indicators -->
@@ -1306,7 +1306,7 @@ function incrementDaysSilently(daysCount) {
 function advanceSimulatedCalendar(daysCount) {
   incrementDaysSilently(daysCount);
   if (elapsedDays % 2 === 0) {
-    alert("📢 Recruitment Season Update:\nNew placement openings have been posted! Old drives have expired.");
+    alert("Recruitment Season Update:\nNew placement openings have been posted! Old drives have expired.");
   }
 }
 
@@ -2383,7 +2383,7 @@ document.addEventListener('fullscreenchange', () => {
   if (!sim || sim.isStarPlayground) return;
   
   if (!document.fullscreenElement) {
-    appendSimChat("SYSTEM", "⚠️ anti-cheat alert: Fullscreen mode deactivated!", false, true);
+    appendSimChat("SYSTEM", "Anti-cheat alert: Fullscreen mode deactivated!", false, true);
     appendSimChat("Recruitment Proctor", "Compliance Infraction: You have exited the proctored screen state. The recruitment drive has been terminated due to a strict security violation.", false);
     
     addSimPlacementToBoard(sim.company, 'rejected');
@@ -2398,7 +2398,7 @@ window.addEventListener('blur', () => {
   const sim = activeSim;
   if (!sim || sim.isStarPlayground) return;
   
-  appendSimChat("SYSTEM", "⚠️ anti-cheat alert: Window focus lost!", false, true);
+  appendSimChat("SYSTEM", "Anti-cheat alert: Window focus lost!", false, true);
   appendSimChat("Recruitment Proctor", "Compliance Infraction: Tab switching or window blur detected. The recruitment drive has been terminated.", false);
   
   addSimPlacementToBoard(sim.company, 'rejected');

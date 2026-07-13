@@ -1770,13 +1770,14 @@ let conversationHistory = [];
 function setThinking(text) {
   const bar = document.getElementById('thinking-bar');
   const label = document.getElementById('thinking-text');
-  label.textContent = text;
-  bar.classList.add('active');
-  statusText.textContent = text;
+  if (label) label.textContent = text;
+  if (bar) bar.classList.add('active');
+  if (statusText) statusText.textContent = text;
 }
 function clearThinking() {
-  document.getElementById('thinking-bar').classList.remove('active');
-  statusText.textContent = 'Agent Ready';
+  const bar = document.getElementById('thinking-bar');
+  if (bar) bar.classList.remove('active');
+  if (statusText) statusText.textContent = 'Agent Ready';
 }
 
 // Robust markdown-to-HTML parser

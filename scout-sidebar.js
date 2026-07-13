@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     else if (days <= 7)  { color = '#f87171'; bg = 'rgba(248,113,113,0.1)'; }
     else if (days <= 30) { color = '#fbbf24'; bg = 'rgba(251,191,36,0.1)'; }
     chip.style.cssText = `display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:${bg};width:100%;margin-bottom:4px;${pulse}`;
-    chip.innerHTML = `<span style="font-size:15px;flex-shrink:0;">📅</span><span class="sidebar-label" style="color:${color};font-size:11.5px;font-weight:700;letter-spacing:0.02em;">${days > 0 ? days + 'd left' : days === 0 ? 'Today!' : 'Expired'}</span>`;
+    chip.innerHTML = `<span class="sidebar-label" style="color:${color};font-size:11.5px;font-weight:700;letter-spacing:0.02em;">Deadline: ${days > 0 ? days + 'd left' : days === 0 ? 'Today!' : 'Expired'}</span>`;
   })();
 
   // ── Command Palette ────────────────────────────────────
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { label: 'Settings', icon: '⚙️', desc: 'API keys & personalization', href: 'settings.html' },
     { label: 'Toggle Theme', icon: '🌙', desc: 'Switch dark / light mode', action: () => document.getElementById('theme-toggle-btn')?.click() },
     { label: 'Mock OA Arena', icon: '🧑‍💻', desc: 'Launch a timed coding challenge', href: 'placements.html#mock-oa' },
-    { label: 'Academic Assistant', icon: '🤖', desc: 'Personalized AI study coach', href: 'assistant.html' },
+    { label: 'Academic Assistant', icon: '🤖', desc: 'Personalized AI study coach', href: 'index.html' },
   ];
 
   let selIdx = 0;

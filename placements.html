@@ -394,32 +394,41 @@ footer {
   </section>
 
   <!-- SECTION: ADD OPPORTUNITY -->
-  <section id="add-drive" style="display: none; border-bottom: none;">
-    <div class="setup-card" style="max-width: 600px; margin: 0;">
-      <h3>New Company Entry</h3>
-      <form id="job-entry-form" onsubmit="addCompanyEntry(event)">
+  <section id="add-drive" style="display: none; border-bottom: none; width: 100%;">
+    <div class="section-label"><span class="section-num">03</span><h2 class="section-title">Add Opportunity</h2></div>
+    <p class="section-desc">Register a new recruitment drive or off-campus application. Keep your pipelines updated with compensation, JDs, and prep logs.</p>
+    
+    <form id="job-entry-form" onsubmit="addCompanyEntry(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; width: 100%; margin-top: 24px;">
+      <!-- Left Column: Core Fields -->
+      <div class="setup-card" style="margin: 0; display: flex; flex-direction: column; gap: 20px;">
+        <h3 style="margin-bottom: 8px; font-family: 'Syne', sans-serif;">General Parameters</h3>
+        
         <div class="form-group">
           <label for="company-name">Company Name</label>
-          <input type="text" id="company-name" class="input-pill" required placeholder="e.g. Google">
+          <input type="text" id="company-name" class="input-pill" required placeholder="e.g. Google" style="width: 100%;">
         </div>
+        
         <div class="form-group">
           <label for="job-title">Job Title / Designation</label>
-          <input type="text" id="job-title" class="input-pill" required placeholder="e.g. Software Engineer Intern">
+          <input type="text" id="job-title" class="input-pill" required placeholder="e.g. Software Engineer Intern" style="width: 100%;">
         </div>
+        
         <div class="form-group">
           <label for="job-type">Type</label>
-          <select id="job-type" class="select-pill">
+          <select id="job-type" class="select-pill" style="width: 100%;">
             <option value="on-campus">On-Campus Drive</option>
             <option value="off-campus">Off-Campus Application</option>
           </select>
         </div>
+        
         <div class="form-group">
           <label for="job-ctc">CTC / Compensation Package</label>
-          <input type="text" id="job-ctc" class="input-pill" required placeholder="e.g. 40 LPA or ₹100,000/month">
+          <input type="text" id="job-ctc" class="input-pill" required placeholder="e.g. 40 LPA or ₹100,000/month" style="width: 100%;">
         </div>
+        
         <div class="form-group">
           <label for="job-status">Application Status</label>
-          <select id="job-status" class="select-pill">
+          <select id="job-status" class="select-pill" style="width: 100%;">
             <option value="dreaming">Dreaming / Target</option>
             <option value="applied">Applied / Pending OA</option>
             <option value="test">Online Assessment (OA)</option>
@@ -429,19 +438,27 @@ footer {
             <option value="rejected">Rejected / Closed</option>
           </select>
         </div>
+      </div>
+      
+      <!-- Right Column: Descriptions & Details -->
+      <div class="setup-card" style="margin: 0; display: flex; flex-direction: column; gap: 20px;">
+        <h3 style="margin-bottom: 8px; font-family: 'Syne', sans-serif;">Job Specifications</h3>
+        
         <div class="form-group">
           <label for="job-jd">Job Description (JD)</label>
-          <textarea id="job-jd" class="textarea-flat" rows="5" placeholder="Paste JD highlights, requirements, or tech stack here..."></textarea>
+          <textarea id="job-jd" class="textarea-flat" rows="7" placeholder="Paste JD highlights, requirements, or tech stack here..." style="width: 100%; height: 160px; font-family: inherit; font-size: 13.5px;"></textarea>
         </div>
+        
         <div class="form-group">
           <label for="job-notes">Preparation &amp; Interview Notes</label>
-          <textarea id="job-notes" class="textarea-flat" rows="4" placeholder="Important topics, Leetcode links, or interview questions asked..."></textarea>
+          <textarea id="job-notes" class="textarea-flat" rows="6" placeholder="Important topics, Leetcode links, or interview questions asked..." style="width: 100%; height: 140px; font-family: inherit; font-size: 13.5px;"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Save Company Entry</button>
-      </form>
-    </div>
-  </section>
-
+        
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+          <button type="submit" class="btn btn-primary" style="height: 48px; padding: 0 40px; font-size: 15px; font-weight: 700; border-radius: 24px; transition: all 0.2s;">Save Company Entry</button>
+        </div>
+      </div>
+    </form>
   </section>
 
   <!-- SECTION: RESUME & ATS OPTIMIZER -->
